@@ -7,6 +7,7 @@ import CustomBtn from '../../components/CustomBtn';
 import Fonts from '../../styles/GolbalFonts';
 import { useNavigation } from "@react-navigation/native";
 import ImagePath from "../../contexts/ImagePath";
+import { useTheme } from "../../contexts/ThemeContext";
 
 
 const SignupScreen = () => {
@@ -16,6 +17,8 @@ const SignupScreen = () => {
   const [name, setName] = useState('');
   const [phonenumber, setPhoneNumber] = useState('');
   const navigation = useNavigation();
+   const theme = useTheme();
+    const style = styles(theme);
 
   const onHandleLogin = () => {
     navigation.navigate('Login')
@@ -124,7 +127,7 @@ const SignupScreen = () => {
 
 export default SignupScreen;
 
-const style = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   main: {
     flex: 1
   },
@@ -135,12 +138,12 @@ const style = StyleSheet.create({
   },
   headerText: {
     fontSize: moderateScale(24),
-    color: '#424242',
+    color:theme.text,
     fontFamily: Fonts.RubikBold
   },
   subHeaderText: {
     fontSize: moderateScale(12),
-    color: '#BDBDBD',
+    color:theme.subText,
     fontFamily: Fonts.RubikMedium,
     marginTop: 10
   },
@@ -152,7 +155,7 @@ const style = StyleSheet.create({
   },
   inputHeader: {
     fontSize: moderateScale(16),
-    color: '#424242',
+    color:theme.text,
     fontFamily: Fonts.RubikBold,
     marginTop: 20
   },
@@ -165,11 +168,11 @@ const style = StyleSheet.create({
   divider: {
     flex: 0.1,
     height: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor:theme.border,
   },
   dividerText: {
     marginHorizontal: 16,
-    color: '#E0E0E0',
+    color:theme.subText,
     fontSize: moderateScale(14),
   },
   googleIcon: {
@@ -183,12 +186,12 @@ const style = StyleSheet.create({
     marginTop: 5
   },
   signupText: {
-    color: '#999999',
+    color:theme.subText,
     fontSize: moderateScale(12),
     fontFamily: Fonts.RubikRegular
   },
   signupLink: {
-    color: '#3565E3',
+    color:theme.primary,
     fontSize: moderateScale(12),
     fontFamily: Fonts.RubikSemiBold
   },

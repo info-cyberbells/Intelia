@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet, Image } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
 import Fonts from '../styles/GolbalFonts';
+import { useTheme } from '../contexts/ThemeContext';
 
 const CustomBtn = ({
     title,
@@ -11,6 +12,11 @@ const CustomBtn = ({
     disabled = false,
     fullWidth = true
 }) => {
+     const theme = useTheme();
+     const styles = style(theme);   
+
+
+
     const buttonStyles = [
         styles.button,
         fullWidth && styles.fullWidth,
@@ -44,7 +50,7 @@ const CustomBtn = ({
 
 export default CustomBtn;
 
-const styles = StyleSheet.create({
+const style = (theme) => StyleSheet.create({
     button: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -58,15 +64,15 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     primaryButton: {
-        backgroundColor: '#3565E3',
+        backgroundColor: theme.primary,
     },
     secondaryButton: {
-        backgroundColor: '#F5F5F5',
+        backgroundColor:theme.inputBackgroundcolor,
     },
     outlineButton: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor:theme.inputBackgroundcolor,
         borderWidth: 1,
-        borderColor: '#E5E5E5',
+        borderColor:theme.border,
     },
     disabled: {
         opacity: 0.5,
@@ -76,17 +82,17 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     primaryText: {
-        color: '#FFFFFF',
+        color:theme.white,
         fontSize: moderateScale(16),
         fontFamily: Fonts.RubikSemiBold,
     },
     secondaryText: {
-        color: '#333333',
+        color:theme.text,
         fontSize: moderateScale(14),
         fontFamily: Fonts.RubikSemiBold,
     },
     outlineText: {
-        color: '#333333',
+        color:theme.text,
         fontSize: moderateScale(14),
         fontFamily: Fonts.RubikMedium
     },
