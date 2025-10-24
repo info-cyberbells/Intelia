@@ -1,6 +1,6 @@
-android/.cxx/
+android/
 *.iml
 .idea/
-.gradle/
-build/
-node_modules/
+.gradle
+build
+node_modules

@@ -14,10 +14,10 @@ const LoginScreen = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation();
+  const navigation = useNavigation();  
   const theme = useTheme();
   const style = styles(theme);
-
+ 
   const onHandleSignup = () => {
     navigation.navigate('Signup')
   }
