@@ -11,6 +11,6 @@ router.post("/register", validateRegister, register); // Driver registration
 router.post("/login", login);
 
 // Protected (Super Admin only) - Create car owner
-router.post("/create-owner", authenticate, authorizeRoles("superAdmin"), createCarOwner);
+router.post("/create-owner", validateRegister, createCarOwner);
 
 export default router;
