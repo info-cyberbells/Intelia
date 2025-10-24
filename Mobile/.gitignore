@@ -1,6 +1,0 @@
-android/
-*.iml
-.idea/
-.gradle
-build
-node_modules
