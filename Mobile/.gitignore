@@ -1,0 +1,5 @@
+android/.cxx/
+*.iml
+.idea/
+.gradle/
+build/
