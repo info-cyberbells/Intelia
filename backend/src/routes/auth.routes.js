@@ -6,12 +6,11 @@ import { validateRegister } from "../validation/auth.validation.js";
 
 const router = express.Router();
 
-// Public
-router.post("/register", validateRegister, register);
-router.post("/register", register);
+// Public routes
+router.post("/register", validateRegister, register); // Driver registration
 router.post("/login", login);
 
-// Protected (Super Admin only)
-router.post("/create-owner", createCarOwner);
+// Protected (Super Admin only) - Create car owner
+router.post("/create-owner", authenticate, authorizeRoles("superAdmin"), createCarOwner);
 
 export default router;
