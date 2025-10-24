@@ -1,0 +1,4 @@
+/Users/imac/Desktop/Intelia/android/app/.cxx/Debug/hi3t30z2/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/Users/imac/Desktop/Intelia/android/app/.cxx/Debug/hi3t30z2/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/Users/imac/Desktop/Intelia/android/app/.cxx/Debug/hi3t30z2/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/Users/imac/Desktop/Intelia/android/app/.cxx/Debug/hi3t30z2/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

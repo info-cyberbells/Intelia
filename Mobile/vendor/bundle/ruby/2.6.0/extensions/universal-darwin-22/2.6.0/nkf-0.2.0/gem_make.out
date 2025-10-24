@@ -1,0 +1,16 @@
+current directory: /Users/imac/Desktop/INtails/Intelia/vendor/bundle/ruby/2.6.0/gems/nkf-0.2.0/ext/nkf
+/System/Library/Frameworks/Ruby.framework/Versions/2.6/usr/bin/ruby -I /System/Library/Frameworks/Ruby.framework/Versions/2.6/usr/lib/ruby/2.6.0 -r ./siteconf20251023-2111-d83k5p.rb extconf.rb
+creating Makefile
+
+current directory: /Users/imac/Desktop/INtails/Intelia/vendor/bundle/ruby/2.6.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR=" clean
+
+current directory: /Users/imac/Desktop/INtails/Intelia/vendor/bundle/ruby/2.6.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR="
+compiling nkf.c
+linking shared-object nkf.bundle
+ld: warning: directory not found for option '-L/AppleInternal/Library/BuildRoots/46298ee5-4a1c-11ef-a181-1aec23608739/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.7.Internal.sdk/usr/local/lib'
+
+current directory: /Users/imac/Desktop/INtails/Intelia/vendor/bundle/ruby/2.6.0/gems/nkf-0.2.0/ext/nkf
+make "DESTDIR=" install
+/usr/bin/install -c -m 0755 nkf.bundle ./.gem.20251023-2111-54nwla
