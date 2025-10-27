@@ -7,7 +7,7 @@ import { validateRegister } from "../validation/auth.validation.js";
 const router = express.Router();
 
 // Public routes
-router.post("/register", validateRegister, register); // Driver registration
+router.post("/register", validateRegister, register);
 router.post("/login", login);
 
 // Protected (Super Admin only) - Create car owner

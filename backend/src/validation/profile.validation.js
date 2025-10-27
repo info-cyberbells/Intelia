@@ -38,9 +38,9 @@ export const validateUpdateProfile = (data, role) => {
       }).unknown(false);
       break;
 
-    case "superAdmin":
+    case "superadmin":
       schema = Joi.object({
-        name: Joi.string().trim().max(191).optional(),
+        firstName: Joi.string().trim().max(191).optional(),
         phoneNumber: Joi.string()
           .pattern(/^\+?[1-9]\d{1,14}$/)
           .optional()

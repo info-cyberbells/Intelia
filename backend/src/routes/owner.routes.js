@@ -17,7 +17,4 @@ router.get("/dashboard", (req, res) => {
 router.get("/profile", getProfile);
 router.put("/profile", updateProfile);
 
-// Add owner-specific routes here
-// For example: manage vehicles, view drivers, etc.
-
 export default router;

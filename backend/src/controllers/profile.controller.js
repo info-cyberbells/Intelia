@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import User from "../models/user.model.js";
 import { validateUpdateProfile } from "../validation/profile.validation.js";
 
@@ -8,15 +10,8 @@ import { validateUpdateProfile } from "../validation/profile.validation.js";
  */
 export const getProfile = async (req, res) => {
   try {
-    const authUser = req.user; // from authenticate middleware
-
-    // Fetch the latest user data
-    const user = await User.findById(authUser.id)
-      .select("-password -social_token"); // hide sensitive fields
-      // .populate([
-      //   { path: "university", select: "name" }, // optional, only if you have this relation
-      // ]);
-
+    const authUser = req.user;
+    const user = await User.findById(authUser.id).select("-password -social_token");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -26,7 +21,6 @@ export const getProfile = async (req, res) => {
 
     // Single role (string)
     const role = user.role?.toLowerCase();
-
     let roleData = {};
 
     // Role-specific data handling
@@ -38,14 +32,12 @@ export const getProfile = async (req, res) => {
         break;
 
       case "owner":
-        // Example: add some admin dashboard stats here if needed
         roleData = {
           phoneNumber: user.phoneNumber || null,
         };
         break;
 
       case "superAdmin":
-        // Example: super admin–specific data
         roleData = {
           message: "Super admin access granted",
         };
@@ -85,24 +77,15 @@ export const getProfile = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   try {
-    const authUser = req.user; // from authenticate middleware
+    const authUser = req.user;
     const user = await User.findById(authUser.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     const role = user.role?.toLowerCase();
     const data = req.body;
-
-
-    // --- Validation section ---
-    // If you have Joi or similar validator:
     const { error } = validateUpdateProfile(data, role);
     if (error) {
+      if (req.file) fs.unlinkSync(req.file.path);
       return res.status(400).json({
         success: false,
         message: error.details ? error.details[0].message : error.message,
@@ -112,17 +95,17 @@ export const updateProfile = async (req, res) => {
     // --- Update logic per role ---
     switch (role) {
       case "driver":
-        if (data.name) user.name = data.name;
+        if (data.firstName) user.firstName = data.firstName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         break;
 
       case "owner":
-        if (data.name) user.name = data.name;
+        if (data.firstName) user.firstName = data.firstName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         break;
 
-      case "superAdmin":
-        if (data.name) user.name = data.name;
+      case "superadmin":
+        if (data.firstName) user.firstName = data.firstName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         break;
 
@@ -133,6 +116,20 @@ export const updateProfile = async (req, res) => {
         });
     }
 
+    if (req.file) {
+      // Delete Old
+      if (user.avatar) {
+        try {
+          const oldPath = path.join(process.cwd(), user.avatar);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } catch (err) {
+          console.warn('Error deleting old avatar', err);
+        }
+      }
+      // Save
+      user.avatar = `/uploads/avatars/${req.file.filename}`;
+    }
+
     await user.save();
 
     return res.status(200).json({
@@ -140,10 +137,11 @@ export const updateProfile = async (req, res) => {
       message: "Profile updated successfully!",
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName,
         email: user.email,
         role: user.role,
         phoneNumber: user.phoneNumber,
+        avatar: user.avatar
       },
     });
   } catch (error) {

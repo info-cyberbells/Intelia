@@ -17,7 +17,4 @@ router.get("/dashboard", (req, res) => {
 router.get("/profile", getProfile);
 router.put("/profile", updateProfile);
 
-// Add driver-specific routes here
-// For example: view assigned trips, update availability, etc.
-
 export default router;

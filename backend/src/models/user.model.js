@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema(
       }, 
       trim: true 
     },
-    validUntil: {
+    validUntil: { 
       type: Date,
       required: function () {
         return this.role === "driver";
@@ -91,6 +91,7 @@ const userSchema = new mongoose.Schema(
         message: "valid Until must be a future date.",
       },
     },
+    avatar: { type: String, default: null },
   },
   { timestamps: true }
 );

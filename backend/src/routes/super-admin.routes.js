@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
+import upload from '../middleware/upload.js';
 import { getProfile, updateProfile } from "../controllers/profile.controller.js";
 
 const router = express.Router();
@@ -15,9 +16,6 @@ router.get("/dashboard", (req, res) => {
 
 // Profile
 router.get("/profile", getProfile);
-router.put("/profile", updateProfile);
-
-// Add more super admin specific routes here
-// For example: view all users, manage system settings, etc.
+router.put("/profile", upload.single('avatar'), updateProfile);
 
 export default router;
