@@ -91,7 +91,15 @@ const userSchema = new mongoose.Schema(
         message: "valid Until must be a future date.",
       },
     },
-    avatar: { type: String, default: null },
+    // avatar: { type: String, default: null },
+    profileImage: {
+      type: String, // URL or file path
+      default: null
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    }
   },
   { timestamps: true }
 );

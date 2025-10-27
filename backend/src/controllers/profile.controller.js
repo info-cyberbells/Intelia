@@ -11,7 +11,11 @@ import { validateUpdateProfile } from "../validation/profile.validation.js";
 export const getProfile = async (req, res) => {
   try {
     const authUser = req.user;
-    const user = await User.findById(authUser.id).select("-password -social_token");
+    
+    // Support both authUser.id and authUser._id
+    const userId = authUser.id || authUser._id;
+    
+    const user = await User.findById(userId).select("-password -social_token");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -28,18 +32,25 @@ export const getProfile = async (req, res) => {
       case "driver":
         roleData = {
           phoneNumber: user.phoneNumber || null,
+          licenseNumber: user.licenseNumber || null,
+          municipality: user.municipality || null,
+          vehicleRegistration: user.vehicleRegistration || null,
+          validUntil: user.validUntil || null,
         };
         break;
 
       case "owner":
         roleData = {
           phoneNumber: user.phoneNumber || null,
+          companyName: user.companyName || null,
+          correspondedMe: user.correspondedMe || null,
         };
         break;
 
-      case "superAdmin":
+      case "superadmin":
         roleData = {
           message: "Super admin access granted",
+          phoneNumber: user.phoneNumber || null,
         };
         break;
 
@@ -55,8 +66,15 @@ export const getProfile = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        firstName: user.firstName,
+        surname: user.surname,
         email: user.email,
         role: user.role,
+        avatar: user.avatar || user.profileImage, // Support both fields
+        profileImage: user.profileImage || user.avatar,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
         ...roleData,
       },
     });
@@ -69,7 +87,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-
 /**
  * PUT : Method
  * Common Function
@@ -78,56 +95,125 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const authUser = req.user;
-    const user = await User.findById(authUser.id);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    const userId = authUser.id || authUser._id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     const role = user.role?.toLowerCase();
     const data = req.body;
+    
+    // Validate based on role
     const { error } = validateUpdateProfile(data, role);
     if (error) {
-      if (req.file) fs.unlinkSync(req.file.path);
+      // Delete uploaded file if validation fails
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (err) {
+          console.warn('Error deleting file:', err);
+        }
+      }
       return res.status(400).json({
         success: false,
         message: error.details ? error.details[0].message : error.message,
       });
     }
 
+    // Check email uniqueness if being changed
+    if (data.email && data.email !== user.email) {
+      const existingUser = await User.findOne({ email: data.email });
+      if (existingUser) {
+        if (req.file) fs.unlinkSync(req.file.path);
+        return res.status(400).json({
+          success: false,
+          message: "Email already exists",
+        });
+      }
+    }
+
     // --- Update logic per role ---
     switch (role) {
       case "driver":
         if (data.firstName) user.firstName = data.firstName;
+        if (data.surname) user.surname = data.surname;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
+        if (data.email) user.email = data.email;
+        
+        // Driver-specific fields
+        if (data.licenseNumber) {
+          // Check license uniqueness
+          if (data.licenseNumber !== user.licenseNumber) {
+            const existingLicense = await User.findOne({ licenseNumber: data.licenseNumber });
+            if (existingLicense) {
+              if (req.file) fs.unlinkSync(req.file.path);
+              return res.status(400).json({
+                success: false,
+                message: "License number already exists",
+              });
+            }
+          }
+          user.licenseNumber = data.licenseNumber;
+        }
+        if (data.municipality) user.municipality = data.municipality;
+        if (data.vehicleRegistration !== undefined) user.vehicleRegistration = data.vehicleRegistration;
+        if (data.validUntil) {
+          if (new Date(data.validUntil) <= new Date()) {
+            if (req.file) fs.unlinkSync(req.file.path);
+            return res.status(400).json({
+              success: false,
+              message: "Valid Until date must be in the future",
+            });
+          }
+          user.validUntil = data.validUntil;
+        }
         break;
 
       case "owner":
         if (data.firstName) user.firstName = data.firstName;
+        if (data.surname) user.surname = data.surname;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
+        if (data.email) user.email = data.email;
+        if (data.companyName) user.companyName = data.companyName;
+        if (data.correspondedMe) user.correspondedMe = data.correspondedMe;
         break;
 
       case "superadmin":
         if (data.firstName) user.firstName = data.firstName;
+        if (data.surname) user.surname = data.surname;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
+        if (data.email) user.email = data.email;
         break;
 
       default:
+        if (req.file) fs.unlinkSync(req.file.path);
         return res.status(403).json({
           success: false,
           message: "You are not allowed to update this profile.",
         });
     }
 
+    // Handle file upload (support both avatar and profileImage)
     if (req.file) {
-      // Delete Old
-      if (user.avatar) {
+      // Delete old avatar/profileImage
+      const oldImagePath = user.avatar || user.profileImage;
+      if (oldImagePath) {
         try {
-          const oldPath = path.join(process.cwd(), user.avatar);
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+          const oldPath = path.join(process.cwd(), oldImagePath);
+          if (fs.existsSync(oldPath)) {
+            fs.unlinkSync(oldPath);
+          }
         } catch (err) {
-          console.warn('Error deleting old avatar', err);
+          console.warn('Error deleting old image:', err);
         }
       }
-      // Save
-      user.avatar = `/uploads/avatars/${req.file.filename}`;
+      
+      // Save new image path (support both fields)
+      const newImagePath = `/uploads/avatars/${req.file.filename}`;
+      user.avatar = newImagePath;
+      user.profileImage = newImagePath;
     }
 
     await user.save();
@@ -137,18 +223,145 @@ export const updateProfile = async (req, res) => {
       message: "Profile updated successfully!",
       user: {
         id: user._id,
+        name: user.name,
         firstName: user.firstName,
+        surname: user.surname,
         email: user.email,
         role: user.role,
         phoneNumber: user.phoneNumber,
-        avatar: user.avatar
+        avatar: user.avatar || user.profileImage,
+        profileImage: user.profileImage || user.avatar,
+        ...(role === "driver" && {
+          licenseNumber: user.licenseNumber,
+          municipality: user.municipality,
+          vehicleRegistration: user.vehicleRegistration,
+          validUntil: user.validUntil,
+        }),
+        ...(role === "owner" && {
+          companyName: user.companyName,
+          correspondedMe: user.correspondedMe,
+        }),
       },
     });
   } catch (error) {
     console.error("Error updating profile:", error);
+    
+    // Delete uploaded file on error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (err) {
+        console.warn('Error deleting file:', err);
+      }
+    }
+    
     return res.status(500).json({
       success: false,
       message: error.message,
     });
+  }
+};
+
+/**
+ * PUT : Method
+ * Change Password
+ */
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const authUser = req.user;
+    const userId = authUser.id || authUser._id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 6 characters long",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Verify current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Update password (will be hashed by pre-save hook)
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+/**
+ * DELETE : Method
+ * Delete profile image/avatar
+ */
+export const deleteProfileImage = async (req, res) => {
+  try {
+    const authUser = req.user;
+    const userId = authUser.id || authUser._id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const imagePath = user.avatar || user.profileImage;
+    if (!imagePath) {
+      return res.status(400).json({
+        success: false,
+        message: "No profile image to delete",
+      });
+    }
+
+    // Delete image file
+    try {
+      const fullPath = path.join(process.cwd(), imagePath);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+    } catch (err) {
+      console.warn('Error deleting image file:', err);
+    }
+
+    user.avatar = null;
+    user.profileImage = null;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Profile image deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
