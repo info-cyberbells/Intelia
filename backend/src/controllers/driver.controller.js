@@ -81,7 +81,7 @@ export const getDriverById = async (req, res) => {
 // @access  Super Admin
 export const createDriver = async (req, res) => {
   try {
-    const {firstName,surname,email,phoneNumber,licenseNumber,municipality,vehicleRegistration,validUntil,} = req.body;
+    const {firstName,surname,email,phoneNumber,licenseNumber,municipality,vehicleRegistration,validUntil } = req.body;
     // Validate required fields
     if (!firstName || !surname || !email || !phoneNumber || !licenseNumber || !municipality || !validUntil) {
       return res.status(400).json({
@@ -119,22 +119,7 @@ export const createDriver = async (req, res) => {
     // Generate temporary password
     // const tempPassword = generateTempPassword();
     const tempPassword = 'Test@123';
-
-    // Get profile image path if uploaded
     const profileImage = req.file ? `/uploads/profiles/${req.file.filename}` : null;
-
-    // Find this line in updateDriver:
-    if (req.file) {
-      if (driver.profileImage) {
-        const oldImagePath = `.${driver.profileImage}`;
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-      driver.profileImage = `/uploads/profiles/${req.file.filename}`;
-    }
-
-    // Create driver
     const driver = await User.create({
       firstName,
       surname,

@@ -65,7 +65,7 @@ const fileFilter = (req, file, cb) => {
 
 // For Owner/Driver profile updates (uses avatars folder)
 export const uploadAvatar = multer({
-  storage: avatarStorage,
+  storage: profileStorage,
   fileFilter: fileFilter,
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
 });
