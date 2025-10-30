@@ -3,6 +3,7 @@ import { register, login, createCarOwner } from "../controllers/auth.controller.
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import { validateRegister } from "../validation/auth.validation.js";
+import { setRole } from "../middleware/setRole.middleware.js";
 
 const router = express.Router();
 
@@ -11,6 +12,6 @@ router.post("/register", validateRegister, register);
 router.post("/login", login);
 
 // Protected (Super Admin only) - Create car owner
-router.post("/create-owner", validateRegister, createCarOwner);
+router.post("/create-owner", setRole("owner"), validateRegister, createCarOwner);
 
 export default router;

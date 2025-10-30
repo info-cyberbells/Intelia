@@ -57,6 +57,7 @@ export const login = async (req, res) => {
 
 // Only Super Admin can create Admin users
 export const createCarOwner = async (req, res) => {
+  console.log('HELLO');
   try {
     const { firstName, surname, companyName, correspondedMe, email, password, phoneNumber } = req.body;
     const existing = await User.findOne({ email });
