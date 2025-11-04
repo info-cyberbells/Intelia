@@ -754,18 +754,11 @@ const Register = () => {
                                 )}
                             </form>
 
-                            {/* Forgot password */}
-                            <div className="text-right mb-8">
-                                <button className="text-sm text-blue-600 hover:underline font-medium">
-                                    Forgot Password
-                                </button>
-                            </div>
-
                             {/* Sign in button */}
                             <button
                                 onClick={handleSubmit}
                                 disabled={isLoading}
-                                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors  mb-2"
+                                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors  mb-2 mt-5"
                             >
                                 {isLoading ? 'Signing up...' : 'Sign up'}
                             </button>
