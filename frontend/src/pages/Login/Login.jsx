@@ -400,7 +400,7 @@ const Login = () => {
                                 onClick={handleSubmit}
                                 className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors  mb-2"
                             >
-                                {isLoading ? "Signing Up..." : "Sign Up"}
+                                {isLoading ? "Logging In..." : "Login"}
                             </button>
 
                             <div className="flex items-center justify-center mb-4 ">
