@@ -1,6 +1,8 @@
 import React from 'react';
 import { Home, Search, Users, Briefcase, FileText } from 'lucide-react';
 import logoimage from '../../assets/image.png';
+import { Link } from 'react-router-dom';
+
 
 const Navbar = () => {
     return (
@@ -12,45 +14,40 @@ const Navbar = () => {
 
             {/* Menu Items */}
             <nav className="px-4 space-y-2">
-                <a
-                    href="/dashboard"
+                <Link to="/dashboard" 
                     className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <Home className="w-5 h-5 mr-3" />
                     Dashboard
-                </a>
+                </Link>
 
-                <a
-                    href="/search"
+                <Link to="/search"
                     className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <Search className="w-5 h-5 mr-3" />
                     Search
-                </a>
+                </Link>
 
-                <a
-                    href="/drivers"
+                <Link to="/drivers"
                     className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <Users className="w-5 h-5 mr-3" />
                     My Drivers
-                </a>
+                </Link>
 
-                <a
-                    href="/talent-hub"
+                <Link to="/talent-hub"
                     className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <Briefcase className="w-5 h-5 mr-3" />
                     Talent Hub
-                </a>
+                </Link>
 
-                <a
-                    href="/resources"
+               <Link to="/resources"
                     className="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                     <FileText className="w-5 h-5 mr-3" />
                     Resources
-                </a>
+                </Link>
             </nav>
 
             {/* Upgrade Card */}
