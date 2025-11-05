@@ -9,6 +9,9 @@ import Drivers from "./pages/Drivers/Drivers";
 import Search from "./pages/Search/Search";
 import TalentHub from "./pages/TalentHub/TalentHub";
 import Resources from "./pages/Resources/Resources";
+import Activity from "./pages/Activity/Activity";
+import DetailPage from "./pages/DetailPage/DetailPage";
+import SearchDriverRecords from "./pages/SearchDriverRecords/SearchDriverRecords";
 
 function App() {
   return (
@@ -22,6 +25,10 @@ function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/talent-hub" element={<TalentHub />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/activity" element={<Activity />} />
+        <Route path="/detail-page" element={<DetailPage />} />
+        <Route path="/search-driver-records" element={<SearchDriverRecords />} />
+
       </Routes>
     </Router>
   );

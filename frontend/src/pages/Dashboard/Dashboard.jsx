@@ -58,7 +58,7 @@ const Dashboard = () => {
   const totalRisk = riskData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 lg:ml-56">
+    <div className="min-h-screen bg-gray-50 p-8 lg:ml-56 mt-12">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-8">
