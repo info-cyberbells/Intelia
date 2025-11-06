@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   ChevronDown,
@@ -7,47 +7,81 @@ import {
   Users,
   AlertCircle,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOwnerDashboard } from "../../features/ownerSlice/ownerSlice";
+import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
+  const { dashboardData, loading, error } = useSelector((state) => state.owner);
   const [selectedPeriod, setSelectedPeriod] = useState("This week");
 
-  const stats = [
+  useEffect(() => {
+    dispatch(fetchOwnerDashboard());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 lg:ml-56 mt-12 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
+  // Add error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 lg:ml-56 mt-12 flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={() => dispatch(fetchOwnerDashboard())}
+            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) return null;
+
+  // Destructure the API data
+  const { stats, recentIncidents, riskAssessment } = dashboardData;
+
+  const statsCards = [
     {
       icon: <Briefcase className="w-6 h-6 text-orange-500" />,
-      value: "932",
+      value: stats.totalDrivers.toLocaleString(),
       label: "Total Drivers",
       bgColor: "bg-orange-50",
     },
     {
       icon: <FileText className="w-6 h-6 text-blue-500" />,
-      value: "1,032",
+      value: stats.totalInquiries.toLocaleString(),
       label: "Inquiries",
       bgColor: "bg-blue-50",
     },
     {
       icon: <Users className="w-6 h-6 text-blue-600" />,
-      value: "102k",
+      value: (stats.totalIncidents / 1000).toFixed(0) + "k",
       label: "Incidents",
       bgColor: "bg-blue-50",
     },
     {
       icon: <AlertCircle className="w-6 h-6 text-yellow-500" />,
-      value: "32k",
-      label: "Licenses",
+      value: (stats.upcomingTasks / 1000).toFixed(0) + "k",
+      label: "Upcoming Tasks",
       bgColor: "bg-yellow-50",
     },
   ];
 
-  const incidentData = [
-    { day: "Mon", thisWeek: 45, lastWeek: 50 },
-    { day: "Tue", thisWeek: 38, lastWeek: 52 },
-    { day: "Wed", thisWeek: 65, lastWeek: 62 },
-    { day: "Thu", thisWeek: 55, lastWeek: 70 },
-    { day: "Fri", thisWeek: 60, lastWeek: 58 },
-    { day: "Sat", thisWeek: 53, lastWeek: 32 },
-    { day: "Sun", thisWeek: 70, lastWeek: 18 },
-  ];
-
+  const incidentData = recentIncidents.map(incident => ({
+    day: incident.day,
+    thisWeek: Math.round(incident.newIssues / 30),
+    lastWeek: Math.round(incident.unresolved / 30),
+  }));
   const riskData = [
     { label: "Primary", percentage: 27, value: 763, color: "bg-blue-500" },
     { label: "Promotion", percentage: 11, value: 321, color: "bg-indigo-900" },
@@ -88,7 +122,7 @@ const Dashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
+          {statsCards.map((stat, index) => (
             <div
               key={index}
               className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
@@ -332,7 +366,7 @@ const Dashboard = () => {
 
           <div className="space-y-4">
             <p className="text-sm font-medium text-gray-600 mb-3">Legend</p>
-            {riskData.map((item, index) => (
+            {riskAssessment.map((item, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-4 h-4 rounded ${item.color}`}></div>

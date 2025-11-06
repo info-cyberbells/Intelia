@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { register, registerDriver, reset } from '../../features/userSlice';
+import { register, registerDriver, reset } from '../../features/userSlice/userSlice';
 import { useNavigate } from "react-router-dom";
 
 

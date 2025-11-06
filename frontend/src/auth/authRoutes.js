@@ -6,5 +6,7 @@ export const USER_ENDPOINTS = {
     CREATE_OWNER: `${API_BASE_URL}/auth/create-owner`,
     CREATE_DRIVER: `${API_BASE_URL}/auth/register`,
 
+    OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,
+
 }
 export default USER_ENDPOINTS;

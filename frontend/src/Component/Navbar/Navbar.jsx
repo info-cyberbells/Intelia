@@ -70,7 +70,7 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
-            <div className="w-full z-10 ml-56 ">
+            <div className="w-full ml-56 ">
                 <TopBar />
             </div>
         </div>

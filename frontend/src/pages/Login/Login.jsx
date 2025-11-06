@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { login, reset } from "../../features/userSlice";
+import { login, reset } from "../../features/userSlice/userSlice";
 import { useNavigate } from "react-router-dom";
 
 const Toast = ({ message, type, onClose }) => {

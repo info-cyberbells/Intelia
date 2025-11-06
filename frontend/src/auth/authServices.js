@@ -1,5 +1,6 @@
 import axios from "axios";
 import USER_ENDPOINTS from "./authRoutes";
+const token = localStorage.getItem("token");
 
 //Login driver / car owner
 export const loginService = async (userData) => {
@@ -24,3 +25,17 @@ export const registerDriverService = async (userData) => {
     });
     return response.data;
 }
+
+
+//owner dashboard
+export const ownerDashboardService = async () => {
+
+    const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, {
+        withCredentials: true,
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return response.data;
+};

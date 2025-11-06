@@ -50,6 +50,15 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    const maxAge = 7 * 24 * 60 * 60 * 1000;
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge,
+    });
+
     res.json({ message: "Login successful", token, user });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -85,7 +94,7 @@ export const logout = async (req, res) => {
 
     // Decode token to get expiry
     const decoded = jwt.decode(token);
-    
+
     // Add token to blacklist
     await TokenBlacklist.create({
       token: token,
@@ -101,9 +110,9 @@ export const logout = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server Error" 
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
     });
   }
 };
