@@ -64,6 +64,33 @@ const Drivers = () => {
         "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?w=200&h=200&fit=crop",
       isOnline: true,
     },
+    {
+      id: 7,
+      name: "Lina Loret",
+      phone: "+1234567890",
+      email: "jordan@mail.com",
+      image:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop",
+      isOnline: false,
+    },
+    {
+      id: 8,
+      name: "Mark Milan",
+      phone: "+1234567890",
+      email: "jordan@mail.com",
+      image:
+        "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=200&h=200&fit=crop",
+      isOnline: true,
+    },
+    {
+      id: 9,
+      name: "Ava Aster",
+      phone: "+1234567890",
+      email: "jordan@mail.com",
+      image:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop",
+      isOnline: true,
+    },
   ]);
 
   const stats = [
@@ -78,8 +105,19 @@ const Drivers = () => {
     { icon: "👥", label: "Licenses", value: "32k", bgColor: "bg-red-50" },
   ];
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  const totalPages = Math.ceil(contacts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentContacts = contacts.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8 lg:ml-56 mt-12">
+    <div className="min-h-screen font-[Poppins] bg-gray-50 p-8 lg:ml-56 mt-12">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800">Contact</h1>
@@ -109,13 +147,13 @@ const Drivers = () => {
       </div>
 
       {/* Contacts Grid */}
+      {/* Contacts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contacts.map((contact) => (
+        {currentContacts.map((contact) => (
           <div
             key={contact.id}
             className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
           >
-            {/* Contact Header */}
             <div className="flex items-start gap-4 mb-6">
               <div className="relative">
                 <img
@@ -162,6 +200,88 @@ const Drivers = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination Footer */}
+      {/* Pagination Footer */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500">
+        <p>
+          Showing{" "}
+          <span className="text-gray-900 font-semibold">
+            {startIndex + 1}–
+            {Math.min(startIndex + itemsPerPage, contacts.length)}
+          </span>{" "}
+          from{" "}
+          <span className="text-gray-600 font-semibold">{contacts.length}</span>{" "}
+          data
+        </p>
+
+        {/* Pagination Controls */}
+        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+          {/* Prev */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${currentPage === 1
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100"
+              }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4 text-gray-600"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Dynamic Page Numbers */}
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => handlePageChange(i + 1)}
+              className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${currentPage === i + 1
+                  ? "bg-yellow-500 text-white border-yellow-500"
+                  : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
+                }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          {/* Next */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${currentPage === totalPages
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-100"
+              }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4 text-gray-600"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

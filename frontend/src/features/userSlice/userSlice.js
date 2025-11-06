@@ -70,6 +70,9 @@ const authSlice = createSlice({
                 if (action.payload.token) {
                     localStorage.setItem("token", action.payload.token);
                 }
+                if (action.payload.user?.role) {
+                    localStorage.setItem("role", action.payload.user.role);
+                }
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
