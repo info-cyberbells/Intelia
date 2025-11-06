@@ -4,7 +4,7 @@ import { authorizeRoles } from "../middleware/role.middleware.js";
 import { getProfile, updateProfile, changePassword, deleteProfileImage } from "../controllers/profile.controller.js";
 import { validateChangePassword } from "../validation/profile.validation.js";
 import upload from "../middleware/upload.middleware.js";
-import { applyJob, withdrawApplication } from "../controllers/driver/jobApplication.controller.js";
+import { applyJob, withdrawApplication, listAvailableJobs } from "../controllers/driver/jobApplication.controller.js";
 
 const router = express.Router();
 
@@ -27,6 +27,9 @@ router.get("/profile", getProfile);
 router.put("/profile", upload.single("avatar"), updateProfile); // Support 'avatar' field name
 router.delete("/profile-image", deleteProfileImage);
 router.put("/change-password", validateChangePassword, changePassword);
+
+// Jobs
+router.get("/jobs", listAvailableJobs);
 
 // Job Application
 router.post("/job/apply/:jobId", applyJob);

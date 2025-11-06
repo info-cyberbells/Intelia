@@ -7,7 +7,7 @@ import upload from "../middleware/upload.middleware.js";
 import { createVehicle, getMyVehicles, updateVehicle, deleteVehicle } from "../controllers/owner/vehicleController.js";
 import { getMyNotifications, markAsRead, markAllAsRead } from "../controllers/notificationController.js";
 import { validateCreateVehicle, validateUpdateVehicle } from "../validation/vehicle.validation.js";
-import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplications } from "../controllers/owner/job.controller.js";
+import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplications, getJobApplications, getApplicationSummary, shortlistApplicant, getShortlistedApplicants } from "../controllers/owner/job.controller.js";
 import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js";
 
 const router = express.Router();
@@ -65,5 +65,10 @@ router.put("/job/:jobId", updateJob);
 router.get("/job/:jobId", getJobById);
 router.delete("/job/:jobId", deleteJob);
 router.put("/:jobId/applicants/:driverId", manageApplications);
+
+router.get("/jobs/:jobId/applications", getJobApplications);
+router.get("/jobs/:jobId/summary", getApplicationSummary);
+router.put("/job/:jobId/applicants/:driverId/shortlist", shortlistApplicant);
+router.get("/jobs/:jobId/shortlisted", getShortlistedApplicants);
 
 export default router;

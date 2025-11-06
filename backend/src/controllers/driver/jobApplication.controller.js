@@ -87,3 +87,73 @@ export const withdrawApplication = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error withdrawing application" });
   }
 };
+
+
+/**
+ * @desc Get list of available jobs for drivers
+ * @route GET /api/driver/jobs
+ * @access Driver
+ */
+export const listAvailableJobs = async (req, res) => {
+  try {
+    const driverId = req.user._id;
+    const { city, state, vehicleType, minSalary, maxSalary, startDate, endDate, keyword } = req.query;
+    const query = {
+      status: "open",
+      isExpired: false,
+      endDate: { $gte: new Date() },
+    };
+
+    // Filters
+    if (city) query["location.city"] = new RegExp(city, "i");
+    if (state) query["location.state"] = new RegExp(state, "i");
+    if (minSalary || maxSalary) {
+      query.salary = {};
+      if (minSalary) query.salary.$gte = Number(minSalary);
+      if (maxSalary) query.salary.$lte = Number(maxSalary);
+    }
+    if (startDate && endDate) {
+      query.startDate = { $gte: new Date(startDate) };
+      query.endDate = { $lte: new Date(endDate) };
+    }
+    if (keyword) {
+      query.$or = [
+        { title: new RegExp(keyword, "i") },
+        { description: new RegExp(keyword, "i") },
+      ];
+    }
+
+    // Vehicle type filter
+    if (vehicleType) {
+      query.vehicleId = { $exists: true };
+    }
+
+    const jobs = await Job.find(query)
+      .populate("ownerId", "firstName lastName companyName")
+      .populate("vehicleId", "make model plateNo")
+      .sort({ createdAt: -1 });
+
+    //Enhance response: mark if driver has applied
+    const enrichedJobs = jobs.map((job) => {
+      const applied = job.applicants.some(
+        (a) => a.driverId.toString() === driverId.toString()
+      );
+      return {
+        ...job.toObject(),
+        alreadyApplied: applied,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      totalJobs: enrichedJobs.length,
+      jobs: enrichedJobs,
+    });
+  } catch (error) {
+    console.error("Error listing available jobs:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error fetching job listings",
+    });
+  }
+};

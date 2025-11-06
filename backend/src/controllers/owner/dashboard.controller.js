@@ -1,9 +1,10 @@
 export const getOwnerDashboard = async (req, res) => {
   try {
+    const authUser = req.user;
     return res.json({
         success: true,
         message: "Dashboard data getting successfully",
-        data: getMockDashboardData(),
+        data: getMockDashboardData(authUser),
     });
   } catch (err) {
     console.error("Dashboard Error:", err);
@@ -15,8 +16,12 @@ export const getOwnerDashboard = async (req, res) => {
 };
 
 // Mock data function
-function getMockDashboardData() {
+function getMockDashboardData(authUser) {
+  const userName = `${authUser.firstName} ${authUser.surname}`;
   return {
+    user : {
+      userName : userName
+    },
     stats: {
       totalDrivers: 932,
       activeDrivers: 850,
