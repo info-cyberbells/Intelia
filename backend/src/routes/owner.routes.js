@@ -4,6 +4,11 @@ import { authorizeRoles } from "../middleware/role.middleware.js";
 import { getProfile, updateProfile, changePassword, deleteProfileImage } from "../controllers/profile.controller.js";
 import { validateChangePassword } from "../validation/profile.validation.js";
 import upload from "../middleware/upload.middleware.js";
+import { createVehicle, getMyVehicles, updateVehicle, deleteVehicle } from "../controllers/owner/vehicleController.js";
+import { getMyNotifications, markAsRead, markAllAsRead } from "../controllers/notificationController.js";
+import { validateCreateVehicle, validateUpdateVehicle } from "../validation/vehicle.validation.js";
+import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplications } from "../controllers/owner/job.controller.js";
+import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js";
 
 const router = express.Router();
 
@@ -11,13 +16,7 @@ const router = express.Router();
 router.use(authenticate, authorizeRoles("owner"));
 
 // Owner Dashboard
-router.get("/dashboard", (req, res) => {
-  res.json({ 
-    success: true,
-    message: "Owner Dashboard Access Granted",
-    user: req.user 
-  });
-});
+router.get("/dashboard", getOwnerDashboard);
 
 // Profile
 // router.get("/profile", getProfile);
@@ -27,5 +26,44 @@ router.put("/profile", upload.single("avatar"), updateProfile); // Support 'avat
 router.delete("/profile-image", deleteProfileImage);
 router.put("/change-password", validateChangePassword, changePassword);
 
+// Vehicle
+router.post("/vehicle", async (req, res) => {
+  const { error } = validateCreateVehicle(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: error.details.map((d) => d.message),
+    });
+  }
+
+  return createVehicle(req, res);
+});
+router.get("/vehicles", getMyVehicles);
+router.put("/vehicle/:vehicleId", async (req, res) => {
+  const { error } = validateUpdateVehicle(req.body);
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: error.details.map((d) => d.message),
+    });
+  }
+
+  return updateVehicle(req, res);
+});
+router.delete("/vehicle/:vehicleId", deleteVehicle);
+
+// Notification
+router.get("/", getMyNotifications);
+router.patch("/:notificationId/read", markAsRead);
+router.patch("/read/all", markAllAsRead);
+
+router.get("/jobs", listJobs);
+router.post("/job", createJob);
+router.put("/job/:jobId", updateJob);
+router.get("/job/:jobId", getJobById);
+router.delete("/job/:jobId", deleteJob);
+router.put("/:jobId/applicants/:driverId", manageApplications);
 
 export default router;

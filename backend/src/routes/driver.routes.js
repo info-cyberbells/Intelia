@@ -4,6 +4,7 @@ import { authorizeRoles } from "../middleware/role.middleware.js";
 import { getProfile, updateProfile, changePassword, deleteProfileImage } from "../controllers/profile.controller.js";
 import { validateChangePassword } from "../validation/profile.validation.js";
 import upload from "../middleware/upload.middleware.js";
+import { applyJob, withdrawApplication } from "../controllers/driver/jobApplication.controller.js";
 
 const router = express.Router();
 
@@ -27,5 +28,8 @@ router.put("/profile", upload.single("avatar"), updateProfile); // Support 'avat
 router.delete("/profile-image", deleteProfileImage);
 router.put("/change-password", validateChangePassword, changePassword);
 
+// Job Application
+router.post("/job/apply/:jobId", applyJob);
+router.put("/job/withdraw/:jobId", withdrawApplication);
 
 export default router;

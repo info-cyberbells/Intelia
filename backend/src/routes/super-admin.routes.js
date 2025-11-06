@@ -7,6 +7,7 @@ import { getAllDrivers,getDriverById,createDriver,updateDriver,deleteDriver,togg
 import { validateCreateClient, validateUpdateClient } from "../validation/client.validation.js";
 import { validateCreateDriver, validateUpdateDriver } from "../validation/driver.validation.js";
 import upload from "../middleware/upload.middleware.js";
+import { verifyVehicle } from "../controllers/superAdmin/moderation.controller.js";
 
 const router = express.Router();
 
@@ -40,5 +41,7 @@ router.post("/drivers", upload.single("profileImage"), validateCreateDriver, cre
 router.put("/drivers/:id", upload.single("profileImage"), validateUpdateDriver, updateDriver);
 router.delete("/drivers/:id", deleteDriver);
 router.patch("/drivers/:id/toggle-status", toggleDriverStatus);
+
+router.patch("/vehicle/verify/:vehicleId", verifyVehicle);
 
 export default router;

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import TokenBlacklist from "../models/tokenBlacklist.model.js";
 
 // Register
 export const register = async (req, res) => {
@@ -57,7 +58,6 @@ export const login = async (req, res) => {
 
 // Only Super Admin can create Admin users
 export const createCarOwner = async (req, res) => {
-  console.log('HELLO');
   try {
     const { firstName, surname, companyName, correspondedMe, email, password, phoneNumber } = req.body;
     const existing = await User.findOne({ email });
@@ -67,5 +67,43 @@ export const createCarOwner = async (req, res) => {
     res.status(201).json({ message: "Owner created successfully", admin });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// Logout
+export const logout = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const user = req.user;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "No token provided",
+      });
+    }
+
+    // Decode token to get expiry
+    const decoded = jwt.decode(token);
+    
+    // Add token to blacklist
+    await TokenBlacklist.create({
+      token: token,
+      userId: user._id,
+      expiresAt: new Date(decoded.exp * 1000),
+    });
+
+    console.log(`User logged out: ${user.email} (${user.role})`);
+
+    res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server Error" 
+    });
   }
 };
