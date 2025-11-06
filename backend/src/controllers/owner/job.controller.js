@@ -1,5 +1,6 @@
 import Job from "../../models/job.model.js";
 import Vehicle from "../../models/vehicle.model.js";
+import User from "../../models/user.model.js";
 import { validateCreateJob, validateUpdateJob } from "../../validation/job.validation.js";
 
 /**
@@ -266,5 +267,132 @@ export const withdrawApplication = async (req, res) => {
   } catch (error) {
     console.error("Error withdrawing application:", error);
     return res.status(500).json({ success: false, message: "Server error withdrawing application" });
+  }
+};
+
+
+/**
+ * @desc Get all applications for a specific job
+ */
+export const getJobApplications = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const ownerId = req.user._id;
+
+    const job = await Job.findOne({ _id: jobId, ownerId })
+      .populate("applicants.driverId", "firstName lastName email phone profileImage")
+      .populate("vehicleId", "make model plateNo");
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Job applications fetched successfully",
+      totalApplications: job.applicants.length,
+      applicants: job.applicants,
+    });
+  } catch (error) {
+    console.error("Error fetching job applications:", error);
+    return res.status(500).json({ success: false, message: "Server error fetching applications" });
+  }
+};
+
+/**
+ * @desc Get application summary by status
+ */
+export const getApplicationSummary = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const ownerId = req.user._id;
+
+    const job = await Job.findOne({ _id: jobId, ownerId });
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
+    }
+
+    const summary = job.applicants.reduce(
+      (acc, app) => {
+        acc[app.status] = (acc[app.status] || 0) + 1;
+        return acc;
+      },
+      { applied: 0, shortlisted: 0, accepted: 0, rejected: 0, withdrawn: 0 }
+    );
+
+    return res.status(200).json({
+      success: true,
+      jobId: job._id,
+      summary,
+    });
+  } catch (error) {
+    console.error("Error fetching summary:", error);
+    return res.status(500).json({ success: false, message: "Server error fetching summary" });
+  }
+};
+
+/**
+ * @desc Shortlist applicant
+ */
+export const shortlistApplicant = async (req, res) => {
+  try {
+    const { jobId, driverId } = req.params;
+    const ownerId = req.user._id;
+
+    console.log('req.params',req.params);
+
+    const job = await Job.findOne({ _id: jobId, ownerId });
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
+    }
+
+    const applicant = job.applicants.find(
+      (a) => a.driverId.toString() === driverId.toString()
+    );
+
+    if (!applicant) {
+      return res.status(404).json({ success: false, message: "Applicant not found for this job." });
+    }
+
+    applicant.status = "accepted";
+    applicant.updatedAt = new Date();
+
+    await job.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Applicant shortlisted successfully.",
+    });
+  } catch (error) {
+    console.error("Error shortlisting applicant:", error);
+    return res.status(500).json({ success: false, message: "Server error shortlisting applicant" });
+  }
+};
+
+/**
+ * @desc Get all shortlisted applicants for a job
+ */
+export const getShortlistedApplicants = async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const ownerId = req.user._id;
+
+    const job = await Job.findOne({ _id: jobId, ownerId })
+      .populate("applicants.driverId", "firstName lastName email phone");
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
+    }
+
+    const shortlisted = job.applicants.filter(a => a.status === "accepted");
+
+    return res.status(200).json({
+      success: true,
+      totalShortlisted: shortlisted.length,
+      shortlisted,
+    });
+  } catch (error) {
+    console.error("Error fetching shortlisted applicants:", error);
+    return res.status(500).json({ success: false, message: "Server error fetching shortlisted applicants" });
   }
 };
