@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginService, RegisterService, registerDriverService } from "../../auth/authServices";
+import { loginService, RegisterService, registerDriverService, logoutService } from "../../auth/authServices";
 
 
 const initialState = {
@@ -14,6 +14,17 @@ export const login = createAsyncThunk("auth/login",
     async (userData, thunkAPI) => {
         try {
             return await loginService(userData);
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+//Logout Thunk
+export const logout = createAsyncThunk("auth/logout",
+    async (_, thunkAPI) => {
+        try {
+            return await logoutService();
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response?.data?.message || error.message);
         }
@@ -80,6 +91,22 @@ const authSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload;
                 state.user = null;
+            })
+
+            //logout
+            .addCase(logout.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(logout.fulfilled, (state) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.user = null;
+                localStorage.clear();
+            })
+            .addCase(logout.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
             })
 
             //register owner

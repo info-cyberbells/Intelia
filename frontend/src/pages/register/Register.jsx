@@ -520,7 +520,7 @@ const Register = () => {
                                                 className="block text-sm font-medium mb-1"
                                                 style={{ color: "#424242", fontWeight: 600 }}
                                             >
-                                                Surname
+                                                Last Name
                                             </label>
                                             <input
                                                 type="text"

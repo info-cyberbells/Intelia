@@ -1,12 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Home, Search, Users, Briefcase } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../../features/userSlice/userSlice";
 import logoimage from "../../assets/image.png";
 
 const MenuItems = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const role = (localStorage.getItem("role") || "").toLowerCase();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      window.dispatchEvent(new Event("storage"));
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const ownerMenu = [
     { to: "/dashboard", icon: <Home className="w-5 h-5 mr-3" />, label: "Dashboard" },
@@ -17,48 +31,48 @@ const MenuItems = () => {
 
   const userMenu = [
     {
-      to: "/dashboard",
+      to: "/driver-dashboard",
       icon: "/menuicons/Dashboard.svg",
-      activeIcon: "/menuicons/DashboardFilled.svg",
+      activeIcon: "/menuicons/Dashboard_active.svg",
       label: "Dashboard",
     },
     {
-      to: "/profile",
+      to: "/my-profile",
       icon: "/menuicons/Profile.svg",
-      activeIcon: "/menuicons/MyProfleFilled.svg",
+      activeIcon: "/menuicons/Profile_activeicon.svg",
       label: "My Profile",
     },
+    // {
+    //   to: "/ai-resumes",
+    //   icon: "/menuicons/ResumeEmpty.svg",
+    //   activeIcon: "/menuicons/ai_resumeactive.svg",
+    //   label: "AI Resume",
+    // },
     {
-      to: "/ai-resumes",
-      icon: "/menuicons/ResumeEmpty.svg",
-      activeIcon: "/menuicons/ResumeFilled.svg",
-      label: "AI Resumes",
-    },
-    {
-      to: "/jobs",
+      to: "/driver-jobs",
       icon: "/menuicons/jobbag.svg",
-      activeIcon: "/menuicons/job.svg",
+      activeIcon: "/menuicons/jobs_active.svg",
       label: "Jobs",
     },
 
-    {
-      to: "/my-applications",
-      icon: "/menuicons/apply.svg",
-      activeIcon: "/menuicons/apply.svg",
-      label: "My Applications",
-    },
-    {
-      to: "/resources",
-      icon: "/menuicons/resourses.svg",
-      activeIcon: "/menuicons/resourses.svg",
-      label: "Resources",
-    },
+    // {
+    //   to: "/my-applications",
+    //   icon: "/menuicons/apply.svg",
+    //   activeIcon: "/menuicons/my_applicationactive.svg",
+    //   label: "My Applications",
+    // },
+    // {
+    //   to: "/resources",
+    //   icon: "/menuicons/resourses.svg",
+    //   activeIcon: "/menuicons/resonance-active.svg",
+    //   label: "Resources",
+    // },
   ];
 
   const activeMenu = role === "owner" ? ownerMenu : userMenu;
 
   return (
-    <div className="w-56 font-[Inter] bg-white fixed flex flex-col justify-between h-full left-0 top-0 shadow-lg">
+    <div className="w-56 font-[Inter] bg-[#FCFCFC] fixed flex flex-col justify-between h-full left-0 top-0 border-r border-gray-200">
       <div>
         {/* Logo Section */}
         <div className="p-3 pl-12 flex justify-start">
@@ -99,18 +113,27 @@ const MenuItems = () => {
         {/* Settings */}
         <Link
           to="/settings"
-          className="flex items-center cursor-pointer px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+          className={`flex items-center cursor-pointer px-4 py-3 rounded-xl transition-colors ${location.pathname === "/settings"
+            ? "bg-[#3565E3] text-white"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            }`}
         >
           <img
-            src="/menuicons/Setting.svg"
+            src={
+              location.pathname === "/settings"
+                ? "/menuicons/settings_active.svg"
+                : "/menuicons/Setting.svg"
+            }
             alt="Settings"
             className="w-6 h-6 mr-3"
           />
           Settings
         </Link>
 
+
         {/* Logout */}
         <button
+          onClick={handleLogout}
           className="flex items-center cursor-pointer w-full px-4 py-3 text-left rounded-xl text-gray-600 hover:bg-red-50 transition-colors"
         >
           <img

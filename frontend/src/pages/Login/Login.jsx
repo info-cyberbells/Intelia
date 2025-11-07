@@ -46,7 +46,7 @@ const Toast = ({ message, type, onClose }) => {
     );
 };
 
-const Login = () => {
+const Login = ({ setToken }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user, isLoading, isError, isSuccess, message } = useSelector(
@@ -92,8 +92,21 @@ const Login = () => {
         if (isSuccess && user) {
             showToast("Login successful!", 'success');
             setTimeout(() => {
-                navigate("/dashboard");
-            }, 1000);
+                window.dispatchEvent(new Event("storage"));
+            }, 500);
+            setTimeout(() => {
+                const role = user?.user?.role || user?.role;
+                if (role === "owner") {
+                    navigate("/dashboard");
+                } else if (role === "driver") {
+                    navigate("/driver-dashboard");
+                } else {
+                    showToast("Please login again!", "error");
+                    localStorage.clear();
+                    window.dispatchEvent(new Event("storage"));
+                    navigate("/");
+                }
+            }, 500);
         }
 
         return () => {

@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const SearchDriverRecords = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen ml-56 mt-12 font-[Poppins] bg-gray-50 flex flex-col">
       <div className="w-full max-w-3xl rounded-2xl p-8">
@@ -15,7 +15,10 @@ const SearchDriverRecords = () => {
         </p>
 
         {/* Form */}
-        <form className="space-y-6">
+        <form className="space-y-6" autoComplete="off">
+          {/* Hidden fake fields to block browser autofill */}
+          <input type="text" name="fakeuser" autoComplete="username" className="hidden" />
+          <input type="password" name="fakepass" autoComplete="new-password" className="hidden" />
           {/* Name */}
           <div>
             <label className="block text-[#5E6366] text-xs font-medium mb-2">
@@ -23,7 +26,7 @@ const SearchDriverRecords = () => {
             </label>
             <input
               type="text"
-              placeholder="Antonio"
+              placeholder="name"
               className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
@@ -35,7 +38,8 @@ const SearchDriverRecords = () => {
             </label>
             <input
               type="email"
-              placeholder="Anonio@gmail.com"
+              placeholder="email"
+              autoComplete="off"
               className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
@@ -47,7 +51,7 @@ const SearchDriverRecords = () => {
             </label>
             <input
               type="text"
-              placeholder="+01 234 567 89"
+              placeholder="phone number"
               className="w-2/3 px-4 py-3 rounded-md  shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
@@ -59,7 +63,8 @@ const SearchDriverRecords = () => {
             </label>
             <input
               type="password"
-              placeholder="**************"
+              placeholder="driving license number"
+              autoComplete="off"
               className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
             />
           </div>
@@ -67,7 +72,7 @@ const SearchDriverRecords = () => {
           {/* Button */}
           <div className="pt-2">
             <button
-              onClick={()=> navigate('/detail-page')}
+              onClick={() => navigate('/detail-page')}
               className="bg-[#3565E3] hover:bg-blue-700 text-white text-xs font-thin px-8 py-2 rounded-md shadow transition-all w-full sm:w-auto"
             >
               Search

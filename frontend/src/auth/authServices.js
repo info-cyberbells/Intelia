@@ -1,12 +1,28 @@
 import axios from "axios";
 import USER_ENDPOINTS from "./authRoutes";
-const token = localStorage.getItem("token");
+
+
+const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return {
+        withCredentials: true,
+        headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+        },
+    };
+};
 
 //Login driver / car owner
 export const loginService = async (userData) => {
     const response = await axios.post(USER_ENDPOINTS.LOGIN_TO_APP, userData, {
         withCredentials: true,
     });
+    return response.data;
+};
+
+//logout
+export const logoutService = async () => {
+    const response = await axios.post(USER_ENDPOINTS.LOGOUT, {}, getAuthHeader());
     return response.data;
 };
 
@@ -29,13 +45,6 @@ export const registerDriverService = async (userData) => {
 
 //owner dashboard
 export const ownerDashboardService = async () => {
-
-    const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, {
-        withCredentials: true,
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-
+    const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, getAuthHeader());
     return response.data;
 };
