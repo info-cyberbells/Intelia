@@ -48,3 +48,12 @@ export const ownerDashboardService = async () => {
     const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, getAuthHeader());
     return response.data;
 };
+
+//driver listing
+export const driverListingService = async (page = 1, limit = 10) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_ALL_DRIVERS}?page=${page}&limit=${limit}`,
+        getAuthHeader()
+    );
+    return response.data;
+}

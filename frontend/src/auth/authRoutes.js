@@ -7,6 +7,7 @@ export const USER_ENDPOINTS = {
     CREATE_DRIVER: `${API_BASE_URL}/auth/register`,
 
     OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,
+    GET_ALL_DRIVERS: `${API_BASE_URL}/owner/drivers`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 
 }
