@@ -1,4 +1,5 @@
 import Job from "../../models/job.model.js";
+import SavedJob from "../../models/savedJob.model.js";
 
 /**
  * @desc Apply for Job
@@ -97,51 +98,31 @@ export const withdrawApplication = async (req, res) => {
 export const listAvailableJobs = async (req, res) => {
   try {
     const driverId = req.user._id;
-    const {
-      city,
-      state,
-      vehicleType,
-      minSalary,
-      maxSalary,
-      startDate,
-      endDate,
-      keyword,
-      page = 1,
-      limit = 10,
-    } = req.query;
-
+    const { city, state, vehicleType, minSalary, maxSalary, startDate, endDate, keyword, page = 1, limit = 10, } = req.query;
     const query = {
       status: "open",
       isExpired: false,
       endDate: { $gte: new Date() },
     };
 
-    // Location filters
+    // Filters
     if (city) query["location.city"] = new RegExp(city, "i");
     if (state) query["location.state"] = new RegExp(state, "i");
-
-    // Salary range filter
     if (minSalary || maxSalary) {
       query.salary = {};
       if (minSalary) query.salary.$gte = Number(minSalary);
       if (maxSalary) query.salary.$lte = Number(maxSalary);
     }
-
-    // Date range filter
     if (startDate && endDate) {
       query.startDate = { $gte: new Date(startDate) };
       query.endDate = { $lte: new Date(endDate) };
     }
-
-    // Keyword search
     if (keyword) {
       query.$or = [
         { title: new RegExp(keyword, "i") },
         { description: new RegExp(keyword, "i") },
       ];
     }
-
-    // Vehicle type filter
     if (vehicleType) {
       query.vehicleType = new RegExp(vehicleType, "i");
     }
@@ -151,7 +132,7 @@ export const listAvailableJobs = async (req, res) => {
     const pageSize = parseInt(limit);
     const skip = (pageNumber - 1) * pageSize;
 
-    // Total count for pagination info
+    // Total job count
     const totalJobs = await Job.countDocuments(query);
 
     // Fetch paginated jobs
@@ -163,15 +144,19 @@ export const listAvailableJobs = async (req, res) => {
       .limit(pageSize)
       .lean();
 
-    // Mark if driver already applied
+    // Fetch all saved jobs for this driver
+    const savedJobs = await SavedJob.find({ driverId }).select("jobId").lean();
+    const savedJobIds = new Set(savedJobs.map((s) => s.jobId.toString()));
+
+    // Enhance jobs with "alreadyApplied" + "isSaved"
     const enrichedJobs = jobs.map((job) => {
       const applied = job.applicants?.some(
         (a) => a.driverId.toString() === driverId.toString()
       );
-      return { ...job, alreadyApplied: applied };
+      const isSaved = savedJobIds.has(job._id.toString());
+      return { ...job, alreadyApplied: applied, isSaved };
     });
 
-    // Response
     return res.status(200).json({
       success: true,
       currentPage: pageNumber,
@@ -185,5 +170,34 @@ export const listAvailableJobs = async (req, res) => {
       success: false,
       message: "Server error fetching job listings",
     });
+  }
+};
+
+
+// Save a job
+export const saveJob = async (req, res) => {
+  try {
+    const driverId = req.user._id;
+    const { jobId } = req.body;
+
+    const jobExists = await Job.findById(jobId);
+    if (!jobExists) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    const alreadySaved = await SavedJob.findOne({ driverId, jobId });
+    if (alreadySaved) {
+      return res.status(400).json({ success: false, message: "Job already saved" });
+    }
+
+    const saved = await SavedJob.create({ driverId, jobId });
+    return res.status(200).json({
+      success: true,
+      message: "Job saved successfully",
+      saved,
+    });
+  } catch (error) {
+    console.error("Error saving job:", error);
+    return res.status(500).json({ success: false, message: "Server error saving job" });
   }
 };
