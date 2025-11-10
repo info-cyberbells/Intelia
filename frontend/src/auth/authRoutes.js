@@ -8,6 +8,9 @@ export const USER_ENDPOINTS = {
 
     OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,
     GET_ALL_DRIVERS: `${API_BASE_URL}/owner/drivers`,
+
+
+    GET_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 
 }

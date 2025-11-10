@@ -43,16 +43,25 @@ export const registerDriverService = async (userData) => {
 }
 
 
-//owner dashboard
+//owner dashboard owner side
 export const ownerDashboardService = async () => {
     const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, getAuthHeader());
     return response.data;
 };
 
-//driver listing
+//driver listing in owner side
 export const driverListingService = async (page = 1, limit = 10) => {
     const response = await axios.get(
         `${USER_ENDPOINTS.GET_ALL_DRIVERS}?page=${page}&limit=${limit}`,
+        getAuthHeader()
+    );
+    return response.data;
+}
+
+//jobs listing in driver side
+export const jobsListingService = async (page = 1, limit = 10) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_ALL_JOBS}?page=${page}&limit=${limit}`,
         getAuthHeader()
     );
     return response.data;
