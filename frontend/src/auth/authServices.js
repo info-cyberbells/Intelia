@@ -59,10 +59,30 @@ export const driverListingService = async (page = 1, limit = 10) => {
 }
 
 //jobs listing in driver side
-export const jobsListingService = async (page = 1, limit = 10) => {
+export const jobsListingService = async (filters = {}) => {
+    const {
+        page = 1,
+        limit = 10,
+        city,
+        minSalary,
+        maxSalary,
+        keyword,
+    } = filters;
+
+    const params = new URLSearchParams();
+
+    params.append("page", page);
+    params.append("limit", limit);
+
+    if (city) params.append("city", city);
+    if (minSalary) params.append("minSalary", minSalary);
+    if (maxSalary) params.append("maxSalary", maxSalary);
+    if (keyword) params.append("keyword", keyword);
+
     const response = await axios.get(
-        `${USER_ENDPOINTS.GET_ALL_JOBS}?page=${page}&limit=${limit}`,
+        `${USER_ENDPOINTS.GET_ALL_JOBS}?${params.toString()}`,
         getAuthHeader()
     );
     return response.data;
-}
+};
+

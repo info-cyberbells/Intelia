@@ -4,9 +4,9 @@ import { jobsListingService } from "../../auth/authServices";
 //get all jobs
 export const fetchAllJobs = createAsyncThunk(
     "jobs/fetchJobs",
-    async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
+    async (filters = {}, { rejectWithValue }) => {
         try {
-            const data = await jobsListingService(page, limit);
+            const data = await jobsListingService(filters);
             return data;
         } catch (error) {
             return rejectWithValue(
@@ -17,6 +17,7 @@ export const fetchAllJobs = createAsyncThunk(
 );
 
 
+
 const JobsSlice = createSlice({
     name: "jobs",
     initialState: {
@@ -24,6 +25,7 @@ const JobsSlice = createSlice({
         data: [],
         totalPages: 0,
         currentPage: 1,
+        totalJobs: 0,
         error: null,
     },
     reducers: {},
@@ -40,6 +42,7 @@ const JobsSlice = createSlice({
                 state.data = action.payload?.jobs || [];
                 state.totalPages = action.payload?.totalPages || 0;
                 state.currentPage = action.payload?.currentPage || 1;
+                state.totalJobs = action.payload?.totalJobs || 0;
 
             })
             .addCase(fetchAllJobs.rejected, (state, action) => {
@@ -49,4 +52,4 @@ const JobsSlice = createSlice({
     },
 });
 
-export default jobsSlice.reducer;
+export default JobsSlice.reducer;

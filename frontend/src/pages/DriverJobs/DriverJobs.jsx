@@ -1,99 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MapPin, Truck, DollarSign, SlidersHorizontal, X, Bookmark, BookmarkCheck } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllJobs } from "../../features/Jobs/JobsSlice";
 
 const JobListingInterface = () => {
-    const [activeTab, setActiveTab] = useState("all");
-    const [savedJobs, setSavedJobs] = useState(new Set());
+    const dispatch = useDispatch();
+    const { loading, data: jobs, totalPages, currentPage, totalJobs, error } = useSelector(
+        (state) => state.jobs
+    );
 
-    const tabs = [
-        { id: "all", label: "All Jobs" },
-        { id: "saved", label: "Saved Jobs" },
-        { id: "applied", label: "Applied Jobs" },
-        { id: "recommended", label: "Recommended Jobs" }
-    ];
+    const [page, setPage] = useState(1);
+    const limit = 10;
 
-    const jobData = [
-        {
-            id: 1,
-            company: "V.A.S. Automotive India Pvt. Ltd.",
-            type: "Full-Time",
-            title: "Luxury Car Workshop Driver",
-            description: "Transport customer and company vehicles (luxury brands) between showroom & workshop. Must ensure vehicle safety and condition.",
-            pay: "₹10,000-18,000/month",
-            duration: "6 days/week",
-            vehicle: "Light vehicle"
-        },
-        {
-            id: 2,
-            company: "Vaan Electric Moto Pvt. Ltd.",
-            type: "Full-Time",
-            title: "Delivery Driver – E-two-wheeler",
-            description: "Deliver parcels & documents across city using EV scooter. Training provided. Full time permanent role.",
-            pay: "₹20,000-22,000/month",
-            duration: "5 days/week",
-            vehicle: "Scooter (EV)"
-        },
-        {
-            id: 3,
-            company: "Meta Furniture",
-            type: "Full-Time",
-            title: "Company Driver – Furniture Deliveries",
-            description: "Safe & timely delivery of furniture to retail shops and customers. Must maintain vehicle and delivery logs.",
-            pay: "₹15,000-18,000/month",
-            duration: "6 days/week",
-            vehicle: "Light vehicle / van"
-        },
-        {
-            id: 4,
-            company: "Nectar Fresh",
-            type: "Full-Time",
-            title: "Personal Car Driver – Deliveries",
-            description: "Operate company car for delivery of orders, manage route navigation and customer handovers. Valid licence required.",
-            pay: "₹15,000-20,000/month",
-            duration: "5 days/week",
-            vehicle: "Car"
-        },
-        {
-            id: 5,
-            company: "Dr. Kochar's House of Smiles",
-            type: "Contract",
-            title: "Delivery Executive – Medical Supplies",
-            description: "Deliver medical supplies & equipment in metro zone. Must follow safety protocols and maintain delivery schedule.",
-            pay: "₹15,000-17,000/month",
-            duration: "6 days/week",
-            vehicle: "Two-wheeler"
-        },
-        {
-            id: 6,
-            company: "KVR TATA",
-            type: "Full-Time",
-            title: "Driver – Fleet Operations",
-            description: "Drive assigned vehicles for logistics company. Maintain vehicle readiness, adhere to schedule and safety norms.",
-            pay: "₹11,000-12,000/month",
-            duration: "6 days/week",
-            vehicle: "Light/Medium vehicle"
-        },
-        {
-            id: 7,
-            company: "Amazon Logistics Partner",
-            type: "Full-Time",
-            title: "Delivery Driver – 2W/3W",
-            description: "Deliver packages for e-commerce platform in metropolitan zone. Early starts, high productivity expected.",
-            pay: "₹₹XXXX/month + incentives",  // you can update the exact value
-            duration: "6 days/week",
-            vehicle: "Two-wheeler / 3-wheeler"
-        },
-        {
-            id: 8,
-            company: "Uber – Drive Platform",
-            type: "Flexible / Gig",
-            title: "Driver – Own Vehicle",
-            description: "Use your own vehicle, set flexible hours, earn per ride or delivery. Ideal for drivers looking flexible schedule.",
-            pay: "Variable (based on trips)",
-            duration: "Flexible",
-            vehicle: "Car / Two-wheeler"
+    const [city, setCity] = useState("");
+    const [minSalary, setMinSalary] = useState("");
+    const [maxSalary, setMaxSalary] = useState("");
+    const [keyword, setKeyword] = useState("");
+
+    // Debounced filters
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            dispatch(fetchAllJobs({ page, limit, city, minSalary, maxSalary, keyword }));
+        }, 500);
+        return () => clearTimeout(delayDebounce);
+    }, [dispatch, city, minSalary, maxSalary, keyword]);
+
+    // Immediate pagination
+    useEffect(() => {
+        dispatch(fetchAllJobs({ page, limit, city, minSalary, maxSalary, keyword }));
+    }, [dispatch, page]);
+
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setPage(pageNumber);
         }
-    ];
+    };
+
+    const [savedJobs, setSavedJobs] = useState(new Set());
 
 
     const toggleSave = (jobId) => {
@@ -118,10 +62,13 @@ const JobListingInterface = () => {
                         <input
                             type="text"
                             placeholder="Search jobs here"
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
                             className="flex-1 outline-none text-sm text-gray-700"
                         />
                         <Search className="w-5 h-5 text-gray-400" />
                     </div>
+
 
                     <div className="flex items-center gap-2">
                         <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -131,66 +78,71 @@ const JobListingInterface = () => {
 
                     {/* Filters */}
                     <div className="flex items-center gap-3 flex-wrap">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
-                            Location
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        {/* City Filter */}
+                        <input
+                            type="text"
+                            placeholder="City"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="px-3 py-2 border rounded-lg text-sm"
+                        />
 
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
-                            Vehicle Type
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        {/* Min Salary */}
+                        <input
+                            type="number"
+                            placeholder="Min Salary"
+                            value={minSalary}
+                            onChange={(e) => setMinSalary(e.target.value)}
+                            className="px-3 py-2 border rounded-lg text-sm w-32"
+                        />
 
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
-                            Pay Type
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        {/* Max Salary */}
+                        <input
+                            type="number"
+                            placeholder="Max Salary"
+                            value={maxSalary}
+                            onChange={(e) => setMaxSalary(e.target.value)}
+                            className="px-3 py-2 border rounded-lg text-sm w-32"
+                        />
 
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
-                            Sort By
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
+                        {/* Keyword Search */}
+                        <input
+                            type="text"
+                            placeholder="Search keyword"
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            className="px-3 py-2 border rounded-lg text-sm flex-1"
+                        />
 
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900">
-                            Reset Filters
+                        {/* Reset Filters */}
+                        <button
+                            onClick={() => {
+                                // Clear all filter states
+                                setCity("");
+                                setMinSalary("");
+                                setMaxSalary("");
+                                setKeyword("");
+                                setPage(1);
+
+                                // 🔹 Trigger a fresh fetch with no filters
+                                dispatch(fetchAllJobs({ page: 1, limit }));
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
+                        >
+                            Reset
                             <X className="w-4 h-4" />
                         </button>
+
                     </div>
+
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="flex gap-8">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                                    ? "border-blue-600 text-blue-600"
-                                    : "border-transparent text-gray-600 hover:text-gray-900"
-                                    }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
 
             {/* Job Cards Grid */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {jobData.map(job => (
+                    {jobs.map(job => (
                         <div
                             key={job.id}
                             className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow"
@@ -246,6 +198,57 @@ const JobListingInterface = () => {
                     ))}
                 </div>
             </div>
+            {/* Pagination Footer */}
+            {!loading && !error && totalPages >= 1 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500 ml-5">
+                    <p>
+                        Page{" "}
+                        <span className="text-gray-900 font-semibold">{page}</span> of{" "}
+                        <span className="text-gray-600 font-semibold">{totalPages}</span>
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                        {/* Prev */}
+                        <button
+                            onClick={() => handlePageChange(page - 1)}
+                            disabled={page === 1}
+                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === 1
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                                }`}
+                        >
+                            ‹
+                        </button>
+
+                        {/* Dynamic page numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
+                                    ? "bg-yellow-500 text-white border-yellow-500"
+                                    : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
+                                    }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+
+                        {/* Next */}
+                        <button
+                            onClick={() => handlePageChange(page + 1)}
+                            disabled={page === totalPages}
+                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === totalPages
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                                }`}
+                        >
+                            ›
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
