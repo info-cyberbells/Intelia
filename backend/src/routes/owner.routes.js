@@ -9,6 +9,7 @@ import { getMyNotifications, markAsRead, markAllAsRead } from "../controllers/no
 import { validateCreateVehicle, validateUpdateVehicle } from "../validation/vehicle.validation.js";
 import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplications, getJobApplications, getApplicationSummary, shortlistApplicant, getShortlistedApplicants } from "../controllers/owner/job.controller.js";
 import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js";
+import { getMyDrivers } from "../controllers/owner/ownerDriverController.js";
 
 const router = express.Router();
 
@@ -70,5 +71,8 @@ router.get("/jobs/:jobId/applications", getJobApplications);
 router.get("/jobs/:jobId/summary", getApplicationSummary);
 router.put("/job/:jobId/applicants/:driverId/shortlist", shortlistApplicant);
 router.get("/jobs/:jobId/shortlisted", getShortlistedApplicants);
+
+// Driver listing
+router.get("/drivers", getMyDrivers);
 
 export default router;
