@@ -97,25 +97,43 @@ export const withdrawApplication = async (req, res) => {
 export const listAvailableJobs = async (req, res) => {
   try {
     const driverId = req.user._id;
-    const { city, state, vehicleType, minSalary, maxSalary, startDate, endDate, keyword } = req.query;
+    const {
+      city,
+      state,
+      vehicleType,
+      minSalary,
+      maxSalary,
+      startDate,
+      endDate,
+      keyword,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
     const query = {
       status: "open",
       isExpired: false,
       endDate: { $gte: new Date() },
     };
 
-    // Filters
+    // Location filters
     if (city) query["location.city"] = new RegExp(city, "i");
     if (state) query["location.state"] = new RegExp(state, "i");
+
+    // Salary range filter
     if (minSalary || maxSalary) {
       query.salary = {};
       if (minSalary) query.salary.$gte = Number(minSalary);
       if (maxSalary) query.salary.$lte = Number(maxSalary);
     }
+
+    // Date range filter
     if (startDate && endDate) {
       query.startDate = { $gte: new Date(startDate) };
       query.endDate = { $lte: new Date(endDate) };
     }
+
+    // Keyword search
     if (keyword) {
       query.$or = [
         { title: new RegExp(keyword, "i") },
@@ -125,28 +143,40 @@ export const listAvailableJobs = async (req, res) => {
 
     // Vehicle type filter
     if (vehicleType) {
-      query.vehicleId = { $exists: true };
+      query.vehicleType = new RegExp(vehicleType, "i");
     }
 
-    const jobs = await Job.find(query)
-      .populate("ownerId", "firstName lastName companyName")
-      .populate("vehicleId", "make model plateNo")
-      .sort({ createdAt: -1 });
+    // Pagination setup
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const skip = (pageNumber - 1) * pageSize;
 
-    //Enhance response: mark if driver has applied
+    // Total count for pagination info
+    const totalJobs = await Job.countDocuments(query);
+
+    // Fetch paginated jobs
+    const jobs = await Job.find(query)
+      .populate("ownerId", "firstName surname companyName")
+      .populate("vehicleId", "make model plateNo")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .lean();
+
+    // Mark if driver already applied
     const enrichedJobs = jobs.map((job) => {
-      const applied = job.applicants.some(
+      const applied = job.applicants?.some(
         (a) => a.driverId.toString() === driverId.toString()
       );
-      return {
-        ...job.toObject(),
-        alreadyApplied: applied,
-      };
+      return { ...job, alreadyApplied: applied };
     });
 
+    // Response
     return res.status(200).json({
       success: true,
-      totalJobs: enrichedJobs.length,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(totalJobs / pageSize),
+      totalJobs,
       jobs: enrichedJobs,
     });
   } catch (error) {

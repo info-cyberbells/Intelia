@@ -174,3 +174,45 @@ export const getMyDriverProfile = async (req, res) => {
     });
   }
 };
+
+
+export const searchDriverByLicense = async (req, res) => {
+  try {
+    const { licenseNumber } = req.query;
+    if (!licenseNumber || licenseNumber.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "License number is required to search driver",
+      });
+    }
+
+    // Perform a case-insensitive partial search
+    const drivers = await Driver.find({
+      licenseNumber: { $regex: licenseNumber, $options: "i" },
+    })
+      .select(
+        "firstName surname email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
+      )
+      .limit(10)
+      .lean();
+
+    if (!drivers || drivers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No driver found with the given license number",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      totalResults: drivers.length,
+      drivers,
+    });
+  } catch (error) {
+    console.error("Error searching driver by license:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while searching driver",
+    });
+  }
+};
