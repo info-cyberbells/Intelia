@@ -1,4 +1,6 @@
 import Job from "../../models/job.model.js";
+import Driver from "../../models/user.model.js";
+import Application from "../../models/application.model.js";
 
 /**
  * @desc Get all drivers hired/shortlisted by owner (across all jobs)
@@ -106,3 +108,69 @@ export const getMyDrivers = async (req, res) => {
   }
 };
 
+
+export const getMyDriverProfile = async (req, res) => {
+  try {
+    const driverId = req.params.driverId;
+
+    // Fetch driver basic info
+    const driver = await Driver.findById(driverId)
+      .select(
+        "firstName surname email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
+      )
+      .lean();
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    // Fetch stats from applications
+    const stats = await Application.aggregate([
+      { $match: { driverId: driver._id } },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const summary = {
+      totalApplied: 0,
+      accepted: 0,
+      rejected: 0,
+      shortlisted: 0,
+      completed: 0,
+    };
+
+    stats.forEach((s) => {
+      if (s._id === "accepted") summary.accepted = s.count;
+      else if (s._id === "rejected") summary.rejected = s.count;
+      else if (s._id === "shortlisted") summary.shortlisted = s.count;
+      else if (s._id === "completed") summary.completed = s.count;
+      summary.totalApplied += s.count;
+    });
+
+    // Combine and send
+    return res.status(200).json({
+      success: true,
+      profile: {
+        ...driver,
+        totalIncidents: 0,
+        milesDriven: 0,
+        safetyScore:0,
+        incomeIncrease:0,
+        stats: summary,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching driver profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching driver profile",
+    });
+  }
+};
