@@ -211,7 +211,7 @@ export const updateProfile = async (req, res) => {
       }
       
       // Save new image path (support both fields)
-      const newImagePath = `/uploads/avatars/${req.file.filename}`;
+      const newImagePath = `/uploads/profiles/${req.file.filename}`;
       user.avatar = newImagePath;
       user.profileImage = newImagePath;
     }
