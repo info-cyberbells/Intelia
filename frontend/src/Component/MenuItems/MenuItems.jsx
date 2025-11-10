@@ -42,12 +42,12 @@ const MenuItems = () => {
       activeIcon: "/menuicons/Profile_activeicon.svg",
       label: "My Profile",
     },
-    // {
-    //   to: "/ai-resumes",
-    //   icon: "/menuicons/ResumeEmpty.svg",
-    //   activeIcon: "/menuicons/ai_resumeactive.svg",
-    //   label: "AI Resume",
-    // },
+    {
+      to: "/ai-resumes",
+      icon: "/menuicons/ResumeEmpty.svg",
+      activeIcon: "/menuicons/ai_resumeactive.svg",
+      label: "AI Resume",
+    },
     {
       to: "/driver-jobs",
       icon: "/menuicons/jobbag.svg",

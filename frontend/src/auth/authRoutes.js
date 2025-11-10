@@ -10,6 +10,10 @@ export const USER_ENDPOINTS = {
     GET_ALL_DRIVERS: `${API_BASE_URL}/owner/drivers`,
 
 
+
+    UPDATE_MY_PROFILE: `${API_BASE_URL}/driver/profile`,
+    MY_PROFILE: `${API_BASE_URL}/driver/profile`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/driver/change-password`,
     GET_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 

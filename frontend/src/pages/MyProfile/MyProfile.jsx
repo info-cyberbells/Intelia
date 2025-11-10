@@ -1,7 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDriverProfile, updateDriverProfile, changeDriverPassword } from "../../features/Drivers/driverSlice";
+import { Eye, EyeOff } from "lucide-react";
+
+
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const icons = {
+    success: (
+      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    error: (
+      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    ),
+    info: (
+      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  };
+
+  return (
+    <div className={`toast ${type}`}>
+      {icons[type]}
+      <div className="toast-message">{message}</div>
+      <svg className="toast-close" onClick={onClose} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </div>
+  );
+};
+
+
 
 const ProfileSettings = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const dispatch = useDispatch();
+  const { profile, loading } = useSelector((state) => state.drivers);
+  const [toast, setToast] = useState(null);
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+
+
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+  };
+
+  const closeToast = () => {
+    setToast(null);
+  };
 
   // 🧠 Profile form state (all empty)
   const [formData, setFormData] = useState({
@@ -12,12 +70,12 @@ const ProfileSettings = () => {
     dob: "",
     municipality: "",
     license: "",
-    city: "",
+    phoneNumber: "",
+    // city: "",
     validUntil: "",
-    country: "",
+    // country: "",
   });
 
-  // 🖼️ Profile image state
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -26,6 +84,31 @@ const ProfileSettings = () => {
     currentPassword: "",
     newPassword: "",
   });
+
+
+  useEffect(() => {
+    dispatch(fetchDriverProfile());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        firstName: profile.firstName || "",
+        lastName: profile.surname || "",
+        email: profile.email || "",
+        municipality: profile.municipality || "",
+        license: profile.licenseNumber || "",
+        validUntil: profile.validUntil?.split("T")[0] || "",
+        // country: profile.country || "",
+        // city: profile.city || "",
+        password: "",
+        dob: "",
+        phoneNumber: profile.phoneNumber || "",
+      });
+      setImagePreview(profile.profileImage || null);
+    }
+  }, [profile]);
+
 
   // Handle profile input
   const handleProfileChange = (e) => {
@@ -48,29 +131,58 @@ const ProfileSettings = () => {
     }
   };
 
-  // Save handler
-  const handleSave = () => {
-    // console.log("Profile Data:", formData);
-    console.log("Profile Data:");
-    console.log("Profile Image:", profileImage);
-    setFormData((prev) =>
-      Object.fromEntries(Object.keys(prev).map((k) => [k, ""]))
-    );
-    setProfileImage(null);
-    setImagePreview(null);
+  const handleSave = (e) => {
+    e.preventDefault();
+
+    const updatedData = {
+      firstName: formData.firstName,
+      surname: formData.lastName,
+      email: formData.email,
+      municipality: formData.municipality,
+      licenseNumber: formData.license,
+      phoneNumber: formData.phoneNumber,
+      // city: formData.city,
+      // country: formData.country,
+      validUntil: formData.validUntil,
+    };
+
+    dispatch(updateDriverProfile(updatedData))
+      .unwrap()
+      .then(() => {
+        showToast("Profile updated successfully!", "success");
+      })
+      .catch((err) => {
+        showToast("Failed to update profile!", "error");
+        console.error(err);
+      });
   };
 
-  //security handler
   const handlePassChange = () => {
-    // console.log("Security Data", securityData);
-    setSecurityData((prev) =>
-      Object.fromEntries(Object.keys(prev).map((k) => [k, ""]))
-    );
+    if (!securityData.currentPassword || !securityData.newPassword) {
+      showToast("Please enter both current and new password!", "error");
+      return;
+    }
+
+    dispatch(changeDriverPassword(securityData))
+      .unwrap()
+      .then(() => {
+        showToast("Password changed successfully!", "success");
+        setSecurityData({ currentPassword: "", newPassword: "" });
+      })
+      .catch((err) => {
+        showToast(err || "Failed to change password!", "error");
+      });
   };
+
 
   return (
     <div className="bg-[#F5F5F5] ml-56  p-6 min-h-screen  mx-auto mt-16 font-[Inter]">
-      {/* === One Wrapper Div for Tabs + Content === */}
+      {toast && (
+        <div className="toast-container">
+          <Toast message={toast.message} type={toast.type} onClose={closeToast} />
+        </div>
+      )}
+
       <div className="w-full bg-white max-w-4xl rounded-2xl shadow-sm p-6">
         {/* --- Section 1: Tabs --- */}
         <div className="flex border-b border-gray-200 mb-6">
@@ -110,18 +222,19 @@ const ProfileSettings = () => {
               <input type="password" name="fakepass" autoComplete="new-password" className="hidden" />
 
 
-              {/* 🖼️ Image Upload Section */}
+              {/*  Image Upload Section */}
               <div className="flex flex-col items-center w-40">
                 <div className="relative">
                   <img
                     src={
                       imagePreview ||
-                      //   "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                      "https://randomuser.me/api/portraits/women/44.jpg"
+                      profile?.profileImage ||
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                     }
-                    alt="Profile"
+                    alt={profile?.firstName || "Profile"}
                     className="w-32 h-32 rounded-full object-cover border border-gray-200 shadow-sm"
                   />
+
                   <label
                     htmlFor="imageUpload"
                     className="absolute bottom-1 right-1 bg-blue-600 hover:bg-blue-700 cursor-pointer text-white p-2 rounded-full shadow-md text-xs"
@@ -140,7 +253,9 @@ const ProfileSettings = () => {
               </div>
 
               {/* Form Section */}
+              {/* Form Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                {/* First Name */}
                 <div>
                   <label className="text-sm">First Name</label>
                   <input
@@ -148,11 +263,12 @@ const ProfileSettings = () => {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleProfileChange}
-                    placeholder="Charlene"
+                    placeholder="Enter first name"
                     className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
                   />
                 </div>
 
+                {/* Last Name */}
                 <div>
                   <label className="text-sm">Last Name</label>
                   <input
@@ -160,11 +276,12 @@ const ProfileSettings = () => {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleProfileChange}
-                    placeholder="Charlene Reed"
+                    placeholder="Enter last name"
                     className="w-full border rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] border-gray-200 outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
+                {/* Email */}
                 <div>
                   <label className="text-sm">Email</label>
                   <input
@@ -173,24 +290,26 @@ const ProfileSettings = () => {
                     value={formData.email}
                     onChange={handleProfileChange}
                     autoComplete="off"
-                    placeholder="charlenareed876@gmail.com"
+                    placeholder="Enter email"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
+                {/* Phone Number */}
                 <div>
-                  <label className="text-sm">Password</label>
+                  <label className="text-sm">Phone Number</label>
                   <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    autoComplete="off"
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleProfileChange}
-                    placeholder="************"
+                    placeholder="Enter phone number"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
+
+                {/* Date of Birth */}
                 <div>
                   <label className="text-sm">Date of Birth</label>
                   <input
@@ -200,10 +319,11 @@ const ProfileSettings = () => {
                     onChange={handleProfileChange}
                     className={`w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm ${!formData.dob ? "text-gray-400" : "text-black"
                       }`}
-                    placeholder="Select Date"
+                    placeholder="Select date"
                   />
                 </div>
 
+                {/* Municipality */}
                 <div>
                   <label className="text-sm">Municipality</label>
                   <input
@@ -211,11 +331,12 @@ const ProfileSettings = () => {
                     name="municipality"
                     value={formData.municipality}
                     onChange={handleProfileChange}
-                    placeholder="San Jose, California, USA"
+                    placeholder="Enter municipality"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
+                {/* License Number */}
                 <div>
                   <label className="text-sm">Driving License Number</label>
                   <input
@@ -223,23 +344,25 @@ const ProfileSettings = () => {
                     name="license"
                     value={formData.license}
                     onChange={handleProfileChange}
-                    placeholder="12ABC3400"
+                    placeholder="Enter license number"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
-                <div>
+                {/* City */}
+                {/* <div>
                   <label className="text-sm">City</label>
                   <input
                     type="text"
                     name="city"
                     value={formData.city}
                     onChange={handleProfileChange}
-                    placeholder="San Jose"
+                    placeholder="Enter city"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
-                </div>
+                </div> */}
 
+                {/* Valid Until */}
                 <div>
                   <label className="text-sm">Valid Until</label>
                   <input
@@ -247,33 +370,40 @@ const ProfileSettings = () => {
                     name="validUntil"
                     value={formData.validUntil}
                     onChange={handleProfileChange}
-                    placeholder="6564"
+                    placeholder="Enter expiry date"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
-                <div>
+                {/* Country */}
+                {/* <div>
                   <label className="text-sm">Country</label>
                   <input
                     type="text"
                     name="country"
                     value={formData.country}
                     onChange={handleProfileChange}
-                    placeholder="USA"
+                    placeholder="Enter country"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
-                </div>
+                </div> */}
 
-                {/* Submit Button */}
+
+                {/* Save Button */}
                 <div className="flex justify-end mt-6 md:col-span-2">
                   <button
-                    type="submit"
-                    className="bg-[#3565E3] text-white text-xs rounded-xl px-16 py-2.5 hover:bg-blue-700 transition"
+                    onClick={handleSave}
+                    type="button"
+                    disabled={loading}
+                    className={`${loading ? "bg-gray-400 cursor-not-allowed" : "bg-[#3565E3] hover:bg-blue-700"
+                      } text-white text-xs rounded-xl px-16 py-2.5 transition`}
                   >
-                    Save
+                    {loading ? "Saving..." : "Save"}
                   </button>
                 </div>
+
               </div>
+
             </form>
           ) : (
             // Security Tab
@@ -282,28 +412,53 @@ const ProfileSettings = () => {
                 Change Password
               </h4>
               <div className="space-y-4">
+
+                {/* Current Password */}
                 <div>
-                  <label className=" text-sm">Current Password</label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    value={securityData.currentPassword}
-                     autoComplete="new-password" 
-                    onChange={handleSecurityChange}
-                    className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
-                  />
+                  <label className="text-sm">Current Password</label>
+                  <div className="relative">
+                    <input
+                      type={showCurrentPass ? "text" : "password"}
+                      name="currentPassword"
+                      value={securityData.currentPassword}
+                      onChange={handleSecurityChange}
+                      placeholder="Enter current password"
+                        autoComplete="new-password" 
+                      className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPass((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showCurrentPass ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
 
+                {/* New Password */}
                 <div>
-                  <label className=" text-sm">New Password</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    value={securityData.newPassword}
-                    onChange={handleSecurityChange}
-                    className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
-                  />
+                  <label className="text-sm">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showNewPass ? "text" : "password"}
+                      name="newPassword"
+                      value={securityData.newPassword}
+                      onChange={handleSecurityChange}
+                      placeholder="Enter new password"
+                      className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPass((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showNewPass ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
+
+
               </div>
 
               <div className="flex justify-end mt-12">
@@ -311,7 +466,7 @@ const ProfileSettings = () => {
                   onClick={handlePassChange}
                   className="bg-[#3565E3] text-white text-xs rounded-xl px-16 py-2.5 hover:bg-blue-700 transition"
                 >
-                  Save
+                  {loading ? "Updating..." : "Save"}
                 </button>
               </div>
             </div>

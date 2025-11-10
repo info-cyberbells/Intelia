@@ -16,14 +16,24 @@ const JobListingInterface = () => {
     const [minSalary, setMinSalary] = useState("");
     const [maxSalary, setMaxSalary] = useState("");
     const [keyword, setKeyword] = useState("");
+    const [showSaved, setShowSaved] = useState(false);
+    const [showApplied, setShowApplied] = useState(false);
 
-    // Debounced filters
+    const isFirstRender = React.useRef(true);
+
+
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
         const delayDebounce = setTimeout(() => {
             dispatch(fetchAllJobs({ page, limit, city, minSalary, maxSalary, keyword }));
         }, 500);
+
         return () => clearTimeout(delayDebounce);
     }, [dispatch, city, minSalary, maxSalary, keyword]);
+    ;
 
     // Immediate pagination
     useEffect(() => {
@@ -70,12 +80,6 @@ const JobListingInterface = () => {
                     </div>
 
 
-                    <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            AI
-                        </div>
-                    </div>
-
                     {/* Filters */}
                     <div className="flex items-center gap-3 flex-wrap">
                         {/* City Filter */}
@@ -105,26 +109,49 @@ const JobListingInterface = () => {
                             className="px-3 py-2 border rounded-lg text-sm w-32"
                         />
 
-                        {/* Keyword Search */}
-                        <input
-                            type="text"
-                            placeholder="Search keyword"
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                            className="px-3 py-2 border rounded-lg text-sm flex-1"
-                        />
+                        {/* Saved Jobs Filter */}
+                        <button
+                            onClick={() => {
+                                setShowSaved((prev) => !prev);
+                                setShowApplied(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 
+    ${showSaved
+                                    ? "bg-blue-100 text-blue-700 border-blue-500 shadow-sm"
+                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                                }`}
+                        >
+                            {showSaved ? "Saved Jobs (Active)" : "Saved Jobs"}
+                        </button>
+
+                        {/* Applied Jobs Filter */}
+                        <button
+                            onClick={() => {
+                                setShowApplied((prev) => !prev);
+                                setShowSaved(false);
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 
+    ${showApplied
+                                    ? "bg-green-100 text-green-700 border-green-500 shadow-sm"
+                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                                }`}
+                        >
+                            {showApplied ? "Applied Jobs (Active)" : "Applied Jobs"}
+                        </button>
+
+
 
                         {/* Reset Filters */}
                         <button
                             onClick={() => {
-                                // Clear all filter states
                                 setCity("");
                                 setMinSalary("");
                                 setMaxSalary("");
                                 setKeyword("");
+                                setShowSaved(false);
+                                setShowApplied(false);
                                 setPage(1);
 
-                                // 🔹 Trigger a fresh fetch with no filters
                                 dispatch(fetchAllJobs({ page: 1, limit }));
                             }}
                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
@@ -132,6 +159,7 @@ const JobListingInterface = () => {
                             Reset
                             <X className="w-4 h-4" />
                         </button>
+
 
                     </div>
 
@@ -142,114 +170,151 @@ const JobListingInterface = () => {
             {/* Job Cards Grid */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {jobs.map(job => (
-                        <div
-                            key={job.id}
-                            className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow"
-                        >
-                            {/* Company Header */}
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                    <div className="w-6 h-6 bg-gray-400 rounded-full"></div>
+                    {jobs
+                        .filter((job) => {
+                            if (showSaved) return job.isSaved;
+                            if (showApplied) return job.alreadyApplied;
+                            return true; // show all
+                        })
+                        .map((job) => (
+
+                            <div
+                                key={job._id}
+                                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow"
+                            >
+                                {/* Company Header */}
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-semibold text-gray-600 text-sm">
+                                        {job?.ownerId?.companyName?.[0]?.toUpperCase() || "C"}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-sm font-semibold text-gray-900">
+                                            {job?.ownerId?.companyName || "Unknown Company"}
+                                        </h3>
+                                        <p className="text-xs text-gray-500">
+                                            {job?.ownerId?.firstName || ""} {job?.ownerId?.surname || ""}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-sm font-semibold text-gray-900">{job.company}</h3>
+
+                                {/* Job Status Badge */}
+                                <div className="mb-3">
+                                    <span
+                                        className={`inline-block px-3 py-1 text-xs rounded-full font-medium ${job.status === "open"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-gray-200 text-gray-600"
+                                            }`}
+                                    >
+                                        {job.status === "open" ? "Open" : "Closed"}
+                                    </span>
+                                </div>
+
+
+
+                                {/* Job Title */}
+                                < h4 className="text-base font-semibold text-gray-900 mb-2" > {job.title}</h4>
+
+                                {/* Job Description */}
+                                <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
+
+                                {/* Key Info */}
+                                <div className="mb-4">
+                                    <div className="text-xs text-gray-600">
+                                        <p>
+                                            <span className="font-medium text-gray-700">Key Info:</span>
+                                        </p>
+                                        <ul className="list-disc list-inside text-gray-600 mt-1">
+                                            {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
+                                                job.requirements.map((req, index) => (
+                                                    <li key={index}>{req}</li>
+                                                ))
+                                            ) : (
+                                                <li>No specific requirements</li>
+                                            )}
+                                        </ul>
+                                        <p className="mt-2">
+                                            <span className="font-medium text-gray-700">Salary:</span>{" "}
+                                            ₹{job.salary?.toLocaleString("en-IN") || "Not specified"}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                    <button
+                                        onClick={() => toggleSave(job.id)}
+                                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                                    >
+                                        {savedJobs.has(job.id) ? (
+                                            <BookmarkCheck className="w-4 h-4" />
+                                        ) : (
+                                            <Bookmark className="w-4 h-4" />
+                                        )}
+                                        Save
+                                    </button>
+                                    <button className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors">
+                                        Apply Now
+                                    </button>
                                 </div>
                             </div>
-
-                            {/* Job Type Badge */}
-                            <div className="mb-3">
-                                <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
-                                    {job.type}
-                                </span>
-                            </div>
-
-                            {/* Job Title */}
-                            <h4 className="text-base font-semibold text-gray-900 mb-2">{job.title}</h4>
-
-                            {/* Job Description */}
-                            <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
-
-                            {/* Key Info */}
-                            <div className="mb-4">
-                                <p className="text-xs text-gray-600">
-                                    <span className="font-medium">Key info:</span> {job.pay} | {job.duration} | {job.vehicle}
-                                </p>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                <button
-                                    onClick={() => toggleSave(job.id)}
-                                    className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
-                                >
-                                    {savedJobs.has(job.id) ? (
-                                        <BookmarkCheck className="w-4 h-4" />
-                                    ) : (
-                                        <Bookmark className="w-4 h-4" />
-                                    )}
-                                    Save
-                                </button>
-                                <button className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors">
-                                    Apply Now
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
-            </div>
+            </div >
             {/* Pagination Footer */}
-            {!loading && !error && totalPages >= 1 && (
-                <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500 ml-5">
-                    <p>
-                        Page{" "}
-                        <span className="text-gray-900 font-semibold">{page}</span> of{" "}
-                        <span className="text-gray-600 font-semibold">{totalPages}</span>
-                    </p>
+            {
+                !loading && !error && totalPages >= 1 && (
+                    <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500 ml-5">
+                        <p>
+                            Page{" "}
+                            <span className="text-gray-900 font-semibold">{page}</span> of{" "}
+                            <span className="text-gray-600 font-semibold">{totalPages}</span>
+                        </p>
 
-                    <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                        {/* Prev */}
-                        <button
-                            onClick={() => handlePageChange(page - 1)}
-                            disabled={page === 1}
-                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === 1
-                                ? "opacity-50 cursor-not-allowed"
-                                : "hover:bg-gray-100"
-                                }`}
-                        >
-                            ‹
-                        </button>
-
-                        {/* Dynamic page numbers */}
-                        {Array.from({ length: totalPages }, (_, i) => (
+                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                            {/* Prev */}
                             <button
-                                key={i}
-                                onClick={() => handlePageChange(i + 1)}
-                                className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
-                                    ? "bg-yellow-500 text-white border-yellow-500"
-                                    : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page === 1}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === 1
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : "hover:bg-gray-100"
                                     }`}
                             >
-                                {i + 1}
+                                ‹
                             </button>
-                        ))}
 
-                        {/* Next */}
-                        <button
-                            onClick={() => handlePageChange(page + 1)}
-                            disabled={page === totalPages}
-                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === totalPages
-                                ? "opacity-50 cursor-not-allowed"
-                                : "hover:bg-gray-100"
-                                }`}
-                        >
-                            ›
-                        </button>
+                            {/* Dynamic page numbers */}
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => handlePageChange(i + 1)}
+                                    className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
+                                        ? "bg-yellow-500 text-white border-yellow-500"
+                                        : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
+                                        }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+
+                            {/* Next */}
+                            <button
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page === totalPages}
+                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === totalPages
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : "hover:bg-gray-100"
+                                    }`}
+                            >
+                                ›
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-        </div>
+        </div >
     );
 };
 

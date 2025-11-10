@@ -16,6 +16,8 @@ import DriverDashboard from "./pages/DriverDashboard/DriverDashboard";
 import MyProfile from "./pages/MyProfile/MyProfile";
 import Settings from "./pages/Settings/Settings";
 import DriverJobs from "./pages/DriverJobs/DriverJobs";
+import NotificationPages from "./pages/NotificationPage/NotificationPage";
+import AiResume from "./pages/AIResume/AiResume";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -62,7 +64,9 @@ function App() {
             <Route path="/search-driver-records" element={<SearchDriverRecords />} />
             <Route path="/my-profile" element={<MyProfile />} />
             <Route path="/settings" element={<Settings />} />
-             <Route path="/driver-jobs" element={<DriverJobs />} />
+            <Route path="/driver-jobs" element={<DriverJobs />} />
+            <Route path="/notifications" element={<NotificationPages />} />
+              <Route path="/ai-resumes" element={<AiResume />} />
           </>
         ) : (
           // If no token → redirect everything else to "/"

@@ -86,3 +86,30 @@ export const jobsListingService = async (filters = {}) => {
     return response.data;
 };
 
+
+//get my profile driver side
+export const getMyProfileService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.MY_PROFILE, getAuthHeader());
+    return response.data;
+};
+
+
+// Update driver profile driver side
+export const updateDriverProfileService = async (updatedData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.UPDATE_MY_PROFILE,
+        updatedData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//change password driver
+export const changePasswordService = async (passwordData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.CHANGE_PASSWORD,
+        passwordData,
+        getAuthHeader()
+    );
+    return response.data;
+};
