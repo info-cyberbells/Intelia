@@ -28,6 +28,9 @@ export const getMyDrivers = async (req, res) => {
       return res.status(200).json({
         success: true,
         totalDrivers: 0,
+        riskScore: 0,
+        lowRisk: 0,
+        totalLicense: 0,
         totalPages: 0,
         currentPage: pageNum,
         drivers: [],
@@ -86,9 +89,9 @@ export const getMyDrivers = async (req, res) => {
     return res.status(200).json({
       success: true,
       totalDrivers,
-      riskScore: '999',
-      lowRisk: '999',
-      totalLicense: '999',
+      riskScore: 999,
+      lowRisk: 999,
+      totalLicense: 999,
       totalPages,
       currentPage: pageNum,
       perPage: limitNum,
