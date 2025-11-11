@@ -65,9 +65,8 @@ export const getProfile = async (req, res) => {
       message: "Profile fetched successfully",
       user: {
         id: user._id,
-        name: user.name,
-        firstName: user.firstName,
-        surname: user.surname,
+        // name: user.name,
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
         avatar: user.avatar || user.profileImage, // Support both fields
@@ -96,7 +95,7 @@ export const updateProfile = async (req, res) => {
   try {
     const authUser = req.user;
     const userId = authUser.id || authUser._id;
-    
+
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -137,8 +136,7 @@ export const updateProfile = async (req, res) => {
     // --- Update logic per role ---
     switch (role) {
       case "driver":
-        if (data.firstName) user.firstName = data.firstName;
-        if (data.surname) user.surname = data.surname;
+        if (data.fullName) user.firstName = data.fullName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
         
@@ -158,7 +156,7 @@ export const updateProfile = async (req, res) => {
           user.licenseNumber = data.licenseNumber;
         }
         if (data.municipality) user.municipality = data.municipality;
-        if (data.vehicleRegistration !== undefined) user.vehicleRegistration = data.vehicleRegistration;
+        // if (data.vehicleRegistration !== undefined) user.vehicleRegistration = data.vehicleRegistration;
         if (data.validUntil) {
           if (new Date(data.validUntil) <= new Date()) {
             if (req.file) fs.unlinkSync(req.file.path);
@@ -172,17 +170,16 @@ export const updateProfile = async (req, res) => {
         break;
 
       case "owner":
-        if (data.firstName) user.firstName = data.firstName;
-        if (data.surname) user.surname = data.surname;
+        if (data.fullName) user.firstName = data.fullName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
-        if (data.companyName) user.companyName = data.companyName;
-        if (data.correspondedMe) user.correspondedMe = data.correspondedMe;
+        // if (data.companyName) user.companyName = data.companyName;
+        // if (data.correspondedMe) user.correspondedMe = data.correspondedMe;
         break;
 
       case "superadmin":
-        if (data.firstName) user.firstName = data.firstName;
-        if (data.surname) user.surname = data.surname;
+        if (data.fullName) user.fullName = data.fullName;
+        // if (data.surname) user.surname = data.surname;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
         break;
@@ -217,6 +214,7 @@ export const updateProfile = async (req, res) => {
     }
 
     await user.save();
+    const baseURL = `${req.protocol}://${req.get("host")}`;
 
     return res.status(200).json({
       success: true,
@@ -224,17 +222,16 @@ export const updateProfile = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        firstName: user.firstName,
-        surname: user.surname,
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
         phoneNumber: user.phoneNumber,
-        avatar: user.avatar || user.profileImage,
-        profileImage: user.profileImage || user.avatar,
+        avatar: `${baseURL}${user.avatar}` || `${baseURL}${user.profileImage}`,
+        profileImage: `${baseURL}${user.profileImage}` || `${baseURL}${user.avatar}`,
         ...(role === "driver" && {
           licenseNumber: user.licenseNumber,
           municipality: user.municipality,
-          vehicleRegistration: user.vehicleRegistration,
+          // vehicleRegistration: user.vehicleRegistration,
           validUntil: user.validUntil,
         }),
         ...(role === "owner" && {

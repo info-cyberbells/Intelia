@@ -7,7 +7,7 @@ import { getAllDrivers,getDriverById,createDriver,updateDriver,deleteDriver,togg
 import { validateCreateClient, validateUpdateClient } from "../validation/client.validation.js";
 import { validateCreateDriver, validateUpdateDriver } from "../validation/driver.validation.js";
 import upload from "../middleware/upload.middleware.js";
-import { verifyVehicle } from "../controllers/superAdmin/moderation.controller.js";
+import { verifyVehicle, updateDriverStatus } from "../controllers/superAdmin/moderation.controller.js";
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ router.get("/dashboard", (req, res) => {
 
 // Profile
 router.get("/profile", getProfile);
-// router.put("/profile", upload.single('avatar'), updateProfile);
+router.put("/profile", upload.single('avatar'), updateProfile);
 
 // Client
 router.get("/clients/stats", getClientStats);
@@ -43,5 +43,6 @@ router.delete("/drivers/:id", deleteDriver);
 router.patch("/drivers/:id/toggle-status", toggleDriverStatus);
 
 router.patch("/vehicle/verify/:vehicleId", verifyVehicle);
+router.patch("/drivers/status/:id", updateDriverStatus);
 
 export default router;

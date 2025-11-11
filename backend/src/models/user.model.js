@@ -3,22 +3,22 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: { type: String, required: true, trim: true },
-    surname: { type: String, required: true, trim: true },
-    companyName: { 
-      type: String, 
-      required: function () {
-        return this.role === "owner";
-      }, 
-      trim: true 
-    },
-    correspondedMe: { 
-      type: String, 
-      required: function () {
-        return this.role === "owner";
-      }, 
-      trim: true 
-    },
+    fullName: { type: String, required: true, trim: true },
+    // surname: { type: String, trim: true },
+    // companyName: { 
+    //   type: String, 
+    //   required: function () {
+    //     return this.role === "owner";
+    //   }, 
+    //   trim: true 
+    // },
+    // correspondedMe: { 
+    //   type: String, 
+    //   required: function () {
+    //     return this.role === "owner";
+    //   }, 
+    //   trim: true 
+    // },
     email: {
       type: String,
       unique: true,
@@ -72,13 +72,13 @@ const userSchema = new mongoose.Schema(
       }, 
       trim: true 
     },
-    vehicleRegistration: { 
-      type: String, 
-      required: function () {
-        return this.role === "driver";
-      }, 
-      trim: true 
-    },
+    // vehicleRegistration: { 
+    //   type: String, 
+    //   required: function () {
+    //     return this.role === "driver";
+    //   }, 
+    //   trim: true 
+    // },
     validUntil: { 
       type: Date,
       required: function () {
@@ -98,8 +98,13 @@ const userSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: false, // User is inactive until approved
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending", // For clarity in admin dashboard
+    },
   },
   { timestamps: true }
 );

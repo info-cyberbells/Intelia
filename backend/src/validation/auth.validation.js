@@ -1,8 +1,8 @@
 import Joi from "joi";
 
 export const registerSchema = Joi.object({
-  firstName: Joi.string().trim().max(191).required(),
-  surname: Joi.string().trim().max(191).required(),
+  fullName: Joi.string().trim().max(191).required(),
+  // surname: Joi.string().trim().max(191).allow(null, '').optional(),
   email: Joi.string().trim().email().required(),
   password: Joi.string().min(6).required(),
   role: Joi.string().valid("superAdmin", "owner", "driver").default("driver"),
@@ -12,16 +12,16 @@ export const registerSchema = Joi.object({
     .messages({ "string.pattern.base": "Invalid phone number format" }),
 
   // OWNER-specific fields
-  companyName: Joi.when("role", {
-    is: "owner",
-    then: Joi.string().trim().max(191).required(),
-    otherwise: Joi.forbidden(),
-  }),
-  correspondedMe: Joi.when("role", {
-    is: "owner",
-    then: Joi.string().trim().max(191).required(),
-    otherwise: Joi.forbidden(),
-  }),
+  // companyName: Joi.when("role", {
+  //   is: "owner",
+  //   then: Joi.string().trim().max(191).required(),
+  //   otherwise: Joi.forbidden(),
+  // }),
+  // correspondedMe: Joi.when("role", {
+  //   is: "owner",
+  //   then: Joi.string().trim().max(191).required(),
+  //   otherwise: Joi.forbidden(),
+  // }),
 
   // DRIVER-specific fields
   licenseNumber: Joi.when("role", {
@@ -40,11 +40,11 @@ export const registerSchema = Joi.object({
     then: Joi.string().trim().max(191).required(),
     otherwise: Joi.forbidden(),
   }),
-  vehicleRegistration: Joi.when("role", {
-    is: "driver",
-    then: Joi.string().trim().max(191).required(),
-    otherwise: Joi.forbidden(),
-  }),
+  // vehicleRegistration: Joi.when("role", {
+  //   is: "driver",
+  //   then: Joi.string().trim().max(191).required(),
+  //   otherwise: Joi.forbidden(),
+  // }),
   validUntil: Joi.when("role", {
     is: "driver",
     then: Joi.date()
