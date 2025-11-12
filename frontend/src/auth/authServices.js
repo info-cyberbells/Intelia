@@ -43,6 +43,55 @@ export const registerDriverService = async (userData) => {
 }
 
 
+// Driver listing for SuperAdmin
+export const superAdminDriverListingService = async (search = "", status = "", page = 1, limit = 10) => {
+    let url = `${USER_ENDPOINTS.SUPER_ADMIN_GET_DRIVERS}?page=${page}&limit=${limit}`;
+
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+
+    const response = await axios.get(url, getAuthHeader());
+    return response.data;
+
+};
+
+
+// Owner listing for SuperAdmin
+export const superAdminOwnerListingService = async (search = "", status = "", page = 1, limit = 10) => {
+    let url = `${USER_ENDPOINTS.SUPER_ADMIN_GET_OWNERS}?page=${page}&limit=${limit}`;
+
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+
+    const response = await axios.get(url, getAuthHeader());
+    return response.data;
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //owner dashboard owner side
 export const ownerDashboardService = async () => {
     const response = await axios.get(USER_ENDPOINTS.OWNER_DASHBOARD, getAuthHeader());
@@ -57,6 +106,27 @@ export const driverListingService = async (page = 1, limit = 10) => {
     );
     return response.data;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //jobs listing in driver side
 export const jobsListingService = async (filters = {}) => {

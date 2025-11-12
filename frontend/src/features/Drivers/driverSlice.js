@@ -1,7 +1,24 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, getMyProfileService, updateDriverProfileService, changePasswordService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService } from "../../auth/authServices";
 
-//get all drivers
+
+// get all drivers - SuperAdmin
+export const fetchSuperAdminDrivers = createAsyncThunk(
+    "drivers/fetchSuperAdminDrivers",
+    async ({ search = "", status = "", page = 1, limit = 10 }, { rejectWithValue }) => {
+        try {
+            const data = await superAdminDriverListingService(search, status, page, limit);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch drivers (SuperAdmin)"
+            );
+        }
+    }
+);
+
+
+//get all drivers  owner
 export const fetchDrivers = createAsyncThunk(
     "drivers/fetchDrivers",
     async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
@@ -79,7 +96,29 @@ const driverSlice = createSlice({
 
     extraReducers: (builder) => {
         builder
-            //get all drivers builder
+
+            //  get all drivers - SuperAdmin
+            .addCase(fetchSuperAdminDrivers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchSuperAdminDrivers.fulfilled, (state, action) => {
+                state.loading = false;
+
+                const { data, pagination } = action.payload || {};
+
+                state.data = data || [];
+                state.totalPages = pagination?.pages || 0;
+                state.currentPage = pagination?.page || 1;
+                state.totalDrivers = pagination?.total || data?.length || 0;
+            })
+
+            .addCase(fetchSuperAdminDrivers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //get all drivers builder owner
             .addCase(fetchDrivers.pending, (state) => {
                 state.loading = true;
                 state.error = null;

@@ -2,64 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDriverProfile, updateDriverProfile, changeDriverPassword } from "../../features/Drivers/driverSlice";
 import { Eye, EyeOff } from "lucide-react";
-
-
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  const icons = {
-    success: (
-      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    ),
-    error: (
-      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    ),
-    info: (
-      <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )
-  };
-
-  return (
-    <div className={`toast ${type}`}>
-      {icons[type]}
-      <div className="toast-message">{message}</div>
-      <svg className="toast-close" onClick={onClose} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </div>
-  );
-};
-
-
+import { useToast } from '../../context/ToastContext';
 
 const ProfileSettings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const { profile, loading } = useSelector((state) => state.drivers);
-  const [toast, setToast] = useState(null);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
 
-
-
-  const showToast = (message, type = "info") => {
-    setToast({ message, type });
-  };
-
-  const closeToast = () => {
-    setToast(null);
-  };
 
   // 🧠 Profile form state (all empty)
   const [formData, setFormData] = useState({
@@ -177,11 +129,6 @@ const ProfileSettings = () => {
 
   return (
     <div className="bg-[#F5F5F5] ml-56  p-6 min-h-screen  mx-auto mt-16 font-[Inter]">
-      {toast && (
-        <div className="toast-container">
-          <Toast message={toast.message} type={toast.type} onClose={closeToast} />
-        </div>
-      )}
 
       <div className="w-full bg-white max-w-4xl rounded-2xl shadow-sm p-6">
         {/* --- Section 1: Tabs --- */}
@@ -423,7 +370,7 @@ const ProfileSettings = () => {
                       value={securityData.currentPassword}
                       onChange={handleSecurityChange}
                       placeholder="Enter current password"
-                        autoComplete="new-password" 
+                      autoComplete="new-password"
                       className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
                     />
                     <button

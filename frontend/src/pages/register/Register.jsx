@@ -2,60 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register, registerDriver, reset } from '../../features/userSlice/userSlice';
 import { useNavigate } from "react-router-dom";
-
-
-const Toast = ({ message, type, onClose }) => {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 4000);
-        return () => clearTimeout(timer);
-    }, [onClose]);
-
-    const icons = {
-        success: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-        ),
-        error: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        ),
-        info: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        )
-    };
-
-    return (
-        <div className={`toast ${type}`}>
-            {icons[type]}
-            <div className="toast-message">{message}</div>
-            <svg
-                className="toast-close"
-                onClick={onClose}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </div>
-    );
-};
-
+import { useToast } from '../../context/ToastContext';
+import image from '../../assets/border.png';
+import border from '../../assets/faceimage.png';
 
 const Register = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { showToast } = useToast();
     const { isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
 
     const [formData, setFormData] = useState({
-        firstName: '',
-        surname: '',
+        fullName: '',
         email: '',
         phoneNumber: '',
         password: '',
@@ -68,31 +26,61 @@ const Register = () => {
         // Driver-only fields
         licenseNumber: '',
         municipality: '',
-        vehicleRegistration: '',
         validUntil: '',
     });
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [toast, setToast] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({});
+    const [driverStep, setDriverStep] = useState(1);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [previousRole, setPreviousRole] = useState('');
+    const [showUploadArea, setShowUploadArea] = useState(false);
 
-    const showToast = (message, type = 'info') => {
-        setToast({ message, type });
-    };
-
-    const closeToast = () => {
-        setToast(null);
-    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
 
+        if (name === 'role' && previousRole && previousRole !== value) {
+            const confirmed = window.confirm(
+                "Are you sure you want to change your role? All entered data will be lost."
+            );
+
+            if (confirmed) {
+                setFormData({
+                    fullName: '',
+                    email: '',
+                    phoneNumber: '',
+                    password: '',
+                    role: value,
+                    companyName: '',
+                    correspondedMe: '',
+                    licenseNumber: '',
+                    municipality: '',
+                    validUntil: '',
+                });
+                setConfirmPassword('');
+                setFieldErrors({});
+                setDriverStep(1);
+                setSelectedImage(null);
+                setImagePreview(null);
+                setPreviousRole(value);
+                showToast("Role changed. Please fill in the details again.", 'info');
+            }
+            return;
+        }
+
+        // Normal field update
         setFormData({
             ...formData,
             [name]: value
         });
+
+        if (name === 'role' && !previousRole) {
+            setPreviousRole(value);
+        }
 
         if (name === 'role') {
             setFieldErrors({});
@@ -101,6 +89,18 @@ const Register = () => {
                 ...fieldErrors,
                 [name]: false
             });
+        }
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -141,11 +141,8 @@ const Register = () => {
             return false;
         }
         // Common validations
-        if (!formData.firstName.trim()) {
-            errors.firstName = true;
-        }
-        if (!formData.surname.trim()) {
-            errors.surname = true;
+        if (!formData.fullName.trim()) {
+            errors.fullName = true;
         }
         if (!formData.email.trim()) {
             errors.email = true;
@@ -186,9 +183,6 @@ const Register = () => {
             if (!formData.municipality.trim()) {
                 errors.municipality = true;
             }
-            if (!formData.vehicleRegistration.trim()) {
-                errors.vehicleRegistration = true;
-            }
             if (!formData.validUntil) {
                 errors.validUntil = true;
             } else {
@@ -213,8 +207,7 @@ const Register = () => {
             const errorField = Object.keys(errors)[0];
             const errorMessages = {
                 role: "Please select your role",
-                firstName: "First name is required",
-                surname: "Surname is required",
+                fullName: "Full name is required",
                 email: "Please enter a valid email address",
                 phoneNumber: "Phone number is required",
                 password: "Password must be at least 6 characters",
@@ -223,7 +216,6 @@ const Register = () => {
                 correspondedMe: "Please tell us what corresponded you",
                 licenseNumber: "License number is required",
                 municipality: "Municipality is required",
-                vehicleRegistration: "Vehicle registration is required",
                 validUntil: "Valid until date is required and must be in future"
             };
             showToast(errorMessages[errorField], 'error');
@@ -238,45 +230,43 @@ const Register = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Validate form before submission
         if (!validateForm()) {
             return;
         }
 
         if (formData.role === 'Owner') {
             const ownerData = {
-                firstName: formData.firstName,
-                surname: formData.surname,
+                fullName: formData.fullName,
                 companyName: formData.companyName,
                 correspondedMe: formData.correspondedMe,
                 email: formData.email,
                 password: formData.password,
-                phoneNumber: formData.phoneNumber
+                phoneNumber: formData.phoneNumber,
             };
             dispatch(register(ownerData));
         } else if (formData.role === 'Driver') {
-            const driverData = {
-                licenseNumber: formData.licenseNumber,
-                firstName: formData.firstName,
-                surname: formData.surname,
-                email: formData.email,
-                password: formData.password,
-                phoneNumber: formData.phoneNumber,
-                municipality: formData.municipality,
-                vehicleRegistration: formData.vehicleRegistration,
-                validUntil: formData.validUntil
-            };
-            dispatch(registerDriver(driverData));
+            if (driverStep === 1) {
+                setDriverStep(2);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                return;
+            } else {
+                const driverData = {
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    phoneNumber: formData.phoneNumber,
+                    password: formData.password,
+                    licenseNumber: formData.licenseNumber,
+                    municipality: formData.municipality,
+                    validUntil: formData.validUntil,
+                };
+                dispatch(registerDriver(driverData));
+            }
         }
     };
 
+
     return (
         <>
-            {toast && (
-                <div className="toast-container">
-                    <Toast message={toast.message} type={toast.type} onClose={closeToast} />
-                </div>
-            )}
             <style>{`
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
@@ -310,6 +300,35 @@ const Register = () => {
     .counter-rotate {
         animation: counterRotate 20s linear infinite;
     }
+        @keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.4s ease-out;
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.4s ease-out;
+}
         `}</style>
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden h-screen">
                 {/* Background decorative circles */}
@@ -355,13 +374,6 @@ const Register = () => {
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border-[3px] border-white"></div>
                                 </div>
                             </div>
-                            {/* <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
-                            <img src="/Location_vector.png" alt="Location" className="w-6 h-6" />
-                        </div> */}
-
-                            {/* <div className="absolute top-[1%] left-[15%]">
-                            <img src="/Location_vector.png" alt="Location" className="w-6 h-6" />
-                        </div> */}
 
                             <div className="absolute top-[60%] right-[0%]">
                                 <div className="counter-rotate">
@@ -450,318 +462,457 @@ const Register = () => {
                             <h1 className="text-4xl font-bold mb-2 text-center" style={{ color: "#424242" }}>Join us Now!!</h1>
                             <p className="mb-6 text-center" style={{ color: "#BDBDBD", fontWeight: "400" }}>Let's Create your Account</p>
 
+
+                            {formData.role === 'Driver' && (
+                                <div className="flex items-center justify-center mb-8 gap-2">
+                                    <div className="flex items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${driverStep === 1 ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'}`}>
+                                            {driverStep === 1 ? '1' : '✓'}
+                                        </div>
+                                        <span className={`ml-2 text-sm font-medium ${driverStep === 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                            Basic Details
+                                        </span>
+                                    </div>
+                                    <div className={`w-16 h-1 mx-2 ${driverStep === 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                                    <div className="flex items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${driverStep === 2 ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-500'}`}>
+                                            2
+                                        </div>
+                                        <span className={`ml-2 text-sm font-medium ${driverStep === 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                            Verification
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
                             <form className="space-y-6">
                                 {/* Fake fields to prevent Chrome autofill */}
                                 <input type="text" name="fakeusernameremembered" autoComplete="username" className="hidden" />
                                 <input type="password" name="fakepasswordremembered" autoComplete="new-password" className="hidden" />
 
-                                <div className="mb-6">
-                                    <label
-                                        className="block text-sm font-medium mb-1"
-                                        style={{ color: "#424242", fontWeight: 600 }}
-                                    >
-                                        Select Your Role
-                                    </label>
+                                {!(formData.role === "Driver" && driverStep === 2) && (
 
-                                    <div className="relative">
-                                        <select
-                                            name="role"
-                                            value={formData.role}
-                                            onChange={handleChange}
-                                            className={`w-full px-4 py-3 pr-10 border ${fieldErrors.role ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none`}
+                                    <div className="mb-6">
+                                        <label
+                                            className="block text-sm font-medium mb-1"
+                                            style={{ color: "#424242", fontWeight: 600 }}
                                         >
-                                            <option value="" className='cursor-pointer'>Select your role</option>
-                                            <option value="Owner">Owner</option>
-                                            <option value="Driver">Driver</option>
-                                        </select>
+                                            Select Your Role
+                                        </label>
 
-                                        <svg
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                        >
-                                            <path
-                                                d="M5 7.5L10 12.5L15 7.5"
-                                                stroke="#6B7280"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
+                                        <div className="relative">
+                                            <select
+                                                name="role"
+                                                value={formData.role}
+                                                onChange={handleChange}
+                                                className={`w-full px-4 py-3 pr-10 border ${fieldErrors.role ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none`}
+                                            >
+                                                <option value="" className='cursor-pointer'>Select your role</option>
+                                                <option value="Owner">Owner</option>
+                                                <option value="Driver">Driver</option>
+                                            </select>
+
+                                            <svg
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                            >
+                                                <path
+                                                    d="M5 7.5L10 12.5L15 7.5"
+                                                    stroke="#6B7280"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Show fields only after role is selected */}
                                 {formData.role && (
                                     <>
-                                        {/* First Name - Common for both */}
-                                        <div className="mb-6">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242", fontWeight: 600 }}
-                                            >
-                                                First Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="firstName"
-                                                value={formData.firstName}
-                                                onChange={handleChange}
-                                                placeholder="enter your name"
-                                                className={`w-full px-4 py-3 border ${fieldErrors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                            />
-                                        </div>
-
-                                        {/* Surname - Common for both */}
-                                        <div className="mb-6">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242", fontWeight: 600 }}
-                                            >
-                                                Last Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="surname"
-                                                value={formData.surname}
-                                                onChange={handleChange}
-                                                placeholder="enter your surname"
-                                                className={`w-full px-4 py-3 border ${fieldErrors.surname ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`} />
-                                        </div>
-
-                                        {/* Owner Only - Company Name */}
-                                        {formData.role === 'Owner' && (
-                                            <>
+                                        {(formData.role === 'Owner' || (formData.role === 'Driver' && driverStep === 1)) && (
+                                            <div className="slide-in-right">
+                                                {/* First Name - Common for both */}
                                                 <div className="mb-6">
                                                     <label
                                                         className="block text-sm font-medium mb-1"
                                                         style={{ color: "#424242", fontWeight: 600 }}
                                                     >
-                                                        Company Name
+                                                        Full Name
                                                     </label>
                                                     <input
                                                         type="text"
-                                                        name="companyName"
-                                                        value={formData.companyName}
+                                                        name="fullName"
+                                                        value={formData.fullName}
                                                         onChange={handleChange}
-                                                        placeholder="enter your company name"
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.companyName ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`} />
-                                                </div>
-                                                <div className="mb-6">
-                                                    <label
-                                                        className="block text-sm font-medium mb-1"
-                                                        style={{ color: "#424242", fontWeight: 600 }}
-                                                    >
-                                                        What Corresponded me
-                                                    </label>
-
-                                                    <input
-                                                        type="text"
-                                                        name="correspondedMe"
-                                                        value={formData.correspondedMe}
-                                                        onChange={handleChange}
-                                                        placeholder="enter your reason"
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.correspondedMe ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                        placeholder="John Carter"
+                                                        className={`w-full px-4 py-3 border ${fieldErrors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
                                                     />
                                                 </div>
-                                            </>
+
+
+                                                {/* Email - Common for both */}
+                                                <div className="mb-6">
+                                                    <label
+                                                        className="block text-sm font-medium mb-1"
+                                                        style={{ color: "#424242", fontWeight: 600 }}
+                                                    >
+                                                        Email
+                                                    </label>
+                                                    <input
+                                                        type="email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleChange}
+                                                        placeholder="you@example.com"
+                                                        autoComplete="new-email"
+                                                        className={`w-full px-4 py-3 border ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                    />
+                                                </div>
+
+                                                {/* Phone Number - Common for both */}
+                                                <div className="mb-6">
+                                                    <label
+                                                        className="block text-sm font-medium mb-1"
+                                                        style={{ color: "#424242", fontWeight: 600 }}
+                                                    >
+                                                        Phone Number
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        name="phoneNumber"
+                                                        value={formData.phoneNumber}
+                                                        onChange={handleChange}
+                                                        placeholder="+91 98765 43210"
+                                                        className={`w-full px-4 py-3 border ${fieldErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                    />
+                                                </div>
+
+                                                {/* Password - Common for both */}
+                                                <div className="mb-3">
+                                                    <label
+                                                        className="block text-sm font-medium mb-1"
+                                                        style={{ color: "#424242" }}
+                                                    >Password</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={showPassword ? "text" : "password"}
+                                                            name="password"
+                                                            value={formData.password}
+                                                            onChange={handleChange}
+                                                            autoComplete="new-password"
+                                                            placeholder="Create a strong password"
+                                                            className={`w-full px-4 py-3 pr-12 border ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPassword(!showPassword)}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        >
+                                                            {showPassword ? (
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                                                </svg>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Confirm Password - Common for both */}
+                                                <div className="mb-6">
+                                                    <label
+                                                        className="block text-sm font-medium mb-1"
+                                                        style={{ color: "#424242" }}
+                                                    >
+                                                        Confirm Password
+                                                    </label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={showConfirmPassword ? "text" : "password"}
+                                                            name="confirmPassword"
+                                                            value={confirmPassword}
+                                                            onChange={handleConfirmPasswordChange}
+                                                            autoComplete="new-password"
+                                                            placeholder="Re-enter your password"
+                                                            className={`w-full px-4 py-3 pr-12 border ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                                        >
+                                                            {showConfirmPassword ? (
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                                                </svg>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Owner Only - Company Name */}
+                                                {formData.role === 'Owner' && (
+                                                    <>
+                                                        <div className="mb-6">
+                                                            <label
+                                                                className="block text-sm font-medium mb-1"
+                                                                style={{ color: "#424242", fontWeight: 600 }}
+                                                            >
+                                                                Company Name
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="companyName"
+                                                                value={formData.companyName}
+                                                                onChange={handleChange}
+                                                                placeholder="e.g., Infocyberbells Pvt. Ltd."
+                                                                className={`w-full px-4 py-3 border ${fieldErrors.companyName ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`} />
+                                                        </div>
+                                                        <div className="mb-6">
+                                                            <label
+                                                                className="block text-sm font-medium mb-1"
+                                                                style={{ color: "#424242", fontWeight: 600 }}
+                                                            >
+                                                                What Corresponded me
+                                                            </label>
+
+                                                            <input
+                                                                type="text"
+                                                                name="correspondedMe"
+                                                                value={formData.correspondedMe}
+                                                                onChange={handleChange}
+                                                                placeholder="Tell us how you heard about us"
+                                                                className={`w-full px-4 py-3 border ${fieldErrors.correspondedMe ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+
+
+
+                                                {formData.role === "Driver" && (
+                                                    <>
+                                                        <div className="mb-6">
+                                                            <label
+                                                                className="block text-sm font-medium mb-1"
+                                                                style={{ color: "#424242", fontWeight: 600 }}
+                                                            >
+                                                                License Number
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="licenseNumber"
+                                                                value={formData.licenseNumber}
+                                                                onChange={handleChange}
+                                                                placeholder="e.g., DL-0420190145643"
+                                                                className={`w-full px-4 py-3 border ${fieldErrors.licenseNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                            />
+                                                        </div>
+
+                                                        <div className="mb-6">
+                                                            <label
+                                                                className="block text-sm font-medium mb-1"
+                                                                style={{ color: "#424242", fontWeight: 600 }}
+                                                            >
+                                                                Municipality
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                name="municipality"
+                                                                value={formData.municipality}
+                                                                onChange={handleChange}
+                                                                placeholder="e.g., Chandigarh Municipal"
+                                                                className={`w-full px-4 py-3 border ${fieldErrors.municipality ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                            />
+                                                        </div>
+
+
+                                                        <div className="mb-6">
+                                                            <label
+                                                                className="block text-sm font-medium mb-1"
+                                                                style={{ color: "#424242", fontWeight: 600 }}
+                                                            >
+                                                                Valid Until
+                                                            </label>
+                                                            <input
+                                                                type="date"
+                                                                name="validUntil"
+                                                                value={formData.validUntil}
+                                                                onChange={handleChange}
+                                                                className={`w-full px-4 py-3 border ${fieldErrors.validUntil ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
+                                                            />
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                         )}
 
-
-
-                                        {formData.role === "Driver" && (
-                                            <>
-                                                <div className="mb-6">
-                                                    <label
-                                                        className="block text-sm font-medium mb-1"
-                                                        style={{ color: "#424242", fontWeight: 600 }}
-                                                    >
-                                                        License Number
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="licenseNumber"
-                                                        value={formData.licenseNumber}
-                                                        onChange={handleChange}
-                                                        placeholder="enter your license number"
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.licenseNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                    />
-                                                </div>
-
-                                                <div className="mb-6">
-                                                    <label
-                                                        className="block text-sm font-medium mb-1"
-                                                        style={{ color: "#424242", fontWeight: 600 }}
-                                                    >
-                                                        Municipality
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="municipality"
-                                                        value={formData.municipality}
-                                                        onChange={handleChange}
-                                                        placeholder="enter municipality"
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.municipality ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                    />
-                                                </div>
-
-                                                <div className="mb-6">
-                                                    <label
-                                                        className="block text-sm font-medium mb-1"
-                                                        style={{ color: "#424242", fontWeight: 600 }}
-                                                    >
-                                                        Vehicle Registration
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        name="vehicleRegistration"
-                                                        value={formData.vehicleRegistration}
-                                                        onChange={handleChange}
-                                                        placeholder="enter vehicle registration number"
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.vehicleRegistration ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                    />
-                                                </div>
-
-                                                <div className="mb-6">
-                                                    <label
-                                                        className="block text-sm font-medium mb-1"
-                                                        style={{ color: "#424242", fontWeight: 600 }}
-                                                    >
-                                                        Valid Until
-                                                    </label>
-                                                    <input
-                                                        type="date"
-                                                        name="validUntil"
-                                                        value={formData.validUntil}
-                                                        onChange={handleChange}
-                                                        className={`w-full px-4 py-3 border ${fieldErrors.validUntil ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                    />
-                                                </div>
-                                            </>
-                                        )}
-
-                                        {/* Email - Common for both */}
-                                        <div className="mb-6">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242", fontWeight: 600 }}
-                                            >
-                                                Email
-                                            </label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                placeholder="enter your email"
-                                                autoComplete="new-email"
-                                                className={`w-full px-4 py-3 border ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                            />
-                                        </div>
-
-                                        {/* Phone Number - Common for both */}
-                                        <div className="mb-6">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242", fontWeight: 600 }}
-                                            >
-                                                Phone Number
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="phoneNumber"
-                                                value={formData.phoneNumber}
-                                                onChange={handleChange}
-                                                placeholder="enter your phone number"
-                                                className={`w-full px-4 py-3 border ${fieldErrors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                            />
-                                        </div>
-
-                                        {/* Password - Common for both */}
-                                        <div className="mb-3">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242" }}
-                                            >Password</label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    name="password"
-                                                    value={formData.password}
-                                                    onChange={handleChange}
-                                                    autoComplete="new-password"
-                                                    placeholder="enter your password"
-                                                    className={`w-full px-4 py-3 pr-12 border ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    {showPassword ? (
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                    ) : (
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                                        </svg>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Confirm Password - Common for both */}
-                                        <div className="mb-6">
-                                            <label
-                                                className="block text-sm font-medium mb-1"
-                                                style={{ color: "#424242" }}
-                                            >
-                                                Confirm Password
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showConfirmPassword ? "text" : "password"}
-                                                    name="confirmPassword"
-                                                    value={confirmPassword}
-                                                    onChange={handleConfirmPasswordChange}
-                                                    autoComplete="new-password"
-                                                    placeholder="enter your password again"
-                                                    className={`w-full px-4 py-3 pr-12 border ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                                >
-                                                    {showConfirmPassword ? (
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                        </svg>
-                                                    ) : (
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                                        </svg>
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </div>
                                     </>
                                 )}
+
                             </form>
+
+                            {formData.role === "Driver" && driverStep === 2 && (
+                                <div className="slide-in-right">
+                                    <h2 className="text-2xl font-semibold mb-2 text-center mt-3" style={{ color: "#424242" }}>
+                                        Upload Your Photo
+                                    </h2>
+                                    <p className="mb-6 text-center text-sm" style={{ color: "#BDBDBD" }}>
+                                        Please upload a clear photo for verification
+                                    </p>
+
+                                    {/* Image Upload Area */}
+                                    <div className="mb-6">
+                                        {!showUploadArea ? (
+                                            // Face Scan Screen (shows first)
+                                            <div className="space-y-6">
+                                                {/* Face Scan Frame */}
+                                                <div className="relative rounded-xl p-8 flex items-center justify-center" style={{ minHeight: '320px' }}>
+                                                    <div className="relative w-64 h-64">
+                                                        {/* Face mesh image (below) */}
+                                                        <img
+                                                            src={border}
+                                                            alt="Face mesh"
+                                                            className="absolute inset-0 w-full h-full object-contain"
+                                                        />
+
+                                                        {/* Frame image (on top) */}
+                                                        <img
+                                                            src={image}
+                                                            alt="Frame"
+                                                            className="absolute inset-0 w-full h-full object-contain"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Security Message */}
+                                                <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                    <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                    </svg>
+                                                    <p className="text-sm text-blue-800">
+                                                        The data you share will be encrypted, stored securely, and only used to verify your identity
+                                                    </p>
+                                                </div>
+
+                                                {/* Upload Buttons */}
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        type="button"
+                                                        className="flex-1 flex items-center justify-center gap-2 border-2 border-gray-300 rounded-xl py-3.5 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        Open camera
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowUploadArea(true)}
+                                                        className="flex-1 flex items-center justify-center gap-2 border-2 border-gray-300 rounded-xl py-3.5 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        Gallery
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            // File Upload Interface (shows after clicking Gallery)
+                                            <div
+                                                className={`relative border-2 border-dashed ${fieldErrors.image ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl p-8 text-center hover:border-blue-400 transition-colors cursor-pointer`}
+                                                onClick={() => document.getElementById('imageUpload').click()}
+                                            >
+                                                {imagePreview ? (
+                                                    <div className="relative">
+                                                        <img
+                                                            src={imagePreview}
+                                                            alt="Preview"
+                                                            className="w-full h-64 object-cover rounded-lg"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedImage(null);
+                                                                setImagePreview(null);
+                                                                setShowUploadArea(false);
+                                                            }}
+                                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="py-8">
+                                                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                        </svg>
+                                                        <p className="text-gray-600 font-medium mb-2">Click to upload or drag and drop</p>
+                                                        <p className="text-sm text-gray-400">PNG, JPG up to 5MB</p>
+                                                    </div>
+                                                )}
+                                                <input
+                                                    id="imageUpload"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageChange}
+                                                    className="hidden"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Back Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setDriverStep(1);
+                                            setShowUploadArea(false);
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        }}
+                                        className="w-full bg-gray-200 text-gray-700 py-3.5 rounded-xl font-semibold text-base hover:bg-gray-300 transition-colors mb-3"
+                                    >
+                                        ← Back to Basic details
+                                    </button>
+                                </div>
+                            )}
+
+
 
                             {/* Sign in button */}
                             <button
                                 onClick={handleSubmit}
                                 disabled={isLoading}
-                                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors  mb-2 mt-5"
+                                className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors mb-2 mt-5"
                             >
-                                {isLoading ? 'Signing up...' : 'Sign up'}
+                                {isLoading
+                                    ? "Please wait..."
+                                    : formData.role === "Driver"
+                                        ? driverStep === 1
+                                            ? "Next"
+                                            : "Sign Up"
+                                        : "Sign Up"}
                             </button>
+
 
                             <div className="flex items-center justify-center mb-4 ">
                                 <div className="w-12 h-px " style={{ backgroundColor: "#E0E0E0", fontWeight: 300 }}></div>

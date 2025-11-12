@@ -6,6 +6,10 @@ export const USER_ENDPOINTS = {
     CREATE_OWNER: `${API_BASE_URL}/auth/create-owner`,
     CREATE_DRIVER: `${API_BASE_URL}/auth/register`,
 
+    SUPER_ADMIN_GET_DRIVERS: `${API_BASE_URL}/superAdmin/drivers`,
+    SUPER_ADMIN_GET_OWNERS: `${API_BASE_URL}/superAdmin/clients`,
+
+
     OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,
     GET_ALL_DRIVERS: `${API_BASE_URL}/owner/drivers`,
 

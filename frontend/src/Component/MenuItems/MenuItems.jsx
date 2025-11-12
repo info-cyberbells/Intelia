@@ -23,10 +23,18 @@ const MenuItems = () => {
   };
 
   const ownerMenu = [
-    { to: "/dashboard", icon: <Home className="w-5 h-5 mr-3" />, label: "Dashboard" },
+    { to: "/admin-dashboard", icon: <Home className="w-5 h-5 mr-3" />, label: "Dashboard" },
     { to: "/search-driver-records", icon: <Search className="w-5 h-5 mr-3" />, label: "Search" },
     { to: "/drivers", icon: <Users className="w-5 h-5 mr-3" />, label: "My Drivers" },
     { to: "/talent-hub", icon: <Briefcase className="w-5 h-5 mr-3" />, label: "Talent Hub" },
+  ];
+
+  const superAdminMenu = [
+    { to: "/dashboard", icon: <Home className="w-5 h-5 mr-3" />, label: "Dashboard" },
+    { to: "/manage-owners", icon: <Users className="w-5 h-5 mr-3" />, label: "Manage Owners" },
+    { to: "/manage-drivers", icon: <Users className="w-5 h-5 mr-3" />, label: "Manage Drivers" },
+    { to: "/manage-jobs", icon: <Users className="w-5 h-5 mr-3" />, label: "Manage Jobs" },
+    // { to: "/reports", icon: <Briefcase className="w-5 h-5 mr-3" />, label: "Reports" },
   ];
 
   const userMenu = [
@@ -69,7 +77,16 @@ const MenuItems = () => {
     // },
   ];
 
-  const activeMenu = role === "owner" ? ownerMenu : userMenu;
+  let activeMenu;
+
+  if (role === "owner") {
+    activeMenu = ownerMenu;
+  } else if (role === "superadmin") {
+    activeMenu = superAdminMenu;
+  } else {
+    activeMenu = userMenu;
+  }
+
 
   return (
     <div className="w-56 font-[Inter] bg-[#FCFCFC] fixed flex flex-col justify-between h-full left-0 top-0 border-r border-gray-200">

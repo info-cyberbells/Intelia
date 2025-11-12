@@ -2,53 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { login, reset } from "../../features/userSlice/userSlice";
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../../context/ToastContext';
 
-const Toast = ({ message, type, onClose }) => {
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onClose();
-        }, 4000);
-        return () => clearTimeout(timer);
-    }, [onClose]);
-
-    const icons = {
-        success: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-        ),
-        error: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        ),
-        info: (
-            <svg className="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-        )
-    };
-
-    return (
-        <div className={`toast ${type}`}>
-            {icons[type]}
-            <div className="toast-message">{message}</div>
-            <svg
-                className="toast-close"
-                onClick={onClose}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </div>
-    );
-};
 
 const Login = ({ setToken }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const { user, isLoading, isError, isSuccess, message } = useSelector(
         (state) => state.auth
     );
@@ -57,17 +17,7 @@ const Login = ({ setToken }) => {
         password: ""
     });
     const [showPassword, setShowPassword] = useState(false);
-    const [toast, setToast] = useState(null);
     const [fieldErrors, setFieldErrors] = useState({});
-
-    const showToast = (message, type = 'info') => {
-        setToast({ message, type });
-    };
-
-    const closeToast = () => {
-        setToast(null);
-    };
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -96,8 +46,10 @@ const Login = ({ setToken }) => {
             }, 500);
             setTimeout(() => {
                 const role = user?.user?.role || user?.role;
-                if (role === "owner") {
+                if (role === "superAdmin") {
                     navigate("/dashboard");
+                } else if (role === "owner") {
+                    navigate("/admin-dashboard");
                 } else if (role === "driver") {
                     navigate("/driver-dashboard");
                 } else {
@@ -169,11 +121,6 @@ const Login = ({ setToken }) => {
 
     return (
         <>
-            {toast && (
-                <div className="toast-container">
-                    <Toast message={toast.message} type={toast.type} onClose={closeToast} />
-                </div>
-            )}
             <style>{`
                         @keyframes rotate {
         from {
@@ -359,7 +306,7 @@ const Login = ({ setToken }) => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        placeholder="enter your email"
+                                        placeholder="you@example.com"
                                         autoComplete="new-email"
                                         className={`w-full px-4 py-3 border ${fieldErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
                                     />
@@ -378,7 +325,7 @@ const Login = ({ setToken }) => {
                                             value={formData.password}
                                             onChange={handleChange}
                                             autoComplete="new-password"
-                                            placeholder="enter your password"
+                                            placeholder="Password"
                                             className={`w-full px-4 py-3 pr-12 border ${fieldErrors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'} rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent`}
                                         />
                                         <button
