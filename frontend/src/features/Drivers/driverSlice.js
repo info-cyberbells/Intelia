@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -82,6 +82,55 @@ export const changeDriverPassword = createAsyncThunk(
 );
 
 
+// Get driver settings
+export const fetchDriverSettings = createAsyncThunk(
+    "drivers/fetchSettings",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getDriverSettingService();
+            return data.settings || data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch settings"
+            );
+        }
+    }
+);
+
+
+// Update driver settings
+export const updateDriverSettings = createAsyncThunk(
+    "drivers/updateSettings",
+    async (settingsData, { rejectWithValue }) => {
+        try {
+            const data = await updateDriverSettingsService(settingsData);
+            return data.settings || data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update settings"
+            );
+        }
+    }
+);
+
+// Post driver feedback
+export const postDriverFeedback = createAsyncThunk(
+    "drivers/postFeedback",
+    async (feedbackData, { rejectWithValue }) => {
+        try {
+            const data = await postDriverFeedbackService(feedbackData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to submit feedback"
+            );
+        }
+    }
+);
+
+
+
+
 const driverSlice = createSlice({
     name: "drivers",
     initialState: {
@@ -91,6 +140,7 @@ const driverSlice = createSlice({
         currentPage: 1,
         error: null,
         profile: null,
+        settings: null,
     },
     reducers: {},
 
@@ -180,7 +230,51 @@ const driverSlice = createSlice({
             .addCase(changeDriverPassword.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+
+            //  Fetch driver settings
+            .addCase(fetchDriverSettings.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchDriverSettings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.settings = action.payload;
+            })
+            .addCase(fetchDriverSettings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //update driver profile details
+            .addCase(updateDriverSettings.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateDriverSettings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.settings = action.payload;
+            })
+            .addCase(updateDriverSettings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //post driver feedback
+            .addCase(postDriverFeedback.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(postDriverFeedback.fulfilled, (state) => {
+                state.loading = false;
+                state.success = true;
+            })
+            .addCase(postDriverFeedback.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
+
 
     },
 });

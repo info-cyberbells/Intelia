@@ -61,7 +61,7 @@ const ProfileSettings = () => {
         country: profile.country || "",
         city: profile.city || "",
         password: "",
-        dob: "",
+        dob: profile.dob ? profile.dob.split("T")[0] : "",
         phoneNumber: profile.phoneNumber || "",
       });
       setImagePreview(profile.avatar || null);
@@ -137,6 +137,7 @@ const ProfileSettings = () => {
     formDataToSend.append("phoneNumber", formData.phoneNumber);
     formDataToSend.append("city", formData.city);
     formDataToSend.append("country", formData.country);
+    formDataToSend.append("dob", formData.dob);
     formDataToSend.append("validUntil", formData.validUntil);
 
     if (profileImage) {

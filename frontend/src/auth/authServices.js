@@ -186,3 +186,31 @@ export const changePasswordService = async (passwordData) => {
     );
     return response.data;
 };
+
+
+
+//get current settings driver
+export const getDriverSettingService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.SETTINGS, getAuthHeader());
+    return response.data;
+};
+
+// Update driver settings
+export const updateDriverSettingsService = async (settingsData) => {
+    const response = await axios.post(
+        `${USER_ENDPOINTS.UPDATE_SETTINGS}`,
+        settingsData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+// Post driver feedback
+export const postDriverFeedbackService = async (feedbackData) => {
+    const response = await axios.post(
+        `${USER_ENDPOINTS.POST_FEEDBACK}`,
+        feedbackData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+

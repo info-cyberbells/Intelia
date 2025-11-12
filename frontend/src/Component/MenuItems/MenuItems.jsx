@@ -63,18 +63,18 @@ const MenuItems = () => {
       label: "Jobs",
     },
 
-    // {
-    //   to: "/my-applications",
-    //   icon: "/menuicons/apply.svg",
-    //   activeIcon: "/menuicons/my_applicationactive.svg",
-    //   label: "My Applications",
-    // },
-    // {
-    //   to: "/resources",
-    //   icon: "/menuicons/resourses.svg",
-    //   activeIcon: "/menuicons/resonance-active.svg",
-    //   label: "Resources",
-    // },
+    {
+      to: "/my-applications",
+      icon: "/menuicons/apply.svg",
+      activeIcon: "/menuicons/my_applicationactive.svg",
+      label: "My Applications",
+    },
+    {
+      to: "/resources",
+      icon: "/menuicons/resourses.svg",
+      activeIcon: "/menuicons/resonance-active.svg",
+      label: "Resources",
+    },
   ];
 
   let activeMenu;

@@ -1,28 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDriverSettings, updateDriverSettings, postDriverFeedback } from "../../features/Drivers/driverSlice";
+import { useToast } from "../../context/ToastContext";
+
+
 
 const Settings = () => {
+    const dispatch = useDispatch();
+    const { showToast } = useToast();
+    const { settings, loading } = useSelector((state) => state.drivers);
+
     const [toggles, setToggles] = useState({
-        email: true,
-        sms: false,
-        inApp: true,
-        italian: true,
+        email: false,
+        inApp: false,
         darkMode: false,
     });
 
-    const handleToggle = (key) =>
-        setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-
     const [feedBack, setfeedBack] = useState("");
 
-    const handleSubmit = () => {
-        console.log("Feedback Submitted!!", feedBack);
-        setfeedBack("");
-    }
+    useEffect(() => {
+        dispatch(fetchDriverSettings());
+    }, [dispatch]);
 
+
+    useEffect(() => {
+        if (settings) {
+            setToggles({
+                email: settings.emailNotification || false,
+                inApp: settings.inAppNotification || false,
+                darkMode: settings.darkMode || false,
+            });
+        }
+    }, [settings]);
+
+
+    const handleToggle = (key) => {
+        const newToggles = { ...toggles, [key]: !toggles[key] };
+        setToggles(newToggles);
+
+        const updatedData = {
+            emailNotification: newToggles.email,
+            inAppNotification: newToggles.inApp,
+            darkMode: newToggles.darkMode,
+        };
+
+        dispatch(updateDriverSettings(updatedData))
+            .unwrap()
+            .then(() => showToast("Settings updated successfully!", "success"))
+            .catch(() => showToast("Failed to update settings!", "error"));
+    };
+
+    const handleSubmit = () => {
+        if (!feedBack.trim()) {
+            showToast("Please enter your feedback!", "error");
+            return;
+        }
+
+        dispatch(postDriverFeedback({ message: feedBack }))
+            .unwrap()
+            .then(() => {
+                showToast("Feedback submitted successfully!", "success");
+                setfeedBack("");
+            })
+            .catch((err) => {
+                showToast(err || "Failed to submit feedback!", "error");
+            });
+    };
     return (
         <div className="bg-[#F5F5F5] ml-56 min-h-screen p-8 mx-auto mt-16 font-[Inter]">
 
             <div className="p-8 rounded-2xl max-w-4xl bg-white shadow-sm">
+                {loading && (
+                    <p className="text-gray-500 text-sm mb-4">Loading settings...</p>
+                )}
                 {/* Header */}
                 <div className="border-b border-gray-200 mb-6">
                     <h2 className="text-blue-600 font-medium text-sm border-b-2 border-blue-600 w-fit pb-1">
@@ -39,9 +89,9 @@ const Settings = () => {
                             <div className="space-y-3">
                                 {[
                                     { key: "email", label: "Email Notifications" },
-                                    { key: "sms", label: "SMS Notifications" },
                                     { key: "inApp", label: "In-App Notifications" },
                                 ].map((item) => (
+
                                     <div
                                         key={item.key}
                                         className="flex justify-between items-center"
@@ -62,16 +112,16 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        {/* 🌐 Language & Display */}
+                        {/*  Language & Display */}
                         <div>
                             <h3 className="font-medium text-[#333B69] mb-4">
                                 Language & Display
                             </h3>
                             <div className="space-y-3">
                                 {[
-                                    { key: "italian", label: "Italian" },
                                     { key: "darkMode", label: "Dark Mode" },
                                 ].map((item) => (
+
                                     <div
                                         key={item.key}
                                         className="flex justify-between items-center"
@@ -98,15 +148,25 @@ const Settings = () => {
                 </div>
 
                 {/*  Contact Support */}
-                <div className="mt-6">
+                <div className="mt-6 border-t border-gray-200 pt-6">
                     <h3 className="font-medium text-[#333B69] mb-3">Contact Support</h3>
-                    <p className="text-sm text-[#232323]">
-                        Call us at: <span>+00000000000</span>
-                    </p>
-                    <p className="text-sm text-[#232323] mt-1">
-                        Email us at: <span>Antelia@gmail.com</span>
-                    </p>
+
+                    <div className="space-y-2">
+                        <p className="text-sm text-[#232323]">
+                            📞 <span className="font-medium">Phone:</span> +1 (800) 555-1234
+                        </p>
+                        <p className="text-sm text-[#232323]">
+                            ✉️ <span className="font-medium">Email:</span>{" "}
+                            <a
+                                href="mailto:support@antelia.com"
+                                className="text-blue-600 hover:underline"
+                            >
+                                support@antelia.com
+                            </a>
+                        </p>
+                    </div>
                 </div>
+
 
                 {/* 💬 Feedback */}
                 <div className="mt-8">
@@ -122,14 +182,17 @@ const Settings = () => {
                     />
                 </div>
 
-                {/* ✅ Submit Button */}
+                {/* Submit Button */}
                 <div className="flex justify-center mt-6">
                     <button
                         onClick={handleSubmit}
-                        className="bg-[#3565E3] text-white px-12 py-2.5 rounded-xl text-sm hover:bg-blue-700 transition"
+                        disabled={loading}
+                        className={`bg-[#3565E3] text-white px-12 py-2.5 rounded-xl text-sm hover:bg-blue-700 transition ${loading ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
                     >
-                        Submit
+                        {loading ? "Submitting..." : "Submit"}
                     </button>
+
                 </div>
             </div>
         </div>

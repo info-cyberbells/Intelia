@@ -21,5 +21,10 @@ export const USER_ENDPOINTS = {
     GET_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 
+    SETTINGS: `${API_BASE_URL}/driver/settings`,
+    UPDATE_SETTINGS: `${API_BASE_URL}/driver/update-settings`,
+    POST_FEEDBACK: `${API_BASE_URL}/driver/post-feedback`
+
+
 }
 export default USER_ENDPOINTS;

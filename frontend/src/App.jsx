@@ -22,6 +22,7 @@ import SuperadminDasboard from './pages/SuperAdmin/SuperAdminDashboard/Superadmi
 import ManageDrivers from './pages/SuperAdmin/ManageDrivers/ManageDrivers';
 import ManageOwners from './pages/SuperAdmin/ManageOwners/ManageOwner';
 import ManageJobs from './pages/SuperAdmin/ManageJobs/ManageJobs';
+import MyApplications from './pages/MyApplications/MyApplications';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -69,6 +70,7 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/talent-hub" element={<TalentHub />} />
             <Route path="/resources" element={<Resources />} />
+            <Route path="/my-applications" element={<MyApplications />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/detail-page" element={<DetailPage />} />
             <Route path="/search-driver-records" element={<SearchDriverRecords />} />
