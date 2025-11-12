@@ -6,8 +6,7 @@ export const validateUpdateProfile = (data, role) => {
   switch (role) {
     case "driver":
       schema = Joi.object({
-        firstName: Joi.string().trim().max(191).optional(),
-        surname: Joi.string().trim().max(191).optional(),
+        fullName: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
         phoneNumber: Joi.string()
           .pattern(/^\+?[1-9]\d{1,14}$/)
@@ -18,7 +17,6 @@ export const validateUpdateProfile = (data, role) => {
           .max(191)
           .optional(),
         municipality: Joi.string().trim().max(191).optional(),
-        vehicleRegistration: Joi.string().trim().max(191).optional().allow(""),
         validUntil: Joi.date()
           .greater("now")
           .optional()
@@ -28,11 +26,10 @@ export const validateUpdateProfile = (data, role) => {
 
     case "owner":
       schema = Joi.object({
-        firstName: Joi.string().trim().max(191).optional(),
-        surname: Joi.string().trim().max(191).optional(),
+        fullName: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
-        companyName: Joi.string().trim().max(191).optional(),
-        correspondedMe: Joi.string().trim().max(191).optional(),
+        // companyName: Joi.string().trim().max(191).optional(),
+        // correspondedMe: Joi.string().trim().max(191).optional(),
         phoneNumber: Joi.string()
           .pattern(/^\+?[1-9]\d{1,14}$/)
           .optional()
@@ -42,8 +39,8 @@ export const validateUpdateProfile = (data, role) => {
 
     case "superadmin":
       schema = Joi.object({
-        firstName: Joi.string().trim().max(191).optional(),
-        surname: Joi.string().trim().max(191).optional(),
+        fullName: Joi.string().trim().max(191).optional(),
+        // surname: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
         phoneNumber: Joi.string()
           .pattern(/^\+?[1-9]\d{1,14}$/)
