@@ -370,7 +370,7 @@ export const shortlistApplicant = async (req, res) => {
     const { jobId, driverId } = req.params;
     const ownerId = req.user._id;
 
-    console.log('req.params',req.params);
+    //console.log('req.params',req.params);
 
     const job = await Job.findOne({ _id: jobId, ownerId });
     if (!job) {
@@ -385,10 +385,37 @@ export const shortlistApplicant = async (req, res) => {
       return res.status(404).json({ success: false, message: "Applicant not found for this job." });
     }
 
+    if (applicant.status === "accepted") {
+      return res.status(400).json({
+        success: false,
+        message: "Applicant is already shortlisted for this job.",
+      });
+    }
+
     applicant.status = "accepted";
     applicant.updatedAt = new Date();
 
     await job.save();
+
+    await createNotification({
+      userId: driverId,
+      title:
+        job.status === "accepted"
+          ? "Application Accepted"
+          : job.status === "rejected"
+          ? "Application Rejected"
+          : "Application Updated",
+      message:
+        job.status === "accepted"
+          ? `Your application for "${job.title}" has been accepted.`
+          : job.status === "rejected"
+          ? `Your application for "${job.title}" has been rejected.`
+          : `Your application status for "${job.title}" was updated.`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
 
     return res.status(200).json({
       success: true,

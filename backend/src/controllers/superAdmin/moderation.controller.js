@@ -15,6 +15,22 @@ export const verifyVehicle = async (req, res) => {
       });
     }
 
+    // Check if already verified
+    if (vehicle.isVerified === true && req.body.verified === true) {
+      return res.status(400).json({
+        success: false,
+        message: "This vehicle is already verified. No further action required.",
+      });
+    }
+
+    // Check if already rejected
+    if (vehicle.isVerified === false && req.body.verified === false && vehicle.verifiedBy) {
+      return res.status(400).json({
+        success: false,
+        message: "This vehicle has already been rejected.",
+      });
+    }
+
     vehicle.isVerified = req.body.verified;
     vehicle.remarks = req.body.remarks;  // remarks by admin
     vehicle.verifiedBy = authUser.id;
@@ -55,6 +71,21 @@ export const updateDriverStatus = async (req, res) => {
 
     if (!user || user.role !== "driver") {
       return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // Check for duplicate actions
+    if (action === "approve" && user.status === "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "This driver is already approved.",
+      });
+    }
+
+    if (action === "reject" && user.status === "rejected") {
+      return res.status(400).json({
+        success: false,
+        message: "This driver is already rejected.",
+      });
     }
 
     if (action === "approve") {
