@@ -1,8 +1,7 @@
 import Joi from "joi";
 
 export const createDriverSchema = Joi.object({
-  firstName: Joi.string().trim().max(191).required(),
-  surname: Joi.string().trim().max(191).required(),
+  fullName: Joi.string().trim().max(191).required(),
   email: Joi.string().trim().email().required(),
   phoneNumber: Joi.string()
     .pattern(/^\+?[1-9]\d{1,14}$/)
@@ -23,8 +22,7 @@ export const createDriverSchema = Joi.object({
 }).unknown(false);
 
 export const updateDriverSchema = Joi.object({
-  firstName: Joi.string().trim().max(191).optional(),
-  surname: Joi.string().trim().max(191).optional(),
+  fullName: Joi.string().trim().max(191).optional(),
   email: Joi.string().trim().email().optional(),
   phoneNumber: Joi.string()
     .pattern(/^\+?[1-9]\d{1,14}$/)

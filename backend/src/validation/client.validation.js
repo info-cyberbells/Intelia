@@ -1,8 +1,7 @@
 import Joi from "joi";
 
 export const createClientSchema = Joi.object({
-  firstName: Joi.string().trim().max(191).required(),
-  surname: Joi.string().trim().max(191).required(),
+  fullName: Joi.string().trim().max(191).required(),
   companyName: Joi.string().trim().max(191).required(),
   correspondedMe: Joi.string().trim().max(191).required(),
   email: Joi.string().trim().email().required(),
@@ -13,8 +12,7 @@ export const createClientSchema = Joi.object({
 }).unknown(false);
 
 export const updateClientSchema = Joi.object({
-  firstName: Joi.string().trim().max(191).optional(),
-  surname: Joi.string().trim().max(191).optional(),
+  fullName: Joi.string().trim().max(191).optional(),
   companyName: Joi.string().trim().max(191).optional(),
   correspondedMe: Joi.string().trim().max(191).optional(),
   email: Joi.string().trim().email().optional(),

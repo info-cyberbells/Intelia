@@ -8,6 +8,7 @@ import { applyJob, withdrawApplication, listAvailableJobs, saveJob, getDriverApp
 import { updateSettings, getSettings } from "../controllers/driver/settings.controller.js";
 import { submitFeedback } from "../controllers/driver/feedback.controller.js";
 import { getSystemNotifications } from "../controllers/systemNotificationController.js";
+import { upsertResume, getResume } from "../controllers/driver/driverResume.controller.js";
 
 const router = express.Router();
 
@@ -50,4 +51,7 @@ router.post("/post-feedback", submitFeedback);
 //Notifications
 router.get("/my-notifications", getSystemNotifications);
 
+// Resume
+router.get("/my-resume", getResume);
+router.post("/post-resume", upload.single("licensePhoto"), upsertResume);
 export default router;

@@ -168,7 +168,7 @@ export const listAvailableJobs = async (req, res) => {
 
     // Fetch paginated jobs
     const jobs = await Job.find(query)
-      .populate("ownerId", "firstName surname companyName")
+      .populate("ownerId", "fullName companyName")
       .populate("vehicleId", "make model plateNo")
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -242,7 +242,7 @@ export const getDriverApplications = async (req, res) => {
     const jobs = await Job.find({ "applicants.driverId": driverId })
       .populate({
         path: "ownerId",
-        select: "firstName companyName avatar profileImage",
+        select: "fullName companyName avatar profileImage",
       })
       .sort({ createdAt: -1 });
 
@@ -257,7 +257,7 @@ export const getDriverApplications = async (req, res) => {
         srNo: index + 1,
         jobId: job._id,
         jobTitle: job.title,
-        companyName: job.ownerId?.companyName || `${job.ownerId?.firstName || ""}`,
+        companyName: job.ownerId?.companyName || `${job.ownerId?.fullName || ""}`,
         location: `${job.location.city || ""}, ${job.location.state || ""}`,
         appliedOn: application?.appliedAt || job.createdAt,
         status:

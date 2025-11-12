@@ -140,7 +140,7 @@ export const updateProfile = async (req, res) => {
     // --- Update logic per role ---
     switch (role) {
       case "driver":
-        if (data.fullName) user.firstName = data.fullName;
+        if (data.fullName) user.fullName = data.fullName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
         
@@ -177,7 +177,7 @@ export const updateProfile = async (req, res) => {
         break;
 
       case "owner":
-        if (data.fullName) user.firstName = data.fullName;
+        if (data.fullName) user.fullName = data.fullName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
         if (data.companyName) user.companyName = data.companyName;
