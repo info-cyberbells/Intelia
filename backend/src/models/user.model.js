@@ -105,6 +105,9 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending", // For clarity in admin dashboard
     },
+    city: { type: String, trim: true },
+    country: { type: String, trim: true },
+    dob: { type: Date },
   },
   { timestamps: true }
 );

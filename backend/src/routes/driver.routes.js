@@ -5,6 +5,8 @@ import { getProfile, updateProfile, changePassword, deleteProfileImage } from ".
 import { validateChangePassword } from "../validation/profile.validation.js";
 import upload from "../middleware/upload.middleware.js";
 import { applyJob, withdrawApplication, listAvailableJobs, saveJob } from "../controllers/driver/jobApplication.controller.js";
+import { updateSettings, getSettings } from "../controllers/driver/settings.controller.js";
+import { submitFeedback } from "../controllers/driver/feedback.controller.js";
 
 const router = express.Router();
 
@@ -35,5 +37,12 @@ router.post("/job/save-job", saveJob);
 // Job Application
 router.post("/job/apply/:jobId", applyJob);
 router.put("/job/withdraw/:jobId", withdrawApplication);
+
+//Settings
+router.get("/settings", getSettings);
+router.post("/update-settings", updateSettings);
+
+// Psot Feedback
+router.post("/post-feedback", submitFeedback);
 
 export default router;

@@ -21,6 +21,11 @@ export const validateUpdateProfile = (data, role) => {
           .greater("now")
           .optional()
           .messages({ "date.greater": "validUntil must be a future date" }),
+           city: Joi.string().trim().max(191).optional(),
+        country: Joi.string().trim().max(191).optional(),
+        dob: Joi.date().less("now").optional().messages({
+          "date.less": "Date of birth must be in the past",
+        }),
       }).unknown(false);
       break;
 

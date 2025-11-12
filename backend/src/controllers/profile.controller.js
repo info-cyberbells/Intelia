@@ -36,6 +36,9 @@ export const getProfile = async (req, res) => {
           municipality: user.municipality || null,
           vehicleRegistration: user.vehicleRegistration || null,
           validUntil: user.validUntil || null,
+          city: user.city,
+          country: user.country,
+          dob: user.dob,
         };
         break;
 
@@ -60,6 +63,7 @@ export const getProfile = async (req, res) => {
         };
     }
 
+    const baseURL = `${req.protocol}://${req.get("host")}`;
     return res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
@@ -69,8 +73,8 @@ export const getProfile = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
-        avatar: user.avatar || user.profileImage, // Support both fields
-        profileImage: user.profileImage || user.avatar,
+        avatar: `${baseURL}${user.profileImage}` || `${baseURL}${user.avatar}`,
+        profileImage: `${baseURL}${user.profileImage}` || `${baseURL}${user.avatar}`,
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -167,6 +171,9 @@ export const updateProfile = async (req, res) => {
           }
           user.validUntil = data.validUntil;
         }
+        if (data.city) user.city = data.city;
+        if (data.country) user.country = data.country;
+        if (data.dob) user.dob = data.dob;
         break;
 
       case "owner":
@@ -233,6 +240,9 @@ export const updateProfile = async (req, res) => {
           municipality: user.municipality,
           // vehicleRegistration: user.vehicleRegistration,
           validUntil: user.validUntil,
+          city: user.city,
+          country: user.country,
+          dob: user.dob,
         }),
         ...(role === "owner" && {
           companyName: user.companyName,

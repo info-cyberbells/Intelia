@@ -8,6 +8,7 @@ import { validateCreateClient, validateUpdateClient } from "../validation/client
 import { validateCreateDriver, validateUpdateDriver } from "../validation/driver.validation.js";
 import upload from "../middleware/upload.middleware.js";
 import { verifyVehicle, updateDriverStatus } from "../controllers/superAdmin/moderation.controller.js";
+import { getAllFeedbacks } from "../controllers/driver/feedback.controller.js";
 
 const router = express.Router();
 
@@ -44,5 +45,6 @@ router.patch("/drivers/:id/toggle-status", toggleDriverStatus);
 
 router.patch("/vehicle/verify/:vehicleId", verifyVehicle);
 router.patch("/drivers/status/:id", updateDriverStatus);
-
+// Get Feedbacks
+router.get("/feedbacks", getAllFeedbacks);
 export default router;
