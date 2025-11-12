@@ -1,5 +1,6 @@
 import Vehicle from "../../models/vehicle.model.js";
 import User from "../../models/user.model.js";
+import { createNotification } from "../../utils/createSystemNotification.js";
 
 // Verify a vehicle
 export const verifyVehicle = async (req, res) => {
@@ -20,6 +21,17 @@ export const verifyVehicle = async (req, res) => {
     vehicle.verifiedAt = new Date();
 
     await vehicle.save();
+
+    await createNotification({
+      userId: vehicle.ownerId, // driver who owns the vehicle
+      title: req.body.verified ? "Vehicle Verified" : "Vehicle Rejected",
+      message: req.body.verified
+        ? "Your vehicle has been successfully verified by the admin."
+        : `Your vehicle was rejected. Remarks: ${req.body.remarks || "No remarks"}`,
+      type: "vehicle",
+      relatedId: vehicle._id,
+      onModel: "Vehicle",
+    });
 
     return res.status(200).json({
       success: true,
@@ -48,9 +60,29 @@ export const updateDriverStatus = async (req, res) => {
     if (action === "approve") {
       user.isActive = true;
       user.status = "approved";
+
+      await createNotification({
+        userId: user._id,
+        title: "Profile Approved",
+        message: "Your driver profile has been approved by the admin.",
+        type: "profile",
+        relatedId: user._id,
+        onModel: "User",
+      });
     } else if (action === "reject") {
       user.isActive = false;
       user.status = "rejected";
+
+      await createNotification({
+        userId: user._id,
+        title: "Profile Rejected",
+        message: "Your driver profile has been rejected by the admin.",
+        type: "profile",
+        relatedId: user._id,
+        onModel: "User",
+      });
+
+
     } else {
       return res.status(400).json({ message: "Invalid action" });
     }

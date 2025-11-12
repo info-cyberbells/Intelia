@@ -1,4 +1,5 @@
 import Vehicle from "../../models/vehicle.model.js";
+import { createNotification } from "../../utils/createSystemNotification.js";
 
 /**
  * Create a new vehicle
@@ -108,6 +109,18 @@ export const verifyVehicle = async (req, res) => {
     vehicle.isVerified = true;
     vehicle.status = "available";
     await vehicle.save();
+
+
+    await createNotification({
+      userId: vehicle.ownerId, // driver who owns the vehicle
+      title: req.body.verified ? "Vehicle Verified" : "Vehicle Rejected",
+      message: req.body.verified
+        ? "Your vehicle has been successfully verified by the admin."
+        : `Your vehicle was rejected. Remarks: ${req.body.remarks || "No remarks"}`,
+      type: "vehicle",
+      relatedId: vehicle._id,
+      onModel: "Vehicle",
+    });
 
     res.json({ success: true, message: "Vehicle verified successfully.", data: vehicle });
   } catch (error) {

@@ -1,5 +1,6 @@
 import Job from "../../models/job.model.js";
 import SavedJob from "../../models/savedJob.model.js";
+import { createNotification } from "../../utils/createSystemNotification.js";
 
 /**
  * @desc Apply for Job
@@ -23,6 +24,15 @@ export const applyJob = async (req, res) => {
 
     job.applicants.push({ driverId });
     await job.save();
+
+    await createNotification({
+      userId: job.ownerId,
+      title: "New Job Application",
+      message: `A driver has applied for your job "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
 
     return res.status(200).json({
       success: true,
@@ -78,6 +88,27 @@ export const withdrawApplication = async (req, res) => {
     applicant.updatedAt = new Date();
 
     await job.save();
+
+    // Notify driver
+    await createNotification({
+      userId: driverId,
+      title: "Application Withdrawn",
+      message: `You have withdrawn your application for "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
+    // Notify owner
+    await createNotification({
+      userId: job.ownerId,
+      title: "Driver Withdrawn Application",
+      message: `A driver has withdrawn their application for your job "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
 
     return res.status(200).json({
       success: true,
@@ -199,5 +230,59 @@ export const saveJob = async (req, res) => {
   } catch (error) {
     console.error("Error saving job:", error);
     return res.status(500).json({ success: false, message: "Server error saving job" });
+  }
+};
+
+// Submitted Application By Driver
+export const getDriverApplications = async (req, res) => {
+  try {
+    const driverId = req.user.id;
+
+    // Find jobs where this driver has applied
+    const jobs = await Job.find({ "applicants.driverId": driverId })
+      .populate({
+        path: "ownerId",
+        select: "firstName companyName avatar profileImage",
+      })
+      .sort({ createdAt: -1 });
+
+    // Format response for front-end
+    const formatted = jobs.map((job, index) => {
+      // Find this driver's application details within the job
+      const application = job.applicants.find(
+        (a) => a.driverId.toString() === driverId.toString()
+      );
+
+      return {
+        srNo: index + 1,
+        jobId: job._id,
+        jobTitle: job.title,
+        companyName: job.ownerId?.companyName || `${job.ownerId?.firstName || ""}`,
+        location: `${job.location.city || ""}, ${job.location.state || ""}`,
+        appliedOn: application?.appliedAt || job.createdAt,
+        status:
+          application?.status === "applied"
+            ? "In Progress"
+            : application?.status === "accepted"
+            ? "Approved"
+            : application?.status === "rejected"
+            ? "Rejected"
+            : application?.status === "withdrawn"
+            ? "Withdrawn"
+            : "Pending",
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      total: formatted.length,
+      applications: formatted,
+    });
+  } catch (error) {
+    console.error("Error fetching driver applications:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching applications",
+    });
   }
 };
