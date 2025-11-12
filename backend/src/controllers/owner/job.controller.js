@@ -2,6 +2,7 @@ import Job from "../../models/job.model.js";
 import Vehicle from "../../models/vehicle.model.js";
 import User from "../../models/user.model.js";
 import { validateCreateJob, validateUpdateJob } from "../../validation/job.validation.js";
+import { createNotification } from "../../utils/createSystemNotification.js";
 
 /**
  * @desc Create Job (Owner)
@@ -206,6 +207,15 @@ export const applyJob = async (req, res) => {
     job.applicants.push({ driverId });
     await job.save();
 
+    await createNotification({
+      userId: job.ownerId,
+      title: "New Job Application",
+      message: `A driver has applied for your job "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
     return res.status(200).json({
       success: true,
       message: "Job application submitted successfully",
@@ -259,6 +269,27 @@ export const withdrawApplication = async (req, res) => {
     applicant.updatedAt = new Date();
 
     await job.save();
+
+    // Notify driver
+    await createNotification({
+      userId: driverId,
+      title: "Application Withdrawn",
+      message: `You have withdrawn your application for "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
+    // Notify owner
+    await createNotification({
+      userId: job.ownerId,
+      title: "Driver Withdrawn Application",
+      message: `A driver has withdrawn their application for your job "${job.title}".`,
+      type: "application",
+      relatedId: job._id,
+      onModel: "Job",
+    });
+
 
     return res.status(200).json({
       success: true,
