@@ -12,6 +12,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.2",
     "axios": "^1.12.2",
+    "browser-image-compression": "^2.0.2",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",

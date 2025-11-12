@@ -38,6 +38,9 @@ export const RegisterService = async (userData) => {
 export const registerDriverService = async (userData) => {
     const response = await axios.post(USER_ENDPOINTS.CREATE_DRIVER, userData, {
         withCredentials: true,
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     });
     return response.data;
 }

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchDriverProfile, updateDriverProfile, changeDriverPassword } from "../../features/Drivers/driverSlice";
 import { Eye, EyeOff } from "lucide-react";
 import { useToast } from '../../context/ToastContext';
+import imageCompression from 'browser-image-compression';
 
 const ProfileSettings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -11,21 +12,27 @@ const ProfileSettings = () => {
   const { profile, loading } = useSelector((state) => state.drivers);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+
 
 
   // 🧠 Profile form state (all empty)
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     password: "",
     dob: "",
     municipality: "",
     license: "",
     phoneNumber: "",
-    // city: "",
+    city: "",
     validUntil: "",
-    // country: "",
+    country: "",
   });
 
   const [profileImage, setProfileImage] = useState(null);
@@ -35,6 +42,7 @@ const ProfileSettings = () => {
   const [securityData, setSecurityData] = useState({
     currentPassword: "",
     newPassword: "",
+    confirmPassword: "",
   });
 
 
@@ -45,19 +53,18 @@ const ProfileSettings = () => {
   useEffect(() => {
     if (profile) {
       setFormData({
-        firstName: profile.firstName || "",
-        lastName: profile.surname || "",
+        fullName: profile.fullName || "",
         email: profile.email || "",
         municipality: profile.municipality || "",
         license: profile.licenseNumber || "",
         validUntil: profile.validUntil?.split("T")[0] || "",
-        // country: profile.country || "",
-        // city: profile.city || "",
+        country: profile.country || "",
+        city: profile.city || "",
         password: "",
         dob: "",
         phoneNumber: profile.phoneNumber || "",
       });
-      setImagePreview(profile.profileImage || null);
+      setImagePreview(profile.avatar || null);
     }
   }, [profile]);
 
@@ -72,33 +79,71 @@ const ProfileSettings = () => {
   const handleSecurityChange = (e) => {
     const { name, value } = e.target;
     setSecurityData((prev) => ({ ...prev, [name]: value }));
+
+    if (passwordErrors[name]) {
+      setPasswordErrors((prev) => ({ ...prev, [name]: false }));
+    }
   };
 
+
   // Handle image upload
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setProfileImage(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image size must be less than 5MB', 'error');
+      return;
+    }
+
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+
+      const compressedFile = await imageCompression(file, options);
+
+      const fileWithName = new File(
+        [compressedFile],
+        file.name || `avatar-${Date.now()}.jpg`,
+        { type: compressedFile.type }
+      );
+
+      setProfileImage(fileWithName);
+      setImagePreview(URL.createObjectURL(compressedFile));
+
+      showToast('Image uploaded successfully', 'success');
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      showToast('Error processing image. Please try another one.', 'error');
     }
   };
 
   const handleSave = (e) => {
     e.preventDefault();
 
-    const updatedData = {
-      firstName: formData.firstName,
-      surname: formData.lastName,
-      email: formData.email,
-      municipality: formData.municipality,
-      licenseNumber: formData.license,
-      phoneNumber: formData.phoneNumber,
-      // city: formData.city,
-      // country: formData.country,
-      validUntil: formData.validUntil,
-    };
+    const formDataToSend = new FormData();
+    formDataToSend.append("fullName", formData.fullName);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("municipality", formData.municipality);
+    formDataToSend.append("licenseNumber", formData.license);
+    formDataToSend.append("phoneNumber", formData.phoneNumber);
+    formDataToSend.append("city", formData.city);
+    formDataToSend.append("country", formData.country);
+    formDataToSend.append("validUntil", formData.validUntil);
 
-    dispatch(updateDriverProfile(updatedData))
+    if (profileImage) {
+      formDataToSend.append("avatar", profileImage);
+    }
+
+    dispatch(updateDriverProfile(formDataToSend))
       .unwrap()
       .then(() => {
         showToast("Profile updated successfully!", "success");
@@ -109,22 +154,48 @@ const ProfileSettings = () => {
       });
   };
 
+
   const handlePassChange = () => {
-    if (!securityData.currentPassword || !securityData.newPassword) {
-      showToast("Please enter both current and new password!", "error");
+    const { currentPassword, newPassword, confirmPassword } = securityData;
+    const errors = {};
+
+    if (!currentPassword.trim()) errors.currentPassword = true;
+    if (!newPassword.trim()) errors.newPassword = true;
+    if (!confirmPassword.trim()) errors.confirmPassword = true;
+
+    setPasswordErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      showToast("Please fill all password fields!", "error");
       return;
     }
 
-    dispatch(changeDriverPassword(securityData))
+    if (newPassword !== confirmPassword) {
+      showToast("New passwords do not match!", "error");
+      setPasswordErrors({
+        newPassword: true,
+        confirmPassword: true,
+      });
+      return;
+    }
+
+    dispatch(changeDriverPassword({ currentPassword, newPassword }))
       .unwrap()
       .then(() => {
         showToast("Password changed successfully!", "success");
-        setSecurityData({ currentPassword: "", newPassword: "" });
+
+        setSecurityData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordErrors({ currentPassword: false, newPassword: false, confirmPassword: false });
+        setShowCurrentPass(false);
+        setShowNewPass(false);
+        setShowConfirmPass(false);
+        setActiveTab("profile");
       })
       .catch((err) => {
         showToast(err || "Failed to change password!", "error");
       });
   };
+
 
 
   return (
@@ -175,7 +246,7 @@ const ProfileSettings = () => {
                   <img
                     src={
                       imagePreview ||
-                      profile?.profileImage ||
+                      profile?.avatar ||
                       "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                     }
                     alt={profile?.firstName || "Profile"}
@@ -200,31 +271,17 @@ const ProfileSettings = () => {
               </div>
 
               {/* Form Section */}
-              {/* Form Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                {/* First Name */}
+                {/* Full Name */}
                 <div>
-                  <label className="text-sm">First Name</label>
+                  <label className="text-sm">Full Name</label>
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
+                    name="fullName"
+                    value={formData.fullName}
                     onChange={handleProfileChange}
-                    placeholder="Enter first name"
+                    placeholder="Full Name"
                     className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
-                  />
-                </div>
-
-                {/* Last Name */}
-                <div>
-                  <label className="text-sm">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleProfileChange}
-                    placeholder="Enter last name"
-                    className="w-full border rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] border-gray-200 outline-none px-3 py-2.5 mt-1 text-sm"
                   />
                 </div>
 
@@ -297,7 +354,7 @@ const ProfileSettings = () => {
                 </div>
 
                 {/* City */}
-                {/* <div>
+                <div>
                   <label className="text-sm">City</label>
                   <input
                     type="text"
@@ -307,7 +364,7 @@ const ProfileSettings = () => {
                     placeholder="Enter city"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
-                </div> */}
+                </div>
 
                 {/* Valid Until */}
                 <div>
@@ -323,7 +380,7 @@ const ProfileSettings = () => {
                 </div>
 
                 {/* Country */}
-                {/* <div>
+                <div>
                   <label className="text-sm">Country</label>
                   <input
                     type="text"
@@ -333,7 +390,7 @@ const ProfileSettings = () => {
                     placeholder="Enter country"
                     className="w-full border border-gray-200 rounded-xl text-[#718EBF] focus:ring-1 focus:ring-[#DFEAF2] outline-none px-3 py-2.5 mt-1 text-sm"
                   />
-                </div> */}
+                </div>
 
 
                 {/* Save Button */}
@@ -371,8 +428,10 @@ const ProfileSettings = () => {
                       onChange={handleSecurityChange}
                       placeholder="Enter current password"
                       autoComplete="new-password"
-                      className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
-                    />
+                      className={`w-full border rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 outline-none ${passwordErrors.currentPassword
+                        ? "border-red-500 bg-red-50 focus:ring-red-300"
+                        : "border-gray-200 focus:ring-[#DFEAF2]"
+                        } text-[#718EBF]`} />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPass((prev) => !prev)}
@@ -393,8 +452,10 @@ const ProfileSettings = () => {
                       value={securityData.newPassword}
                       onChange={handleSecurityChange}
                       placeholder="Enter new password"
-                      className="w-full border text-[#718EBF] border-gray-200 rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 focus:ring-[#DFEAF2] outline-none"
-                    />
+                      className={`w-full border rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 outline-none ${passwordErrors.newPassword
+                        ? "border-red-500 bg-red-50 focus:ring-red-300"
+                        : "border-gray-200 focus:ring-[#DFEAF2]"
+                        } text-[#718EBF]`} />
                     <button
                       type="button"
                       onClick={() => setShowNewPass((prev) => !prev)}
@@ -405,6 +466,28 @@ const ProfileSettings = () => {
                   </div>
                 </div>
 
+                <div>
+                  <label className="text-sm">Confirm New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPass ? "text" : "password"}
+                      name="confirmPassword"
+                      value={securityData.confirmPassword}
+                      onChange={handleSecurityChange}
+                      placeholder="Re-enter new password"
+                      className={`w-full border rounded-xl px-3 py-2.5 pr-10 mt-1 text-sm focus:ring-1 outline-none ${passwordErrors.confirmPassword
+                        ? "border-red-500 bg-red-50 focus:ring-red-300"
+                        : "border-gray-200 focus:ring-[#DFEAF2]"
+                        } text-[#718EBF]`} />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPass((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showConfirmPass ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
 
               </div>
 
@@ -413,7 +496,7 @@ const ProfileSettings = () => {
                   onClick={handlePassChange}
                   className="bg-[#3565E3] text-white text-xs rounded-xl px-16 py-2.5 hover:bg-blue-700 transition"
                 >
-                  {loading ? "Updating..." : "Save"}
+                  {loading ? "Updating..." : "Change Password"}
                 </button>
               </div>
             </div>
