@@ -28,8 +28,8 @@ export const validateUpdateProfile = (data, role) => {
       schema = Joi.object({
         fullName: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
-        // companyName: Joi.string().trim().max(191).optional(),
-        // correspondedMe: Joi.string().trim().max(191).optional(),
+        companyName: Joi.string().trim().max(191).optional(),
+        correspondedMe: Joi.string().trim().max(191).optional(),
         phoneNumber: Joi.string()
           .pattern(/^\+?[1-9]\d{1,14}$/)
           .optional()

@@ -173,8 +173,8 @@ export const updateProfile = async (req, res) => {
         if (data.fullName) user.firstName = data.fullName;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
-        // if (data.companyName) user.companyName = data.companyName;
-        // if (data.correspondedMe) user.correspondedMe = data.correspondedMe;
+        if (data.companyName) user.companyName = data.companyName;
+        if (data.correspondedMe) user.correspondedMe = data.correspondedMe;
         break;
 
       case "superadmin":

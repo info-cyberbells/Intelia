@@ -5,20 +5,20 @@ const userSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true, trim: true },
     // surname: { type: String, trim: true },
-    // companyName: { 
-    //   type: String, 
-    //   required: function () {
-    //     return this.role === "owner";
-    //   }, 
-    //   trim: true 
-    // },
-    // correspondedMe: { 
-    //   type: String, 
-    //   required: function () {
-    //     return this.role === "owner";
-    //   }, 
-    //   trim: true 
-    // },
+    companyName: { 
+      type: String, 
+      required: function () {
+        return this.role === "owner";
+      }, 
+      trim: true 
+    },
+    correspondedMe: { 
+      type: String, 
+      required: function () {
+        return this.role === "owner";
+      }, 
+      trim: true 
+    },
     email: {
       type: String,
       unique: true,

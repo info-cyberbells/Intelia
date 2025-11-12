@@ -12,16 +12,16 @@ export const registerSchema = Joi.object({
     .messages({ "string.pattern.base": "Invalid phone number format" }),
 
   // OWNER-specific fields
-  // companyName: Joi.when("role", {
-  //   is: "owner",
-  //   then: Joi.string().trim().max(191).required(),
-  //   otherwise: Joi.forbidden(),
-  // }),
-  // correspondedMe: Joi.when("role", {
-  //   is: "owner",
-  //   then: Joi.string().trim().max(191).required(),
-  //   otherwise: Joi.forbidden(),
-  // }),
+  companyName: Joi.when("role", {
+    is: "owner",
+    then: Joi.string().trim().max(191).required(),
+    otherwise: Joi.forbidden(),
+  }),
+  correspondedMe: Joi.when("role", {
+    is: "owner",
+    then: Joi.string().trim().max(191).required(),
+    otherwise: Joi.forbidden(),
+  }),
 
   // DRIVER-specific fields
   licenseNumber: Joi.when("role", {
