@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getDriverNotificationsService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -129,6 +129,36 @@ export const postDriverFeedback = createAsyncThunk(
 );
 
 
+// Get driver settings
+export const fetchMyJobsApplications = createAsyncThunk(
+    "drivers/fetchMyApplications",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getMyJobApplicationsService();
+            return data.applications || data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch jobs applications"
+            );
+        }
+    }
+);
+
+
+// Fetch driver notifications
+export const fetchDriverNotifications = createAsyncThunk(
+    "drivers/fetchDriverNotifications",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getDriverNotificationsService();
+            return data.notifications || [];
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch notifications"
+            );
+        }
+    }
+);
 
 
 const driverSlice = createSlice({
@@ -141,6 +171,8 @@ const driverSlice = createSlice({
         error: null,
         profile: null,
         settings: null,
+        applications: [],
+        notifications: [],
     },
     reducers: {},
 
@@ -272,7 +304,36 @@ const driverSlice = createSlice({
             .addCase(postDriverFeedback.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+
+            //get my applications summmary builder
+            .addCase(fetchMyJobsApplications.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchMyJobsApplications.fulfilled, (state, action) => {
+                state.loading = false;
+                state.applications = action.payload;
+            })
+            .addCase(fetchMyJobsApplications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //get drivers all notifications
+            .addCase(fetchDriverNotifications.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchDriverNotifications.fulfilled, (state, action) => {
+                state.loading = false;
+                state.notifications = action.payload;
+            })
+            .addCase(fetchDriverNotifications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
 
 
 

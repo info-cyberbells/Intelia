@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationModal from "../NotificationPopUp/NotificationPopUp";
+import { useSelector } from "react-redux";
 
 const TopBar = () => {
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [open, setOpen] = useState(false);
 
   return (
@@ -34,58 +36,39 @@ const TopBar = () => {
       <div className="flex items-center space-x-12">
         {/* Message Icon */}
         <div className="relative">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5 text-blue-700"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M7 8h10M7 12h4m1 8a9 9 0 100-18 9 9 0 000 18z"
-            />
-          </svg>
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2462/2462719.png"
+            alt="Notifications"
+            className="w-6 h-6 object-contain"
+          />
         </div>
+
 
         {/* Notification Icon */}
         <div
           className="relative cursor-pointer"
-          // onClick={() => navigate("/activity")}
           onClick={() => setOpen(true)}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5 text-blue-700"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full"></span>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/1827/1827392.png"
+            alt="Notifications"
+            className="w-6 h-6 object-contain"
+          />
         </div>
+
 
         {/* User Profile */}
         <div className="flex items-center space-x-4">
           <div>
             <p className="text-sm font-semibold text-gray-800 leading-none">
-              Human
+              {user?.firstName || user?.name || "User"}
             </p>
-            <p className="text-xs text-gray-400">Admin</p>
+            <p className="text-xs text-gray-400">{user?.role || "Admin"}</p>
           </div>
           <img
-            src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=800"
+            src={user?.profileImage || user?.avatar || "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=800"}
             alt="User Avatar"
-            className="w-8 h-8 object-cover"
+            className="w-8 h-8 object-cover rounded-full"
           />
         </div>
       </div>

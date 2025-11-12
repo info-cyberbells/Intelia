@@ -1,141 +1,137 @@
 import React, { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDriverNotifications } from "../../features/Drivers/driverSlice";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
+
+// 🔹 Inline fade-in animation 
+const fadeInStyle = `
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-in-out;
+}
+`;
+
 
 const NotificationModal = ({ isOpen, onClose }) => {
   const modalRef = useRef(null);
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // ✅ Always call hooks before any conditional return
+  const { notifications, loading } = useSelector((state) => state.drivers);
+
+  useEffect(() => {
+    if (isOpen) dispatch(fetchDriverNotifications());
+  }, [isOpen, dispatch]);
+
   useEffect(() => {
     if (!isOpen) return;
-
     const handleClickOutside = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target)) {
         onClose();
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const notifications = [
-    {
-      id: 1,
-      name: "Kristin Watson",
-      Last: "alexander",
-      action: "Rate ⭐ 5 for 3D soothing wallpaper. This is best wallpaper. ",
-      date: "Jun 23",
-      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    {
-      id: 2,
-      name: "Leslie Alexander",
-      Last: "flores",
-      action: "Likes 3D computer improved version",
-      date: "Aug 15",
-      avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    },
-    {
-      id: 3,
-      name: "Annette Black",
-      Last:"edwards",
-      action: "Comment on Gray vintage 3D computer",
-      date: "Apr 11",
-      avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-    },
-    {
-      id: 4,
-      name: "Brooklyn Simmons",
-      Last: "cooper",
-      action: "Purchased 3D dark mode wallpaper",
-      date: "Nov 10",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    {
-      id: 5,
-      name: "Brooklyn Simmons",
-      Last: "alexandra",
-      action: "Purchased 3D dark mode wallpaper",
-      date: "Nov 10",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-  ];
 
-  return (
-    <div className="fixed inset-0 z-50 font-[Inter] flex items-start justify-end bg-transparent">
-      {/* Click area + container */}
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "application":
+        // 🎯 Clipboard / file icon (for job application updates)
+        return "https://cdn-icons-png.flaticon.com/512/942/942799.png";
+
+      case "profile":
+        // 👤 Verified profile or account update
+        return "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+
+      case "alert":
+        // ⚠️ Clean modern alert bell
+        return "https://cdn-icons-png.flaticon.com/512/3602/3602145.png";
+
+      case "message":
+        // 💬 Message or communication icon
+        return "https://cdn-icons-png.flaticon.com/512/2462/2462719.png";
+
+      default:
+        // 📢 Default notification
+        return "https://cdn-icons-png.flaticon.com/512/3602/3602145.png";
+    }
+  };
+
+
+  const latestNotifications = notifications.slice(0, 5);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] font-[Inter] flex items-start justify-end bg-transparent">
+      <style>{fadeInStyle}</style>
       <div
         ref={modalRef}
-        className="relative mt-14 mr-32 w-[340px] bg-white rounded-2xl shadow-2xl p-4 border border-gray-100 animate-slide-down"
+        className="relative mt-14 mr-32 w-[340px] bg-white rounded-2xl shadow-2xl p-4 border border-gray-100 animate-fadeIn"
       >
-        {/*Small arrow pointing up */}
         <div className="absolute -top-2 right-10 w-4 h-4 bg-white rotate-45 border-t border-gray-200"></div>
 
-        {/* Header */}
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-base font-semibold text-[#303030]">
-            Notification
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
+          <h2 className="text-base font-semibold text-[#303030]">Notification</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
             ✕
           </button>
         </div>
 
-        {/* Notification list */}
-        <div className="space-y-3 overflow-y-auto">
-          {notifications.map((n) => (
-            <div
-              key={n.id}
-              className="flex items-start gap-3 border-b border-[#D4D4D4] pb-3 mb-3"
-            >
-              {/* Avatar */}
-              <img
-                src={n.avatar}
-                alt={n.name}
-                className="w-10 h-10 rounded-full"
-              />
-
-              {/* Notification Content */}
-              <div className="flex-1">
-                {/* Header Row: Name + Date */}
-                <div className="flex justify-between items-start">
-                  <p className="font-medium text-[#303030] tracking-tight text-sm">
-                    {n.name}{" "}
-                    <span className="text-xs text-[#B5B5B5] ml-1">enjfeof</span>
-                  </p>
-
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-gray-400">{n.date}</p>
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+        {loading ? (
+          <p className="text-center text-gray-400 py-4 text-sm">Loading...</p>
+        ) : (
+          <div className="space-y-3 overflow-y-auto max-h-80">
+            {latestNotifications.length > 0 ? (
+              latestNotifications.map((n) => (
+                <div
+                  key={n._id}
+                  className={`flex items-start gap-3 border-b border-gray-200 pb-3 ${!n.isRead ? "bg-blue-50 rounded-lg p-2" : ""
+                    }`}
+                >
+                  <img
+                    src={getNotificationIcon(n.type)}
+                    alt={n.title}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-100 bg-gray-50 p-1"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <p className="font-medium text-[#303030] text-sm">{n.title}</p>
+                      <span className="text-xs text-gray-400">
+                        {new Date(n.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{n.message}</p>
                   </div>
                 </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-400 text-sm py-6">
+                You’re all caught up — no new notifications!
+              </p>
+            )}
 
-                {/* Action Text */}
-                <p className="text-[#303030] tracking-tight text-[13px] mt-1 truncate w-[240px]">{n.action}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* Footer button */}
         <button
           onClick={() => {
             navigate("/notifications");
             onClose();
           }}
-          className="w-full mt-6 bg-[#3565E3] text-white text-xs font-medium py-2.5 rounded-xl hover:bg-blue-700 transition"
+          className="w-full mt-4 bg-[#3565E3] text-white text-xs font-medium py-2.5 rounded-xl hover:bg-blue-700 transition"
         >
           See all notifications
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

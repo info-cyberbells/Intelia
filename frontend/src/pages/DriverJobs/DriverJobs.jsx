@@ -71,7 +71,7 @@ const JobListingInterface = () => {
                     <div className="flex items-center bg-white border border-gray-300 rounded-lg px-4 py-2 flex-1 min-w-[250px] max-w-md">
                         <input
                             type="text"
-                            placeholder="Search jobs here"
+                            placeholder="Search jobs here with title"
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                             className="flex-1 outline-none text-sm text-gray-700"
@@ -168,150 +168,171 @@ const JobListingInterface = () => {
 
 
             {/* Job Cards Grid */}
+            {/* Job Cards Grid */}
             <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {jobs
-                        .filter((job) => {
-                            if (showSaved) return job.isSaved;
-                            if (showApplied) return job.alreadyApplied;
-                            return true; // show all
-                        })
-                        .map((job) => (
+                {(() => {
+                    const filteredJobs = jobs.filter((job) => {
+                        if (showSaved) return job.isSaved;
+                        if (showApplied) return job.alreadyApplied;
+                        return true;
+                    });
 
-                            <div
-                                key={job._id}
-                                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow"
-                            >
-                                {/* Company Header */}
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-semibold text-gray-600 text-sm">
-                                        {job?.ownerId?.companyName?.[0]?.toUpperCase() || "C"}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-sm font-semibold text-gray-900">
-                                            {job?.ownerId?.companyName || "Unknown Company"}
-                                        </h3>
-                                        <p className="text-xs text-gray-500">
-                                            {job?.ownerId?.firstName || ""} {job?.ownerId?.surname || ""}
-                                        </p>
-                                    </div>
-                                </div>
+                    if (loading) {
+                        return <div className="text-center py-20 text-gray-600">Loading jobs...</div>;
+                    }
 
-                                {/* Job Status Badge */}
-                                <div className="mb-3">
-                                    <span
-                                        className={`inline-block px-3 py-1 text-xs rounded-full font-medium ${job.status === "open"
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-gray-200 text-gray-600"
-                                            }`}
-                                    >
-                                        {job.status === "open" ? "Open" : "Closed"}
-                                    </span>
-                                </div>
-
-
-
-                                {/* Job Title */}
-                                < h4 className="text-base font-semibold text-gray-900 mb-2" > {job.title}</h4>
-
-                                {/* Job Description */}
-                                <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
-
-                                {/* Key Info */}
-                                <div className="mb-4">
-                                    <div className="text-xs text-gray-600">
-                                        <p>
-                                            <span className="font-medium text-gray-700">Key Info:</span>
-                                        </p>
-                                        <ul className="list-disc list-inside text-gray-600 mt-1">
-                                            {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
-                                                job.requirements.map((req, index) => (
-                                                    <li key={index}>{req}</li>
-                                                ))
-                                            ) : (
-                                                <li>No specific requirements</li>
-                                            )}
-                                        </ul>
-                                        <p className="mt-2">
-                                            <span className="font-medium text-gray-700">Salary:</span>{" "}
-                                            ₹{job.salary?.toLocaleString("en-IN") || "Not specified"}
-                                        </p>
-                                    </div>
-
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                    <button
-                                        onClick={() => toggleSave(job.id)}
-                                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
-                                    >
-                                        {savedJobs.has(job.id) ? (
-                                            <BookmarkCheck className="w-4 h-4" />
-                                        ) : (
-                                            <Bookmark className="w-4 h-4" />
-                                        )}
-                                        Save
-                                    </button>
-                                    <button className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors">
-                                        Apply Now
-                                    </button>
-                                </div>
+                    if (filteredJobs.length === 0) {
+                        return (
+                            <div className="text-center py-20">
+                                <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
+                                <p className="text-gray-500">
+                                    {showSaved ? "You haven't saved any jobs yet" :
+                                        showApplied ? "You haven't applied to any jobs yet" :
+                                            "Try adjusting your filters"}
+                                </p>
                             </div>
-                        ))}
-                </div>
-            </div >
-            {/* Pagination Footer */}
-            {
-                !loading && !error && totalPages >= 1 && (
-                    <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500 ml-5">
-                        <p>
-                            Page{" "}
-                            <span className="text-gray-900 font-semibold">{page}</span> of{" "}
-                            <span className="text-gray-600 font-semibold">{totalPages}</span>
-                        </p>
+                        );
+                    }
 
-                        <div className="flex items-center gap-2 mt-4 sm:mt-0">
-                            {/* Prev */}
-                            <button
-                                onClick={() => handlePageChange(page - 1)}
-                                disabled={page === 1}
-                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === 1
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : "hover:bg-gray-100"
-                                    }`}
-                            >
-                                ‹
-                            </button>
+                    return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {filteredJobs.map((job) => (
 
-                            {/* Dynamic page numbers */}
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => handlePageChange(i + 1)}
-                                    className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
-                                        ? "bg-yellow-500 text-white border-yellow-500"
-                                        : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
-                                        }`}
+                                <div
+                                    key={job._id}
+                                    className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-lg transition-shadow"
                                 >
-                                    {i + 1}
-                                </button>
-                            ))}
+                                    {/* Company Header */}
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-semibold text-gray-600 text-sm">
+                                            {job?.ownerId?.companyName?.[0]?.toUpperCase() || "C"}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-sm font-semibold text-gray-900">
+                                                {job?.ownerId?.companyName || "Unknown Company"}
+                                            </h3>
+                                            <p className="text-xs text-gray-500">
+                                                {job?.ownerId?.firstName || ""} {job?.ownerId?.surname || ""}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                            {/* Next */}
+                                    {/* Job Status Badge */}
+                                    <div className="mb-3">
+                                        <span
+                                            className={`inline-block px-3 py-1 text-xs rounded-full font-medium ${job.status === "open"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-gray-200 text-gray-600"
+                                                }`}
+                                        >
+                                            {job.status === "open" ? "Open" : "Closed"}
+                                        </span>
+                                    </div>
+
+
+
+                                    {/* Job Title */}
+                                    < h4 className="text-base font-semibold text-gray-900 mb-2" > {job.title}</h4>
+
+                                    {/* Job Description */}
+                                    <p className="text-sm text-gray-500 mb-4 line-clamp-2">{job.description}</p>
+
+                                    {/* Key Info */}
+                                    <div className="mb-4">
+                                        <div className="text-xs text-gray-600">
+                                            <p>
+                                                <span className="font-medium text-gray-700">Key Info:</span>
+                                            </p>
+                                            <ul className="list-disc list-inside text-gray-600 mt-1">
+                                                {Array.isArray(job.requirements) && job.requirements.length > 0 ? (
+                                                    job.requirements.map((req, index) => (
+                                                        <li key={index}>{req}</li>
+                                                    ))
+                                                ) : (
+                                                    <li>No specific requirements</li>
+                                                )}
+                                            </ul>
+                                            <p className="mt-2">
+                                                <span className="font-medium text-gray-700">Salary:</span>{" "}
+                                                ₹{job.salary?.toLocaleString("en-IN") || "Not specified"}
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                        <button
+                                            onClick={() => toggleSave(job.id)}
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                                        >
+                                            {savedJobs.has(job.id) ? (
+                                                <BookmarkCheck className="w-4 h-4" />
+                                            ) : (
+                                                <Bookmark className="w-4 h-4" />
+                                            )}
+                                            Save
+                                        </button>
+                                        <button className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors">
+                                            Apply Now
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })()}
+            </div>
+            {/* Pagination Footer */}
+            {!loading && !error && totalPages >= 1 && (
+                <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-gray-500 ml-5">
+                    <p>
+                        Page{" "}
+                        <span className="text-gray-900 font-semibold">{page}</span> of{" "}
+                        <span className="text-gray-600 font-semibold">{totalPages}</span>
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                        {/* Prev */}
+                        <button
+                            onClick={() => handlePageChange(page - 1)}
+                            disabled={page === 1}
+                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === 1
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                                }`}
+                        >
+                            ‹
+                        </button>
+
+                        {/* Dynamic page numbers */}
+                        {Array.from({ length: totalPages }, (_, i) => (
                             <button
-                                onClick={() => handlePageChange(page + 1)}
-                                disabled={page === totalPages}
-                                className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === totalPages
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : "hover:bg-gray-100"
+                                key={i}
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
+                                    ? "bg-blue-600 text-white border-blue-600"
+                                    : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
                                     }`}
                             >
-                                ›
+                                {i + 1}
                             </button>
-                        </div>
+                        ))}
+
+                        {/* Next */}
+                        <button
+                            onClick={() => handlePageChange(page + 1)}
+                            disabled={page === totalPages}
+                            className={`w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md ${page === totalPages
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:bg-gray-100"
+                                }`}
+                        >
+                            ›
+                        </button>
                     </div>
-                )
+                </div>
+            )
             }
 
         </div >

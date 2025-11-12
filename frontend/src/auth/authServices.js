@@ -204,6 +204,7 @@ export const updateDriverSettingsService = async (settingsData) => {
     );
     return response.data;
 };
+
 // Post driver feedback
 export const postDriverFeedbackService = async (feedbackData) => {
     const response = await axios.post(
@@ -214,3 +215,17 @@ export const postDriverFeedbackService = async (feedbackData) => {
     return response.data;
 };
 
+//get my job applications
+export const getMyJobApplicationsService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.MY_JOB_APPLICATIONS, getAuthHeader());
+    return response.data;
+};
+
+// Get driver notifications
+export const getDriverNotificationsService = async () => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.MY_NOTIFICATIONS}`,
+        getAuthHeader()
+    );
+    return response.data;
+};

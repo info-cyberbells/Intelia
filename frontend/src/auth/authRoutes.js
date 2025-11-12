@@ -19,6 +19,8 @@ export const USER_ENDPOINTS = {
     MY_PROFILE: `${API_BASE_URL}/driver/profile`,
     CHANGE_PASSWORD: `${API_BASE_URL}/driver/change-password`,
     GET_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
+    MY_JOB_APPLICATIONS: `${API_BASE_URL}/driver/my-applications`,
+    MY_NOTIFICATIONS: `${API_BASE_URL}/driver/my-notifications`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 
     SETTINGS: `${API_BASE_URL}/driver/settings`,
