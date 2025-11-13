@@ -17,7 +17,7 @@ export const getOwnerDashboard = async (req, res) => {
 
 // Mock data function
 function getMockDashboardData(authUser) {
-  const userName = `${authUser.firstName} ${authUser.surname}`;
+  const userName = `${authUser.fullName}`;
   return {
     user : {
       userName : userName

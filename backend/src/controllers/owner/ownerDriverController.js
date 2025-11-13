@@ -22,7 +22,7 @@ export const getMyDrivers = async (req, res) => {
       .populate({
         path: "applicants.driverId",
         select:
-          "firstName surname phoneNumber email profileImage licenseNumber rating",
+          "fullName phoneNumber email profileImage licenseNumber rating",
       })
       .select("title applicants");
 
@@ -77,7 +77,7 @@ export const getMyDrivers = async (req, res) => {
     // Format output
     const formatted = paginatedDrivers.map((a) => ({
       driverId: a.driver?._id,
-      driverName: `${a.driver?.firstName || ""} ${a.driver?.surname || ""}`.trim(),
+      driverName: `${a.driver?.fullName || ""}`.trim(),
       phoneNumber: a.driver?.phoneNumber,
       email: a.driver?.email,
       profileImage: a.driver?.profileImage,
@@ -116,7 +116,7 @@ export const getMyDriverProfile = async (req, res) => {
     // Fetch driver basic info
     const driver = await Driver.findById(driverId)
       .select(
-        "firstName surname email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
+        "fullName email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
       )
       .lean();
 
@@ -191,7 +191,7 @@ export const searchDriverByLicense = async (req, res) => {
       licenseNumber: { $regex: licenseNumber, $options: "i" },
     })
       .select(
-        "firstName surname email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
+        "fullName email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
       )
       .limit(10)
       .lean();

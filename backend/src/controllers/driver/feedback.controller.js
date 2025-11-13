@@ -32,7 +32,7 @@ export const submitFeedback = async (req, res) => {
 export const getAllFeedbacks = async (req, res) => {
   try {
     const feedbacks = await Feedback.find()
-      .populate("userId", "firstName surname role email")
+      .populate("userId", "fullName role email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, feedbacks });

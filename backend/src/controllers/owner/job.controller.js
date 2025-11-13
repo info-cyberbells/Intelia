@@ -105,7 +105,7 @@ export const deleteJob = async (req, res) => {
 export const listJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ status: "open", isExpired: false })
-      .populate("ownerId", "firstName surname companyName")
+      .populate("ownerId", "fullName companyName")
       .populate("vehicleId", "make model plateNo");
 
     return res.status(200).json({
@@ -125,7 +125,7 @@ export const listJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId)
-      .populate("ownerId", "firstName surname companyName")
+      .populate("ownerId", "fullName companyName")
       .populate("vehicleId", "make model plateNo");
 
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
@@ -311,7 +311,7 @@ export const getJobApplications = async (req, res) => {
     const ownerId = req.user._id;
 
     const job = await Job.findOne({ _id: jobId, ownerId })
-      .populate("applicants.driverId", "firstName lastName email phone profileImage")
+      .populate("applicants.driverId", "fullName email phone profileImage")
       .populate("vehicleId", "make model plateNo");
 
     if (!job) {
@@ -436,7 +436,7 @@ export const getShortlistedApplicants = async (req, res) => {
     const ownerId = req.user._id;
 
     const job = await Job.findOne({ _id: jobId, ownerId })
-      .populate("applicants.driverId", "firstName lastName email phone");
+      .populate("applicants.driverId", "fullName email phone");
 
     if (!job) {
       return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
