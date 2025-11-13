@@ -21,6 +21,11 @@ export const USER_ENDPOINTS = {
     GET_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
     MY_JOB_APPLICATIONS: `${API_BASE_URL}/driver/my-applications`,
     MY_NOTIFICATIONS: `${API_BASE_URL}/driver/my-notifications`,
+    GET_MY_RESUME: `${API_BASE_URL}/driver/my-resume`,
+    ROUTE_TYPES: `${API_BASE_URL}/master/route-types`,
+    VEHICLE_TYPES: `${API_BASE_URL}/master/vehicle-types`,
+    SKILLS: `${API_BASE_URL}/master/skills`,
+    POST_RESUME: `${API_BASE_URL}/driver/post-resume`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
 
     SETTINGS: `${API_BASE_URL}/driver/settings`,

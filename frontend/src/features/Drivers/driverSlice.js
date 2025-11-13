@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getDriverNotificationsService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getDriverNotificationsService, getMyResumeService, getRouteTypesService, getVehicleTypesService, getSkillsService, postDriverResumeService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -160,6 +160,78 @@ export const fetchDriverNotifications = createAsyncThunk(
     }
 );
 
+// Get my resume
+export const fetchMyResume = createAsyncThunk(
+    "drivers/fetchMyResume",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await getMyResumeService();
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch resume"
+            );
+        }
+    }
+);
+
+// Fetch route types
+export const fetchRouteTypes = createAsyncThunk(
+    "drivers/fetchRouteTypes",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getRouteTypesService();
+            return data.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch route types"
+            );
+        }
+    }
+);
+
+// Fetch vehicle types
+export const fetchVehicleTypes = createAsyncThunk(
+    "drivers/fetchVehicleTypes",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getVehicleTypesService();
+            return data.data;
+        } catch (error) {
+            return rejectWithValue("Failed to fetch vehicle types");
+        }
+    }
+);
+
+// Fetch Skills List
+export const fetchSkills = createAsyncThunk(
+    "master/fetchSkills",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await getSkillsService();
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || "Failed to load skills");
+        }
+    }
+);
+
+// Post driver resume
+export const postDriverResume = createAsyncThunk(
+    "drivers/postResume",
+    async (resumeData, { rejectWithValue }) => {
+        try {
+            const data = await postDriverResumeService(resumeData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to submit resume"
+            );
+        }
+    }
+);
+
+
 
 const driverSlice = createSlice({
     name: "drivers",
@@ -173,6 +245,10 @@ const driverSlice = createSlice({
         settings: null,
         applications: [],
         notifications: [],
+        resume: null,
+        routeTypes: [],
+        vehicleTypes: [],
+        skillsMaster: [],
     },
     reducers: {},
 
@@ -332,7 +408,83 @@ const driverSlice = createSlice({
             .addCase(fetchDriverNotifications.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+
+            // Fetch My Resume
+            .addCase(fetchMyResume.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchMyResume.fulfilled, (state, action) => {
+                state.loading = false;
+                state.resume = action.payload;
+            })
+            .addCase(fetchMyResume.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Route Types
+            .addCase(fetchRouteTypes.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchRouteTypes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.routeTypes = action.payload || [];
+            })
+            .addCase(fetchRouteTypes.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            // vehicle Types
+            .addCase(fetchVehicleTypes.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchVehicleTypes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vehicleTypes = action.payload || [];
+            })
+            .addCase(fetchVehicleTypes.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+
+            // skills Types
+            .addCase(fetchSkills.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchSkills.fulfilled, (state, action) => {
+                state.loading = false;
+                state.skillsMaster = action.payload || [];
+            })
+            .addCase(fetchSkills.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            // Post resume builder
+            .addCase(postDriverResume.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(postDriverResume.fulfilled, (state, action) => {
+                state.loading = false;
+                state.resume = action.payload.data || action.payload;
+            })
+            .addCase(postDriverResume.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+
+
+
 
 
 

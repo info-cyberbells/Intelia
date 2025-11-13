@@ -1,6 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import { useDispatch, useSelector } from "react-redux";
+import { useToast } from '../../context/ToastContext';
+import { fetchMyResume, fetchRouteTypes, fetchVehicleTypes, fetchSkills, postDriverResume } from "../../features/Drivers/driverSlice";
+
 
 const DriverResumeForm = () => {
+  const dispatch = useDispatch();
+  const { showToast } = useToast();
+  const { resume, loading, routeTypes, vehicleTypes, skillsMaster } = useSelector((state) => state.drivers);
+
   const tabs = [
     "Basic Info",
     "Experience",
@@ -9,26 +18,27 @@ const DriverResumeForm = () => {
   ];
   const [activeStep, setActiveStep] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showResume, setShowResume] = useState(false);
+  const [isVehicleDropdownOpen, setIsVehicleDropdownOpen] = useState(false);
+
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
     municipality: "",
     dob: "",
     licenseNumber: "",
     expiry: "",
-    company: "",
+    companyName: "",
     startDate: "",
     endDate: "",
-    vehicleType: "",
-    routeType: "",
+    vehicleType: [],
+    routeType: [],
     description: "",
     skills: [],
     preferences: "",
     licensePhoto: null,
   });
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +47,37 @@ const DriverResumeForm = () => {
       [name]: value,
     }));
   };
+
+  useEffect(() => {
+    dispatch(fetchMyResume());
+    dispatch(fetchRouteTypes());
+    dispatch(fetchVehicleTypes());
+    dispatch(fetchSkills());
+
+  }, []);
+
+  useEffect(() => {
+    if (resume) {
+      setFormData({
+        fullName: resume.basicInfo?.fullName || "",
+        email: resume.basicInfo?.email || "",
+        municipality: resume.basicInfo?.municipality || "",
+        dob: resume.basicInfo?.dob?.slice(0, 10) || "",
+        licenseNumber: resume.basicInfo?.licenseNumber || "",
+        expiry: resume.basicInfo?.licenseExpiry?.slice(0, 10) || "",
+        companyName: resume.experience?.companyName || "",
+        startDate: resume.experience?.startDate?.slice(0, 10) || "",
+        endDate: resume.experience?.endDate?.slice(0, 10) || "",
+        vehicleType: resume.experience?.vehicleType || [],
+        routeType: resume.experience?.routeType || [],
+        description: resume.experience?.description || "",
+        skills: resume.skillPreferences?.skills || [],
+        preferences: resume.skillPreferences?.additionalPreferences || "",
+        licensePhoto: resume.basicInfo?.licensePhoto || null,
+      });
+    }
+  }, [resume]);
+
 
   const nextStep = (e) => {
     e?.preventDefault();
@@ -49,18 +90,282 @@ const DriverResumeForm = () => {
     if (activeStep > 0) setActiveStep(activeStep - 1);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // alert("Form data saved successfully!");
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    const marginLeft = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 20;
+
+    // Helper function for adding text with word wrap
+    const addText = (text, x, yPos, maxWidth, fontSize = 11, isBold = false) => {
+      doc.setFont("helvetica", isBold ? "bold" : "normal");
+      doc.setFontSize(fontSize);
+      const lines = doc.splitTextToSize(text, maxWidth);
+      doc.text(lines, x, yPos);
+      return lines.length * (fontSize * 0.5); // Return height used
+    };
+
+    // Header - Name
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(35, 35, 35);
+    doc.text(formData.fullName || "Driver", marginLeft, y);
+    y += 8;
+
+    // Subtitle - Vehicle Types
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(113, 142, 191);
+    const vehicleTypeText = Array.isArray(formData.vehicleType)
+      ? formData.vehicleType.join(", ") + " Driver"
+      : (formData.vehicleType || "") + " Driver";
+    doc.text(vehicleTypeText, marginLeft, y);
+    y += 12;
+
+    // Two columns layout
+    const leftX = marginLeft;
+    const rightX = pageWidth / 2 + 10;
+    const columnWidth = (pageWidth / 2) - 30;
+
+    // ============ BASIC INFO (Left Column) ============
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(53, 101, 227);
+    doc.text("Basic Info", leftX, y);
+
+    let leftY = y + 7;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+
+    if (formData.email) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Email: ", leftX, leftY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.email, leftX + 20, leftY);
+      leftY += 6;
+    }
+
+    if (formData.municipality) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("Municipality: ", leftX, leftY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.municipality, leftX + 30, leftY);
+      leftY += 6;
+    }
+
+    if (formData.dob) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("DOB: ", leftX, leftY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.dob, leftX + 20, leftY);
+      leftY += 6;
+    }
+
+    if (formData.licenseNumber) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("License: ", leftX, leftY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.licenseNumber, leftX + 20, leftY);
+      leftY += 6;
+    }
+
+    if (formData.expiry) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("License Expiry: ", leftX, leftY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.expiry, leftX + 33, leftY);
+      leftY += 6;
+    }
+
+    // ============ EXPERIENCE (Right Column) ============
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(53, 101, 227);
+    doc.text("Experience", rightX, y);
+
+    let rightY = y + 7;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    if (formData.companyName) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("Company: ", rightX, rightY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(formData.companyName, rightX + 25, rightY);
+      rightY += 6;
+    }
+
+    if (formData.vehicleType?.length > 0) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("Vehicle Type: ", rightX, rightY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      const vehicleText = Array.isArray(formData.vehicleType)
+        ? formData.vehicleType.join(", ")
+        : formData.vehicleType;
+      const vehicleLines = doc.splitTextToSize(vehicleText, columnWidth - 35);
+      doc.text(vehicleLines, rightX + 30, rightY);
+      rightY += vehicleLines.length * 6;
+    }
+
+    if (formData.routeType?.length > 0) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("Route Type: ", rightX, rightY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      const routeText = Array.isArray(formData.routeType)
+        ? formData.routeType.join(", ")
+        : formData.routeType;
+      const routeLines = doc.splitTextToSize(routeText, columnWidth - 35);
+      doc.text(routeLines, rightX + 28, rightY);
+      rightY += routeLines.length * 6;
+    }
+
+    if (formData.startDate || formData.endDate) {
+      doc.setTextColor(60, 60, 60);
+      doc.setFont("helvetica", "bold");
+      doc.text("Duration: ", rightX, rightY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(115, 128, 141);
+      doc.text(`${formData.startDate || ""} - ${formData.endDate || ""}`, rightX + 23, rightY);
+      rightY += 6;
+    }
+
+    // Move Y below both columns
+    y = Math.max(leftY, rightY) + 8;
+
+    // ============ DESCRIPTION ============
+    if (formData.description) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(53, 101, 227);
+      doc.text("Description", marginLeft, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(115, 128, 141);
+      const descLines = doc.splitTextToSize(formData.description, pageWidth - 40);
+      doc.text(descLines, marginLeft, y);
+      y += descLines.length * 5 + 8;
+    }
+
+    // ============ SKILLS ============
+    if (formData.skills?.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(53, 101, 227);
+      doc.text("Skills", marginLeft, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(115, 128, 141);
+      const skillsText = Array.isArray(formData.skills)
+        ? formData.skills.join(", ")
+        : formData.skills;
+      const skillLines = doc.splitTextToSize(skillsText, pageWidth - 40);
+      doc.text(skillLines, marginLeft, y);
+      y += skillLines.length * 5 + 8;
+    }
+
+    // ============ PREFERENCES ============
+    if (formData.preferences) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(53, 101, 227);
+      doc.text("Preferences", marginLeft, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(115, 128, 141);
+      const prefLines = doc.splitTextToSize(formData.preferences, pageWidth - 40);
+      doc.text(prefLines, marginLeft, y);
+      y += prefLines.length * 5;
+    }
+
+    // Save PDF
+    doc.save(`${formData.fullName || "Driver"}_Resume.pdf`);
+  };
+
+
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+
+    try {
+      // Create FormData directly here
+      const formDataToSend = new FormData();
+
+      // Append basic info - MATCH POSTMAN FIELD NAMES EXACTLY
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("municipality", formData.municipality);
+      formDataToSend.append("dob", formData.dob);
+      formDataToSend.append("licenseNumber", formData.licenseNumber);
+      formDataToSend.append("licenseExpiry", formData.expiry);
+
+      // Append experience - MATCH POSTMAN FIELD NAMES
+      formDataToSend.append("companyName", formData.companyName);
+      formDataToSend.append("startDate", formData.startDate);
+      formDataToSend.append("endDate", formData.endDate);
+      formDataToSend.append("description", formData.description);
+
+      // Append routeType as comma-separated string (like in Postman)
+      formDataToSend.append("routeType", formData.routeType.join(", "));
+
+      // Append vehicleType as comma-separated string (like in Postman)
+      formDataToSend.append("vehicleType", formData.vehicleType.join(", "));
+
+      // Append skills as comma-separated string (like in Postman)
+      formDataToSend.append("skills", formData.skills.join(", "));
+
+      // Append additionalPreferences (note the field name!)
+      formDataToSend.append("additionalPreferences", formData.preferences);
+
+      // Append license photo if exists
+      if (formData.licensePhoto) {
+        formDataToSend.append("licensePhoto", formData.licensePhoto);
+      }
+
+      console.log("Sending FormData");
+
+      // Debug: Log all FormData entries
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      await dispatch(postDriverResume(formDataToSend)).unwrap();
+      showToast("Resume submitted successfully!", "success");
+    } catch (error) {
+      console.error("Failed to submit resume:", error);
+      showToast(error || "Failed to submit resume. Please try again.", "error");
+    }
   };
 
   return (
     <main className="ml-56 mt-16 min-h-screen bg-[#F5F5F5] p-8 font-inter flex flex-col justify-between">
-      <div className="p-8 rounded-2xl bg-white border border-[#DDE2E5]">
+      <div className="p-8 rounded-2xl max-w-5xl bg-white border border-[#DDE2E5]">
         <form
           onSubmit={handleSubmit}
-          className=" min-h-[70vh]  pb-4 flex flex-col justify-between"
+          className=" min-h-[70vh] pb-4 flex flex-col justify-between"
         >
           {/* Header */}
           <div>
@@ -71,11 +376,10 @@ const DriverResumeForm = () => {
                     key={tab}
                     type="button"
                     onClick={() => setActiveStep(index)}
-                    className={`pb-2 font-[Inter] transition-colors ${
-                      activeStep === index
-                        ? "text-[#3565E3] border-b-2 border-[#3565E3]"
-                        : "text-[#718EBF] "
-                    }`}
+                    className={`pb-2 font-[Inter] transition-colors ${activeStep === index
+                      ? "text-[#3565E3] border-b-2 border-[#3565E3]"
+                      : "text-[#718EBF] "
+                      }`}
                   >
                     {tab}
                   </button>
@@ -94,23 +398,11 @@ const DriverResumeForm = () => {
             {tabs[activeStep] === "Basic Info" && (
               <div className="grid grid-cols-2 gap-6 font-[Inter]">
                 <div>
-                  <label className="text-sm text-[#232323]">First Name</label>
+                  <label className="text-sm text-[#232323]">Full Name</label>
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    placeholder="Charlene Reed"
-                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm text-[#232323]">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
+                    name="fullName"
+                    value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Charlene Reed"
                     className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
@@ -177,7 +469,7 @@ const DriverResumeForm = () => {
                     name="expiry"
                     value={formData.expiry}
                     onChange={handleChange}
-                    placeholder="**********"
+                    placeholder="10/30"
                     className=" mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
                   />
                 </div>
@@ -202,18 +494,21 @@ const DriverResumeForm = () => {
                   <label
                     htmlFor="licensePhoto"
                     className={`mt-2 flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition
-                        ${
-                          formData.licensePhoto
-                            ? "border-[#A7C8E7] bg-[#F8FBFD]"
-                            : "border-[#DFEAF2] hover:bg-[#F8FBFD]"
-                        }`}
+                        ${formData.licensePhoto
+                        ? "border-[#A7C8E7] bg-[#F8FBFD]"
+                        : "border-[#DFEAF2] hover:bg-[#F8FBFD]"
+                      }`}
                   >
                     {formData.licensePhoto ? (
                       <div className="relative">
                         <img
-                          src={URL.createObjectURL(formData.licensePhoto)}
-                          alt="License Preview"
-                          className="h-32 w-auto rounded-lg object-contain"
+                          src={
+                            typeof formData.licensePhoto === 'string'
+                              ? formData.licensePhoto
+                              : URL.createObjectURL(formData.licensePhoto)
+                          }
+                          alt="License"
+                          className="h-40 rounded-xl object-contain border border-[#DFEAF2] shadow-sm mt-2"
                         />
                         <button
                           type="button"
@@ -285,10 +580,10 @@ const DriverResumeForm = () => {
                   <label className="text-sm text-[#232323]">Company Name</label>
                   <input
                     type="text"
-                    name="company"
-                    value={formData.company}
+                    name="companyName"
+                    value={formData.companyName}
                     onChange={handleChange}
-                    placeholder="Charlene Reed"
+                    placeholder="Earth Movers"
                     className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
                   />
                 </div>
@@ -300,7 +595,7 @@ const DriverResumeForm = () => {
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
-                    placeholder="Charlene Reed"
+                    placeholder="01/01/2012"
                     className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
                   />
                 </div>
@@ -312,78 +607,176 @@ const DriverResumeForm = () => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    placeholder="charlenereed@gmail.com"
+                    placeholder="01/01/2020"
                     className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
                   />
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="text-sm text-[#232323]">Vehicle Type</label>
-                  <input
-                    type="text"
-                    name="vehicleType"
-                    value={formData.vehicleType}
-                    onChange={handleChange}
-                    placeholder="2-wheeler / LMV / HMV etc."
-                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
-                  />
+
+                  <div
+                    onClick={() => setIsVehicleDropdownOpen((prev) => !prev)}
+                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm bg-white cursor-pointer flex justify-between items-center focus:outline-none"
+                  >
+                    <span>
+                      {formData.vehicleType && formData.vehicleType.length > 0
+                        ? `${formData.vehicleType.length} Vehicle Types Selected`
+                        : "Select Vehicle Type..."}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="#718EBF"
+                      className={`w-5 h-5 transform transition-transform duration-200 ${isVehicleDropdownOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
+
+                  {isVehicleDropdownOpen && (
+                    <div className="absolute z-10 mt-2 w-full bg-white border border-[#DFEAF2] rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                      {vehicleTypes && vehicleTypes.length > 0 ? (
+                        vehicleTypes.map((item) => (
+                          <label
+                            key={item._id}
+                            className="flex items-center px-4 py-2 text-sm text-[#718EBF] cursor-pointer hover:bg-[#F8FBFD]"
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.vehicleType.includes(item.name)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  vehicleType: isChecked
+                                    ? [...prev.vehicleType, item.name]
+                                    : prev.vehicleType.filter((v) => v !== item.name),
+                                }));
+                              }}
+                              className="mr-2 accent-[#3565E3]"
+                            />
+                            {item.name}
+                          </label>
+                        ))
+                      ) : (
+                        <p className="px-4 py-2 text-sm text-gray-400">No vehicle types available</p>
+                      )}
+                    </div>
+                  )}
+
+                  {formData.vehicleType?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {formData.vehicleType.map((vehicle) => (
+                        <span
+                          key={vehicle}
+                          className="px-3 py-1 bg-[#E6EEFF] text-[#3565E3] text-xs font-medium rounded-full flex items-center gap-2"
+                        >
+                          {vehicle}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                vehicleType: prev.vehicleType.filter((v) => v !== vehicle),
+                              }))
+                            }
+                            className="text-[#3565E3] hover:text-[#1E40AF]"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* <div>
-                  <label className="text-sm text-[#232323]">Route Type</label>
-                  <select
-                    name="routeType"
-                    value={formData.routeType}
-                    onChange={handleChange}
-                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
-                  >
-                    <option value="">Select...</option>
-                    <option>City</option>
-                    <option>Interstate</option>
-                    <option>Local Delivery</option>
-                    <option>Highway</option>
-                  </select>
-                </div> */}
 
                 <div className="relative">
                   <label className="text-sm text-[#232323]">Route Type</label>
 
-                  <div className="relative">
-                    <select
-                      name="routeType"
-                      value={formData.routeType}
-                      onChange={handleChange}
-                      onClick={() => setIsDropdownOpen((prev) => !prev)}
-                      onBlur={() => setIsDropdownOpen(false)}
-                      className="appearance-none mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2] pr-10"
-                    >
-                      <option value="">Select...</option>
-                      <option>City</option>
-                      <option>Interstate</option>
-                      <option>Local Delivery</option>
-                      <option>Highway</option>
-                    </select>
-
-                    {/* Custom Chevron Icon */}
-                    <div className="absolute right-3 pt-1 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="#718EBF"
-                        className={`w-5 h-5 transform transition-transform duration-200 ${
-                          isDropdownOpen ? "rotate-180" : "rotate-0"
+                  <div
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm bg-white cursor-pointer flex justify-between items-center focus:outline-none"
+                  >
+                    <span>
+                      {formData.routeType && formData.routeType.length > 0
+                        ? `${formData.routeType.length} Route Types Selected`
+                        : "Select Route Type..."}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="#718EBF"
+                      className={`w-5 h-5 transform transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : "rotate-0"
                         }`}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 9l6 6 6-6"
-                        />
-                      </svg>
-                    </div>
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                    </svg>
                   </div>
+
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 mt-2 w-full bg-white border border-[#DFEAF2] rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                      {routeTypes && routeTypes.length > 0 ? (
+                        routeTypes.map((route) => (
+                          <label
+                            key={route._id}
+                            className="flex items-center px-4 py-2 text-sm text-[#718EBF] cursor-pointer hover:bg-[#F8FBFD]"
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.routeType.includes(route.name)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  routeType: isChecked
+                                    ? [...prev.routeType, route.name]
+                                    : prev.routeType.filter((r) => r !== route.name),
+                                }));
+                              }}
+                              className="mr-2 accent-[#3565E3]"
+                            />
+                            {route.name}
+                          </label>
+                        ))
+                      ) : (
+                        <p className="px-4 py-2 text-sm text-gray-400">No route types available</p>
+                      )}
+                    </div>
+                  )}
+
+                  {formData.routeType?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {formData.routeType.map((route) => (
+                        <span
+                          key={route}
+                          className="px-3 py-1 bg-[#E6EEFF] text-[#3565E3] text-xs font-medium rounded-full flex items-center gap-2"
+                        >
+                          {route}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                routeType: prev.routeType.filter((r) => r !== route),
+                              }))
+                            }
+                            className="text-[#3565E3] hover:text-[#1E40AF]"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="col-span-2">
@@ -402,21 +795,6 @@ const DriverResumeForm = () => {
 
             {tabs[activeStep] === "Skills & Preferences" && (
               <div className="grid grid-cols-2 gap-6">
-                {/* <div>
-                  <label className="text-sm text-[#232323]">Skills</label>
-                  <select
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleChange}
-                    className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm  focus:outline-none focus:border-[#DFEAF2]"
-                  >
-                    <option value="">Select...</option>
-                    <option>City</option>
-                    <option>Interstate</option>
-                    <option>Local Delivery</option>
-                    <option>Highway</option>
-                  </select>
-                </div> */}
 
                 <div className="relative">
                   <label className="text-sm text-[#232323]">Skills</label>
@@ -428,7 +806,7 @@ const DriverResumeForm = () => {
                   >
                     <span>
                       {formData.skills && formData.skills.length > 0
-                        ? "Skills Selected"
+                        ? `${formData.skills.length} Skills Selected`
                         : "Select skills..."}
                     </span>
                     <svg
@@ -437,9 +815,8 @@ const DriverResumeForm = () => {
                       viewBox="0 0 24 24"
                       strokeWidth={2}
                       stroke="#718EBF"
-                      className={`w-5 h-5 transform transition-transform duration-200 ${
-                        isDropdownOpen ? "rotate-180" : "rotate-0"
-                      }`}
+                      className={`w-5 h-5 transform transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : "rotate-0"
+                        }`}
                     >
                       <path
                         strokeLinecap="round"
@@ -452,38 +829,33 @@ const DriverResumeForm = () => {
                   {/* Dropdown menu */}
                   {isDropdownOpen && (
                     <div className="absolute z-10 mt-2 w-full bg-white border border-[#DFEAF2] rounded-xl shadow-lg max-h-56 overflow-y-auto">
-                      {[
-                        "Safe Driving",
-                        "Route Knowledge",
-                        "Delivery Management",
-                        "Customer Handling",
-                        "Time Management",
-                        "Vehicle Maintenance",
-                        "Long Distance Driving",
-                        "Navigation (Google Maps)",
-                        "Heavy Vehicle Operation",
-                      ].map((skill) => (
-                        <label
-                          key={skill}
-                          className="flex items-center px-4 py-2 text-sm text-[#718EBF] hover:bg-[#F8FBFD] cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.skills?.includes(skill)}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setFormData((prev) => ({
-                                ...prev,
-                                skills: checked
-                                  ? [...(prev.skills || []), skill]
-                                  : prev.skills.filter((s) => s !== skill),
-                              }));
-                            }}
-                            className="mr-2 accent-[#3565E3] w-4 h-4"
-                          />
-                          {skill}
-                        </label>
-                      ))}
+                      {skillsMaster && skillsMaster.length > 0 ? (
+                        skillsMaster.map((item) => (
+                          <label
+                            key={item._id}
+                            className="flex items-center px-4 py-2 text-sm text-[#718EBF] cursor-pointer hover:bg-[#F8FBFD]"
+                            onMouseDown={(e) => e.preventDefault()} // Prevent blur on click
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.skills.includes(item.name)}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  skills: isChecked
+                                    ? [...prev.skills, item.name]
+                                    : prev.skills.filter((s) => s !== item.name),
+                                }));
+                              }}
+                              className="mr-2 accent-[#3565E3]"
+                            />
+                            {item.name}
+                          </label>
+                        ))
+                      ) : (
+                        <p className="px-4 py-2 text-sm text-gray-400">No skills available</p>
+                      )}
                     </div>
                   )}
 
@@ -531,228 +903,332 @@ const DriverResumeForm = () => {
             )}
 
             {tabs[activeStep] === "AI Resume Preview" && (
-  <div className="grid grid-cols-2 gap-6 font-[Inter]">
-    {/* ---------- Basic Info ---------- */}
-    <h3 className="col-span-2 text-lg font-semibold text-[##232323] mb-2">
-      Basic Info
-    </h3>
+              <div className="">
+                {!showResume ? (
+                  <div className="grid grid-cols-2 gap-6 font-[Inter]">
+                    {/* ---------- Basic Info ---------- */}
+                    <h3 className="col-span-2 text-lg font-semibold text-[##232323] mb-2">
+                      Basic Info
+                    </h3>
 
-    <div>
-      <label className="text-sm text-[#232323]">First Name</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.firstName || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.fullName || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Last Name</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.lastName || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">Email</label>
+                      <input
+                        type="email"
+                        readOnly
+                        value={formData.email || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Email</label>
-      <input
-        type="email"
-        readOnly
-        value={formData.email || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Municipality
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.municipality || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Municipality</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.municipality || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Date of Birth
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.dob || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Date of Birth</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.dob || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        License Number
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.licenseNumber || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">License Number</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.licenseNumber || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        License Expiry Date
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.expiry || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">License Expiry Date</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.expiry || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    {/* ---------- License Photo ---------- */}
+                    {formData.licensePhoto && (
+                      <div className="col-span-2 mt-4">
+                        <label className="text-sm text-[#232323]">
+                          Uploaded License Photo
+                        </label>
+                        <img
+                          src={
+                            typeof formData.licensePhoto === 'string'
+                              ? formData.licensePhoto
+                              : URL.createObjectURL(formData.licensePhoto)
+                          }
+                          alt="License"
+                          className="h-40 rounded-xl object-contain border border-[#DFEAF2] shadow-sm mt-2"
+                        />
+                      </div>
+                    )}
 
-    {/* ---------- License Photo ---------- */}
-    {formData.licensePhoto && (
-      <div className="col-span-2 mt-4">
-        <label className="text-sm text-[#232323]">Uploaded License Photo</label>
-        <img
-          src={URL.createObjectURL(formData.licensePhoto)}
-          alt="License"
-          className="h-40 rounded-xl object-contain border border-[#DFEAF2] shadow-sm mt-2"
-        />
-      </div>
-    )}
+                    {/* ---------- Experience ---------- */}
+                    <h3 className="col-span-2 text-lg font-semibold text-[#232323] mt-6 mb-2">
+                      Experience
+                    </h3>
 
-    {/* ---------- Experience ---------- */}
-    <h3 className="col-span-2 text-lg font-semibold text-[#232323] mt-6 mb-2">
-      Experience
-    </h3>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Company Name
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.companyName || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Company Name</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.company || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Vehicle Type
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.vehicleType || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Vehicle Type</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.vehicleType || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Start Date
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.startDate || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Start Date</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.startDate || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">End Date</label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.endDate || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">End Date</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.endDate || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div>
+                      <label className="text-sm text-[#232323]">
+                        Route Type
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.routeType || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
 
-    <div>
-      <label className="text-sm text-[#232323]">Route Type</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.routeType || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div className="col-span-2">
+                      <label className="text-sm text-[#232323]">
+                        Description
+                      </label>
+                      <textarea
+                        readOnly
+                        rows={4}
+                        value={formData.description || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2] resize-none"
+                      ></textarea>
+                    </div>
 
-    <div className="col-span-2">
-      <label className="text-sm text-[#232323]">Experience Description</label>
-      <textarea
-        readOnly
-        rows={4}
-        value={formData.description || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2] resize-none"
-      ></textarea>
-    </div>
+                    {/* ---------- Skills & Preferences ---------- */}
+                    <h3 className="col-span-2 text-lg font-semibold text-[#232323] mt-6 mb-2">
+                      Skills & Preferences
+                    </h3>
 
-    {/* ---------- Skills & Preferences ---------- */}
-    <h3 className="col-span-2 text-lg font-semibold text-[#232323] mt-6 mb-2">
-      Skills & Preferences
-    </h3>
+                    <div className="col-span-2">
+                      <label className="text-sm text-[#232323]">Skills</label>
+                      <textarea
+                        readOnly
+                        rows={2}
+                        value={formData.skills?.join(", ") || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2] resize-none"
+                      ></textarea>
+                    </div>
 
-    <div className="col-span-2">
-      <label className="text-sm text-[#232323]">Skills</label>
-      <textarea
-        readOnly
-        rows={2}
-        value={formData.skills?.join(", ") || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2] resize-none"
-      ></textarea>
-    </div>
+                    <div className="col-span-2">
+                      <label className="text-sm text-[#232323]">
+                        Additional Preferences
+                      </label>
+                      <input
+                        type="text"
+                        readOnly
+                        value={formData.preferences || ""}
+                        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="">
+                    <h2 className="text-2xl font-semibold text-[#232323] mb-2">
+                      {formData.fullName}
+                    </h2>
+                    <p className="text-sm text-[#718EBF] mb-6">
+                      {formData.vehicleType?.join(", ")} Driver
+                    </p>
 
-    <div className="col-span-2">
-      <label className="text-sm text-[#232323]">Additional Preferences</label>
-      <input
-        type="text"
-        readOnly
-        value={formData.preferences || ""}
-        className="mt-1 w-full text-[#718EBF] rounded-xl border border-[#DFEAF2] px-4 py-2 text-sm focus:outline-none focus:border-[#DFEAF2]"
-      />
-    </div>
+                    <div className="grid grid-cols-2 text-left text-[#73808D] gap-6">
+                      <div>
+                        <h3 className="font-semibold mb-1 text-[#232323]">
+                          Basic Info
+                        </h3>
+                        <p><span className="font-medium">Email:</span> {formData.email}</p>
+                        <p><span className="font-medium">Municipality:</span> {formData.municipality}</p>
+                        <p><span className="font-medium">DOB:</span> {formData.dob}</p>
+                        <p><span className="font-medium">License:</span> {formData.licenseNumber}</p>
+                        <p><span className="font-medium">License Expiry:</span> {formData.expiry}</p>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold mb-1 text-[#232323]">
+                          Experience
+                        </h3>
+                        <p><span className="font-medium">Company:</span> {formData.companyName}</p>
+                        <p><span className="font-medium">Vehicle Type:</span> {formData.vehicleType?.join(", ")}</p>
+                        <p><span className="font-medium">Route Type:</span> {formData.routeType?.join(", ")}</p>
+                        <p>
+                          <span className="font-medium">Duration:</span> {formData.startDate} - {formData.endDate}
+                        </p>
+                      </div>
+                    </div>
 
-  </div>
-)}
+                    <div className="mt-6 text-[#73808D] text-left">
+                      <h3 className="font-semibold mb-1 text-[#232323]">Description</h3>
+                      <p className="mb-4">{formData.description}</p>
 
+                      <h3 className="font-semibold mb-1 text-[#232323]">Skills</h3>
+                      <p className="mb-3">{formData.skills?.join(", ")}</p>
 
+                      <h3 className="font-semibold mb-1 text-[#232323]">Preferences</h3>
+                      <p className="text-sm">{formData.preferences}</p>
+                    </div>
 
-
-          </div>
-
-          <div className=" bottom-0 pt-12 mt-4 left-56 right-0 bg-white flex justify-center gap-4 items-center py-4">
-            <button
-              type="button"
-              onClick={() => {
-                if (activeStep === 0 || activeStep === tabs.length - 1) {
-                  setActiveStep(0);
-                  setFormData({});
-                } else {
-                  prevStep();
-                }
-              }}
-              className={`px-8 py-2 rounded-md text-sm font-[Inter] font-medium transition border-2 border-[#3565E3] text-[#3565E3] hover:bg-gray-50`}
-            >
-              {activeStep === 0 || activeStep === tabs.length - 1
-                ? "Cancel"
-                : "Back"}
-            </button>
-
-            {activeStep < tabs.length - 1 ? (
-              <button
-                type="button"
-                onClick={(e) => nextStep(e)}
-                className="px-10 py-2 rounded-md bg-[#3565E3] font-[Inter] border-2 border-[#3565E3] text-white text-sm font-medium hover:bg-blue-700 transition"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="px-8 py-2 font-[Inter] bg-[#3565E3] border-2 border-[#3565E3] rounded-md text-white text-sm font-medium transition"
-              >
-                Continue
-              </button>
+                    {formData.licensePhoto && (
+                      <div className="mt-6 text-left">
+                        <h3 className="font-semibold mb-2 text-[#232323]">
+                          License Photo
+                        </h3>
+                        <img
+                          src={
+                            typeof formData.licensePhoto === 'string'
+                              ? formData.licensePhoto
+                              : URL.createObjectURL(formData.licensePhoto)
+                          }
+                          alt="License"
+                          className="h-48 rounded-xl border border-[#DFEAF2] object-contain shadow-sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
+
+          {/* ---------- BUTTONS ---------- */}
+          <div className="bottom-0 pt-12 mt-4 bg-white flex justify-center gap-4 items-center py-4">
+            {activeStep === tabs.length - 1 ? (
+              !showResume ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => prevStep()}
+                    className="px-8 py-2 rounded-md border-2 border-[#3565E3] text-[#3565E3] text-sm font-normal hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+
+                    onClick={() => setShowResume(true)}
+                    className="px-8 py-2 rounded-md bg-[#3565E3] text-white border-2 border-[#3565E3] text-sm font-normal hover:bg-blue-700 transition"
+                  >
+                    Continue
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowResume(false)}
+                    className="px-8 py-2 rounded-md border-2 border-[#3565E3] text-[#3565E3] text-sm font-normal hover:bg-gray-50 transition"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleSubmit();
+                      handleDownloadPDF();
+                    }}
+                    className="px-8 py-2 rounded-md bg-[#3565E3] text-white border-2 border-[#3565E3] text-sm font-normal hover:bg-blue-700 transition"
+                  >
+                    Download PDF
+                  </button>
+                </>
+              )
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => prevStep()}
+                  className="px-8 py-2 rounded-md border-2 border-[#3565E3] text-[#3565E3] text-sm font-normal hover:bg-gray-50 transition"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => nextStep(e)}
+                  className="px-8 py-2 rounded-md bg-[#3565E3] text-white border-2 border-[#3565E3] text-sm font-normal hover:bg-blue-700 transition"
+                >
+                  Next
+                </button>
+              </>
+            )}
+          </div>
         </form>
       </div>
     </main>

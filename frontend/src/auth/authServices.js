@@ -229,3 +229,57 @@ export const getDriverNotificationsService = async () => {
     );
     return response.data;
 };
+
+// Get driver notifications
+export const getMyResumeService = async () => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_MY_RESUME}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+// Get Route Types for driver (Master Data)
+export const getRouteTypesService = async () => {
+    const response = await axios.get(`${USER_ENDPOINTS.ROUTE_TYPES}`, getAuthHeader());
+    return response.data;
+};
+
+
+// GET Vehicle Types
+export const getVehicleTypesService = async () => {
+    const response = await axios.get(
+        USER_ENDPOINTS.VEHICLE_TYPES,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
+//get driver skills
+export const getSkillsService = async () => {
+    const response = await axios.get(`${USER_ENDPOINTS.SKILLS}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
+//post driver resume details
+export const postDriverResumeService = async (resumeData) => {
+    const authHeader = getAuthHeader();
+
+    const response = await axios.post(
+        USER_ENDPOINTS.POST_RESUME,
+        resumeData,
+        {
+            ...authHeader,
+            headers: {
+                ...authHeader.headers,
+                "Content-Type": "multipart/form-data",
+            },
+        }
+    );
+
+    return response.data;
+};
