@@ -17,8 +17,8 @@ const resumeSchema = new mongoose.Schema({
     companyName: String,
     startDate: Date,
     endDate: Date,
-    routeType: String,
-    vehicleType: String,
+    routeType: [String],
+    vehicleType: [String],
     description: String,
   },
 

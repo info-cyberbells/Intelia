@@ -33,6 +33,7 @@ export const upsertResume = async (req, res) => {
     }
 
     const baseURL = `${req.protocol}://${req.get("host")}`;
+    const existingResume = await DriverResume.findOne({ userId });
     
     // Construct resume object
     const resumeData = {
@@ -44,14 +45,14 @@ export const upsertResume = async (req, res) => {
         dob: data.dob || null,
         licenseNumber: data.licenseNumber,
         licenseExpiry: data.licenseExpiry || null,
-        licensePhoto: file ? `${baseURL}/uploads/profiles/${file.filename}` : resume?.licensePhoto,
+        licensePhoto: file ? `${baseURL}/uploads/profiles/${file.filename}` : existingResume?.basicInfo?.licensePhoto || null,
       },
       experience: {
         companyName: data.companyName,
         startDate: data.startDate || null,
         endDate: data.endDate || null,
-        routeType: data.routeType,
-        vehicleType: data.vehicleType,
+        routeType: data.routeType ? data.routeType.split(",") : [],
+        vehicleType: data.vehicleType ? data.vehicleType.split(",") : [],
         description: data.description,
       },
       skillPreferences: {
