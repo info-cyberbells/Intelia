@@ -63,7 +63,10 @@ const VehicleSchema = new mongoose.Schema({
   verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   verifiedAt: { type: Date },
   remarks: { type: String }, // admin remarks
-
+  vehicleImage: {
+    type: String, // URL or file path
+    default: null
+  },
   // Audit
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

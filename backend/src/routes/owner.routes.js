@@ -11,6 +11,7 @@ import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplicatio
 import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js";
 import { getMyDrivers ,getMyDriverProfile, searchDriverByLicense } from "../controllers/owner/ownerDriverController.js";
 import { addReview, getClientReviews } from "../controllers/review.controller.js";
+import { uploadVehicleImage } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
@@ -24,25 +25,52 @@ router.get("/dashboard", getOwnerDashboard);
 // router.get("/profile", getProfile);
 // router.put("/profile", updateProfile);
 router.get("/profile", getProfile);
-router.put("/profile", upload.single("avatar"), updateProfile); // Support 'avatar' field name
+router.put("/profile", upload.single("avatar"), updateProfile);
 router.delete("/profile-image", deleteProfileImage);
 router.put("/change-password", validateChangePassword, changePassword);
 
 // Vehicle
-router.post("/vehicle", async (req, res) => {
-  const { error } = validateCreateVehicle(req.body);
-  if (error) {
-    return res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: error.details.map((d) => d.message),
-    });
-  }
+router.post("/vehicle", uploadVehicleImage.single("vehicleImage"), async (req, res) => {
+  try {
+    const cleanedBody = {};
+    const insurance = {};
 
-  return createVehicle(req, res);
+    Object.keys(req.body).forEach((key) => {
+      const match = key.match(/^insurance(\[['"]?)(\w+)(['"]?\])$/);
+      if (match) {
+        insurance[match[2]] = req.body[key];
+      } else {
+        cleanedBody[key] = req.body[key];
+      }
+    });
+
+    if (Object.keys(insurance).length > 0) {
+      cleanedBody.insurance = insurance;
+    }
+
+    req.body = cleanedBody;
+    //console.log("Cleaned Body:", req.body);
+
+    // Validate
+    const { error } = validateCreateVehicle(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.details.map((d) => d.message),
+      });
+    }
+
+    // Proceed to create vehicle
+    return createVehicle(req, res);
+  } catch (err) {
+    console.error("Error creating vehicle:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
+
 router.get("/vehicles", getMyVehicles);
-router.put("/vehicle/:vehicleId", async (req, res) => {
+router.put("/vehicle/:vehicleId", uploadVehicleImage.single("vehicleImage"), async (req, res) => {
   const { error } = validateUpdateVehicle(req.body);
   if (error) {
     return res.status(400).json({
