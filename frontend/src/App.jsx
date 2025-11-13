@@ -26,10 +26,29 @@ import MyApplications from './pages/MyApplications/MyApplications';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    setToken(storedToken);
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserRole(user?.role);
+    }
+
     const handleStorageChange = () => {
-      setToken(localStorage.getItem("token"));
+      const newToken = localStorage.getItem("token");
+      const newUser = localStorage.getItem("user");
+
+      setToken(newToken);
+      if (newUser) {
+        const user = JSON.parse(newUser);
+        setUserRole(user?.role);
+      } else {
+        setUserRole(null);
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -43,16 +62,14 @@ function App() {
         <Route
           path="/"
           element={
-            token ? (
-              localStorage.getItem("role") === "superAdmin" ? (
-                <Navigate to="/dashboard" replace />
-              ) : localStorage.getItem("role") === "owner" ? (
-                <Navigate to="/admin-dashboard" replace />
-              ) : localStorage.getItem("role") === "driver" ? (
-                <Navigate to="/driver-dashboard" replace />
-              ) : (
-                <Login />
-              )
+            !token ? (
+              <Login />
+            ) : userRole === "superAdmin" ? (
+              <Navigate to="/dashboard" replace />
+            ) : userRole === "owner" ? (
+              <Navigate to="/admin-dashboard" replace />
+            ) : userRole === "driver" ? (
+              <Navigate to="/driver-dashboard" replace />
             ) : (
               <Login />
             )

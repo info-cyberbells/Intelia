@@ -1,8 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { loginService, RegisterService, registerDriverService, logoutService } from "../../auth/authServices";
 
+const storedUser = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
 
 const initialState = {
+    user: storedUser,
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -77,13 +82,21 @@ const authSlice = createSlice({
             .addCase(login.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload.user;
+                const user = action.payload.user;
+
+                const minimalUser = {
+                    name: user.fullName || user.firstName || user.name || "",
+                    profileImage: user.profileImage || "",
+                    role: user.role || "",
+                };
+
+                state.user = minimalUser;
+
                 if (action.payload.token) {
                     localStorage.setItem("token", action.payload.token);
                 }
-                if (action.payload.user?.role) {
-                    localStorage.setItem("role", action.payload.user.role);
-                }
+
+                localStorage.setItem("user", JSON.stringify(minimalUser));
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;

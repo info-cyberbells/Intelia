@@ -10,7 +10,8 @@ const MenuItems = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const role = (localStorage.getItem("role") || "").toLowerCase();
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = (user?.role || "").toLowerCase();
 
   const handleLogout = async () => {
     try {

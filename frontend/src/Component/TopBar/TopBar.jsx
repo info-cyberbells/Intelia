@@ -58,17 +58,22 @@ const TopBar = () => {
 
 
         {/* User Profile */}
-        <div className="flex items-center space-x-4">
-          <div>
-            <p className="text-sm font-semibold text-gray-800 leading-none">
-              {user?.firstName || user?.name || "User"}
+        <div className="flex items-center gap-3">
+          {/* User Info */}
+          <div className="text-right">
+            <p className="text-sm font-semibold text-gray-800 leading-tight">
+              {user?.name || "User"}
             </p>
-            <p className="text-xs text-gray-400">{user?.role || "Admin"}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {user?.role || "Admin"}
+            </p>
           </div>
+
+          {/* Avatar */}
           <img
-            src={user?.profileImage || user?.avatar || "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=800"}
+            src={user?.profileImage || "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=800"}
             alt="User Avatar"
-            className="w-8 h-8 object-cover rounded-full"
+            className="w-10 h-10 object-cover rounded-full border-2 border-gray-200 shadow-sm"
           />
         </div>
       </div>
