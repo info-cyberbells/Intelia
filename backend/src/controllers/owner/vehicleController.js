@@ -1,5 +1,7 @@
 import Vehicle from "../../models/vehicle.model.js";
 import { createNotification } from "../../utils/createSystemNotification.js";
+import path from "path";
+import fs from "fs";
 
 /**
  * Create a new vehicle
@@ -8,23 +10,63 @@ export const createVehicle = async (req, res) => {
   try {
     const authUser = req.user;
     if (authUser.role !== "owner") {
-      return res.status(403).json({ success: false, message: "Only owners can add vehicles." });
+      return res.status(403).json({
+        success: false,
+        message: "Only owners can add vehicles.",
+      });
     }
 
     const { make, model, year, color, vin, plateNo, registrationState, capacity, fuelType, transmission, registrationExpiry, lastInspection, insurance } = req.body;
-
-    // Prevent duplicate plateNo for same owner
     const existing = await Vehicle.findOne({ ownerId: authUser.id, plateNo });
     if (existing) {
-      return res.status(400).json({ success: false, message: "Vehicle with this plate already exists." });
+      return res.status(400).json({
+        success: false,
+        message: "Vehicle with this plate already exists.",
+      });
     }
 
-    const vehicle = await Vehicle.create({ ownerId: authUser.id, make, model, year, color, vin, plateNo, registrationState, capacity, fuelType, transmission, registrationExpiry, lastInspection, insurance, });
+    // Uploaded image
+    let vehicleImagePath = null;
+    if (req.file) {
+      vehicleImagePath = `/uploads/vehicles/${req.file.filename}`;
+    }
 
-    res.status(201).json({ success: true, data: vehicle });
+    // Create vehicle
+    const vehicle = await Vehicle.create({
+      ownerId: authUser.id,
+      make,
+      model,
+      year,
+      color,
+      vin,
+      plateNo,
+      registrationState,
+      capacity,
+      fuelType,
+      transmission,
+      registrationExpiry,
+      lastInspection,
+      insurance,
+      vehicleImage: vehicleImagePath,
+    });
+
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    const responseVehicle = vehicle.toObject();
+    if (responseVehicle.vehicleImage) {
+      responseVehicle.vehicleImage = `${baseURL}${responseVehicle.vehicleImage}`;
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Vehicle created successfully",
+      data: responseVehicle,
+    });
   } catch (error) {
     console.error("Create vehicle error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -36,14 +78,33 @@ export const getMyVehicles = async (req, res) => {
     const authUser = req.user;
 
     if (authUser.role !== "owner") {
-      return res.status(403).json({ success: false, message: "Only owners can view their vehicles." });
+      return res.status(403).json({
+        success: false,
+        message: "Only owners can view their vehicles.",
+      });
     }
 
     const vehicles = await Vehicle.find({ ownerId: authUser.id }).sort({ createdAt: -1 });
-    res.json({ success: true, data: vehicles });
+
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    const updatedVehicles = vehicles.map((vehicle) => {
+      const v = vehicle.toObject();
+      if (v.vehicleImage) {
+        v.vehicleImage = `${baseURL}${v.vehicleImage}`;
+      }
+      return v;
+    });
+
+    res.json({
+      success: true,
+      data: updatedVehicles,
+    });
   } catch (error) {
     console.error("List vehicles error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -57,11 +118,45 @@ export const updateVehicle = async (req, res) => {
 
     const vehicle = await Vehicle.findOne({ _id: vehicleId, ownerId: authUser.id });
     if (!vehicle) {
-      return res.status(404).json({ success: false, message: "Vehicle not found or not yours." });
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found or not yours.",
+      });
     }
 
-    Object.assign(vehicle, req.body, { updatedAt: new Date() });
+    // Clean form-data body
+    const cleanedBody = {};
+    for (const key in req.body) {
+      if (key.startsWith("insurance[")) {
+        const match = key.match(/insurance\[(.+)\]/);
+        if (match) {
+          cleanedBody.insurance = cleanedBody.insurance || {};
+          cleanedBody.insurance[match[1]] = req.body[key];
+        }
+      } else {
+        cleanedBody[key] = req.body[key];
+      }
+    }
+
+    // Handle uploaded file (if any)
+    if (req.file) {
+      // delete old image if exists
+      if (vehicle.vehicleImage && fs.existsSync(`.${vehicle.vehicleImage}`)) {
+        fs.unlinkSync(`.${vehicle.vehicleImage}`);
+      }
+
+      // set new image path
+      cleanedBody.vehicleImage = `/uploads/vehicles/${req.file.filename}`;
+    }
+
+    // Merge updates
+    Object.assign(vehicle, cleanedBody, { updatedAt: new Date() });
     await vehicle.save();
+
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    if (vehicle.vehicleImage) {
+      vehicle.vehicleImage = `${baseURL}${vehicle.vehicleImage}`;
+    }
 
     res.json({ success: true, data: vehicle });
   } catch (error) {

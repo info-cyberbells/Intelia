@@ -104,5 +104,24 @@ export const uploadProfile = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
+// VEHICLE IMAGE UPLOAD
+const vehicleDir = path.join(baseUploadDir, "vehicles");
+if (!fs.existsSync(vehicleDir)) fs.mkdirSync(vehicleDir, { recursive: true });
+
+const vehicleStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, vehicleDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}${ext}`);
+  },
+});
+
+export const uploadVehicleImage = multer({
+  storage: vehicleStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+
 // Default export (for backward compatibility)
 export default uploadAvatar;
