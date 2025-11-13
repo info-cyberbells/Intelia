@@ -1,14 +1,15 @@
 import express from "express";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
-import { getProfile, updateProfile } from "../controllers/profile.controller.js";
-import {getAllClients,getClientById,createClient,updateClient,deleteClient,toggleClientStatus,getClientStats } from "../controllers/client.controller.js";
-import { getAllDrivers,getDriverById,createDriver,updateDriver,deleteDriver,toggleDriverStatus,getDriverStats,getMunicipalities } from "../controllers/driver.controller.js";
-import { validateCreateClient, validateUpdateClient } from "../validation/client.validation.js";
+import { getAllDrivers, getDriverById, createDriver, updateDriver, deleteDrivers, toggleDriverStatus, getDriverStats, getMunicipalities } from "../controllers/driver.controller.js";
 import { validateCreateDriver, validateUpdateDriver } from "../validation/driver.validation.js";
-import upload from "../middleware/upload.middleware.js";
 import { verifyVehicle, updateDriverStatus } from "../controllers/superAdmin/moderation.controller.js";
+import { getAllClients, getClientById, createClient, updateClient, deleteClient, toggleClientStatus, getClientStats } from "../controllers/client.controller.js";
+import { validateCreateClient, validateUpdateClient } from "../validation/client.validation.js";
+import { getProfile, updateProfile } from "../controllers/profile.controller.js";
 import { getAllFeedbacks } from "../controllers/driver/feedback.controller.js";
+import { uploadProfile, uploadLicensePhoto } from "../middleware/upload.middleware.js";
+import { getClientReviews } from "../controllers/review.controller.js";
 
 const router = express.Router();
 
@@ -20,31 +21,57 @@ router.get("/dashboard", (req, res) => {
   res.json({ message: "Super Admin Panel Access Granted" });
 });
 
-// Profile
+// =================== Profile ===================
 router.get("/profile", getProfile);
-router.put("/profile", upload.single('avatar'), updateProfile);
+router.put("/profile", uploadProfile.single("avatar"), updateProfile);
 
-// Client
+// =================== Client Routes ===================
 router.get("/clients/stats", getClientStats);
 router.get("/clients", getAllClients);
 router.get("/clients/:id", getClientById);
-router.post("/clients", upload.single("profileImage"), validateCreateClient, createClient);
-router.put("/clients/:id", upload.single("profileImage"), validateUpdateClient, updateClient);
+router.post("/clients", uploadProfile.single("profileImage"), validateCreateClient, createClient);
+router.put("/clients/:id", uploadProfile.single("profileImage"), validateUpdateClient, updateClient);
 router.delete("/clients/:id", deleteClient);
 router.patch("/clients/:id/toggle-status", toggleClientStatus);
 
-// Driver
+// =================== Driver Routes ===================
 router.get("/drivers/stats", getDriverStats);
 router.get("/drivers/municipalities", getMunicipalities);
 router.get("/drivers", getAllDrivers);
 router.get("/drivers/:id", getDriverById);
-router.post("/drivers", upload.single("profileImage"), validateCreateDriver, createDriver);
-router.put("/drivers/:id", upload.single("profileImage"), validateUpdateDriver, updateDriver);
-router.delete("/drivers/:id", deleteDriver);
-router.patch("/drivers/:id/toggle-status", toggleDriverStatus);
 
-router.patch("/vehicle/verify/:vehicleId", verifyVehicle);
+// Handle both profile and license image in single API
+router.post(
+  "/drivers",
+  uploadProfile.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "licensePhoto", maxCount: 1 },
+  ]),
+  validateCreateDriver,
+  createDriver
+);
+
+router.put(
+  "/drivers/:id",
+  uploadProfile.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "licensePhoto", maxCount: 1 },
+  ]),
+  validateUpdateDriver,
+  updateDriver
+);
+
+router.delete("/drivers/delete", deleteDrivers);
+router.patch("/drivers/:id/toggle-status", toggleDriverStatus);
 router.patch("/drivers/status/:id", updateDriverStatus);
-// Get Feedbacks
+
+// Vehicle Verification
+router.patch("/vehicle/verify/:vehicleId", verifyVehicle);
+
+// Feedback
 router.get("/feedbacks", getAllFeedbacks);
+
+// Reviews
+router.get("/driver-reviews/:clientId", getClientReviews);
+
 export default router;

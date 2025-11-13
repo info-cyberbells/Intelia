@@ -3,6 +3,7 @@ import Joi from "joi";
 export const createDriverSchema = Joi.object({
   fullName: Joi.string().trim().max(191).required(),
   email: Joi.string().trim().email().required(),
+  password: Joi.string().min(6).required(),
   phoneNumber: Joi.string()
     .pattern(/^\+?[1-9]\d{1,14}$/)
     .required()

@@ -10,6 +10,7 @@ import { validateCreateVehicle, validateUpdateVehicle } from "../validation/vehi
 import { createJob, updateJob, deleteJob, listJobs, getJobById, manageApplications, getJobApplications, getApplicationSummary, shortlistApplicant, getShortlistedApplicants } from "../controllers/owner/job.controller.js";
 import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js";
 import { getMyDrivers ,getMyDriverProfile, searchDriverByLicense } from "../controllers/owner/ownerDriverController.js";
+import { addReview, getClientReviews } from "../controllers/review.controller.js";
 
 const router = express.Router();
 
@@ -76,5 +77,9 @@ router.get("/jobs/:jobId/shortlisted", getShortlistedApplicants);
 router.get("/drivers", getMyDrivers);
 router.get("/driver/profile/:driverId", getMyDriverProfile);
 router.get("/driver/search", searchDriverByLicense);
+
+// Reviews
+router.post("/driver-reviews", addReview);
+router.get("/driver-reviews/:clientId", getClientReviews);
 
 export default router;

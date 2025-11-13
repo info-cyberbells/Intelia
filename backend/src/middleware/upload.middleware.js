@@ -63,6 +63,33 @@ const fileFilter = (req, file, cb) => {
 // UPLOAD INSTANCES
 // ============================================
 
+
+// ============================================
+// LICENSE PHOTO UPLOAD (for Driver License images)
+// ============================================
+const licenseDir = path.join(baseUploadDir, "licenses");
+if (!fs.existsSync(licenseDir)) {
+  fs.mkdirSync(licenseDir, { recursive: true });
+}
+
+const licenseStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, licenseDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "license-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+// Create the multer instance
+export const uploadLicensePhoto = multer({
+  storage: licenseStorage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+});
+
+
 // For Owner/Driver profile updates (uses avatars folder)
 export const uploadAvatar = multer({
   storage: profileStorage,

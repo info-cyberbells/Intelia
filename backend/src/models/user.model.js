@@ -96,6 +96,10 @@ const userSchema = new mongoose.Schema(
       type: String, // URL or file path
       default: null
     },
+    licensePhoto: {
+      type: String, // URL or file path
+      default: null
+    },
     isActive: {
       type: Boolean,
       default: false, // User is inactive until approved

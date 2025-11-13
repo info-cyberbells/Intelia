@@ -73,27 +73,35 @@ export const getMyDrivers = async (req, res) => {
     const totalDrivers = uniqueDrivers.length;
     const totalPages = Math.ceil(totalDrivers / limitNum);
     const paginatedDrivers = uniqueDrivers.slice(skip, skip + limitNum);
+    
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    // Format output safely
+    const formatted = paginatedDrivers.map((a) => {
+      const profileImage = a.driver?.profileImage && a.driver?.profileImage !== "N/A" ? `${baseURL}${a.driver.profileImage.startsWith("/") ? "" : "/"}${a.driver.profileImage}` : null;
+      const licensePhoto = a.driver?.licensePhoto && a.driver?.licensePhoto !== "N/A" ? `${baseURL}${a.driver.licensePhoto.startsWith("/") ? "" : "/"}${a.driver.licensePhoto}` : null;
 
-    // Format output
-    const formatted = paginatedDrivers.map((a) => ({
-      driverId: a.driver?._id,
-      driverName: `${a.driver?.fullName || ""}`.trim(),
-      phoneNumber: a.driver?.phoneNumber,
-      email: a.driver?.email,
-      profileImage: a.driver?.profileImage,
-      licenseNumber: a.driver?.licenseNumber,
-      rating: a.driver?.rating || 0,
-      appliedJob: a.jobTitle,
-      status: a.status,
-      appliedAt: a.appliedAt,
-    }));
+      return {
+        driverId: a.driver?._id,
+        driverName: `${a.driver?.fullName || ""}`.trim(),
+        phoneNumber: a.driver?.phoneNumber || null,
+        email: a.driver?.email || null,
+        profileImage,
+        licensePhoto,
+        licenseNumber: a.driver?.licenseNumber || null,
+        rating: a.driver?.rating || 0,
+        appliedJob: a.jobTitle || null,
+        status: a.status || null,
+        appliedAt: a.appliedAt || null,
+      };
+    });
+
 
     return res.status(200).json({
       success: true,
       totalDrivers,
       riskScore: 999,
       lowRisk: 999,
-      totalLicense: 999,
+      totalLicense: totalDrivers,
       totalPages,
       currentPage: pageNum,
       perPage: limitNum,
@@ -153,6 +161,10 @@ export const getMyDriverProfile = async (req, res) => {
       else if (s._id === "completed") summary.completed = s.count;
       summary.totalApplied += s.count;
     });
+
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    driver.profileImage = driver?.profileImage && driver?.profileImage !== "N/A" ? `${baseURL}${driver.profileImage.startsWith("/") ? "" : "/"}${driver.profileImage}` : null;
+    driver.licensePhoto = driver?.licensePhoto && driver?.licensePhoto !== "N/A" ? `${baseURL}${driver.licensePhoto.startsWith("/") ? "" : "/"}${driver.licensePhoto}` : null;
 
     // Combine and send
     return res.status(200).json({

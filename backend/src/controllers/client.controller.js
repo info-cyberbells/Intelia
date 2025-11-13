@@ -87,10 +87,10 @@ export const getClientById = async (req, res) => {
 // @access  Super Admin
 export const createClient = async (req, res) => {
   try {
-    const { firstName, surname, companyName, correspondedMe, email, phoneNumber } = req.body;
+    const { fullName, password, companyName, correspondedMe, email, phoneNumber } = req.body;
 
     // Validate required fields
-    if (!firstName || !surname || !companyName || !correspondedMe || !email || !phoneNumber) {
+    if (!fullName || !password || !companyName || !correspondedMe || !email || !phoneNumber) {
       return res.status(400).json({
         success: false,
         message: "All required fields must be provided",
@@ -106,36 +106,21 @@ export const createClient = async (req, res) => {
       });
     }
 
-    // Generate temporary password
-    // const tempPassword = generateTempPassword();
-    const tempPassword = 'Test@123';
-
-    // Find this line in createClient:
-    const profileImage = req.file ? `/uploads/profiles/${req.file.filename}` : null;
-
-    // Find this line in updateClient:
-    if (req.file) {
-      if (client.profileImage) {
-        const oldImagePath = `.${client.profileImage}`;
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-      client.profileImage = `/uploads/profiles/${req.file.filename}`;
-    }
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    const profileImage = req.file ? `${baseURL}/uploads/profiles/${req.file.filename}` : null;
 
     // Create client
     const client = await User.create({
-      firstName,
-      surname,
+      fullName,
       companyName,
       correspondedMe,
       email,
       phoneNumber,
-      password: tempPassword,
+      password: password,
       role: "owner",
       profileImage,
       isActive: true,
+      status: "approved",
     });
 
     const clientResponse = client.toObject();
@@ -158,7 +143,7 @@ export const createClient = async (req, res) => {
 // @access  Super Admin
 export const updateClient = async (req, res) => {
   try {
-    const { firstName, surname, companyName, correspondedMe, email, phoneNumber } = req.body;
+    const { fullName, companyName, correspondedMe, email, phoneNumber } = req.body;
 
     const client = await User.findOne({
       _id: req.params.id,
@@ -182,10 +167,10 @@ export const updateClient = async (req, res) => {
         });
       }
     }
+    const baseURL = `${req.protocol}://${req.get("host")}`;
 
     // Update fields
-    if (firstName) client.firstName = firstName;
-    if (surname) client.surname = surname;
+    if (fullName) client.fullName = fullName;
     if (companyName) client.companyName = companyName;
     if (correspondedMe) client.correspondedMe = correspondedMe;
     if (email) client.email = email;
@@ -200,7 +185,7 @@ export const updateClient = async (req, res) => {
           fs.unlinkSync(oldImagePath);
         }
       }
-      client.profileImage = `/uploads/profiles/${req.file.filename}`;
+      client.profileImage = `${baseURL}/uploads/profiles/${req.file.filename}`;
     }
 
     await client.save();

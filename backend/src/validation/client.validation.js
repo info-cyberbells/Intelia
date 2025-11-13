@@ -2,6 +2,7 @@ import Joi from "joi";
 
 export const createClientSchema = Joi.object({
   fullName: Joi.string().trim().max(191).required(),
+  password: Joi.string().min(6).required(),
   companyName: Joi.string().trim().max(191).required(),
   correspondedMe: Joi.string().trim().max(191).required(),
   email: Joi.string().trim().email().required(),
