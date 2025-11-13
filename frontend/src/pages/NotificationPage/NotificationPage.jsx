@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDriverNotifications } from "../../features/Drivers/driverSlice";
+import { fetchDriverNotifications } from "../../features/notifications/notificationSlice";
 
 
 const NotificationFeed = () => {
@@ -15,7 +15,7 @@ const NotificationFeed = () => {
   const [visibility, setVisibility] = useState("everyone");
 
   const dispatch = useDispatch();
-  const { notifications, loading, error } = useSelector((state) => state.drivers);
+  const { data: notifications, loading } = useSelector((state) => state.notifications);
   const [visibleCount, setVisibleCount] = useState(4);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const NotificationFeed = () => {
                 </div>
 
                 <div className="flex items-end gap-2">
-                 {item.isRead === false && (
+                  {item.isRead === false && (
                     <span className="w-2 h-2 bg-blue-500 rounded-full mb-[4px]"></span>
                   )}
                 </div>

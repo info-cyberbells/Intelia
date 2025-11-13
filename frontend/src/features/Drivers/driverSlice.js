@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getDriverNotificationsService, getMyResumeService, getRouteTypesService, getVehicleTypesService, getSkillsService, postDriverResumeService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getMyResumeService, postDriverResumeService, deleteDriversService, updateDriverStatusService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -13,6 +13,19 @@ export const fetchSuperAdminDrivers = createAsyncThunk(
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch drivers (SuperAdmin)"
             );
+        }
+    }
+);
+
+
+export const fetchInactiveDrivers = createAsyncThunk(
+    "drivers/fetchInactiveDrivers",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await superAdminDriverListingService("", "inactive", 1, 100);
+            return data;
+        } catch (error) {
+            return rejectWithValue("Failed to fetch inactive drivers");
         }
     }
 );
@@ -144,22 +157,6 @@ export const fetchMyJobsApplications = createAsyncThunk(
     }
 );
 
-
-// Fetch driver notifications
-export const fetchDriverNotifications = createAsyncThunk(
-    "drivers/fetchDriverNotifications",
-    async (_, { rejectWithValue }) => {
-        try {
-            const data = await getDriverNotificationsService();
-            return data.notifications || [];
-        } catch (error) {
-            return rejectWithValue(
-                error.response?.data?.message || "Failed to fetch notifications"
-            );
-        }
-    }
-);
-
 // Get my resume
 export const fetchMyResume = createAsyncThunk(
     "drivers/fetchMyResume",
@@ -171,47 +168,6 @@ export const fetchMyResume = createAsyncThunk(
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch resume"
             );
-        }
-    }
-);
-
-// Fetch route types
-export const fetchRouteTypes = createAsyncThunk(
-    "drivers/fetchRouteTypes",
-    async (_, { rejectWithValue }) => {
-        try {
-            const data = await getRouteTypesService();
-            return data.data;
-        } catch (error) {
-            return rejectWithValue(
-                error.response?.data?.message || "Failed to fetch route types"
-            );
-        }
-    }
-);
-
-// Fetch vehicle types
-export const fetchVehicleTypes = createAsyncThunk(
-    "drivers/fetchVehicleTypes",
-    async (_, { rejectWithValue }) => {
-        try {
-            const data = await getVehicleTypesService();
-            return data.data;
-        } catch (error) {
-            return rejectWithValue("Failed to fetch vehicle types");
-        }
-    }
-);
-
-// Fetch Skills List
-export const fetchSkills = createAsyncThunk(
-    "master/fetchSkills",
-    async (_, { rejectWithValue }) => {
-        try {
-            const res = await getSkillsService();
-            return res.data;
-        } catch (err) {
-            return rejectWithValue(err.response?.data || "Failed to load skills");
         }
     }
 );
@@ -232,6 +188,34 @@ export const postDriverResume = createAsyncThunk(
 );
 
 
+// delete driver(s) - SuperAdmin
+export const deleteSuperAdminDrivers = createAsyncThunk(
+    "drivers/deleteSuperAdminDrivers",
+    async (ids, { rejectWithValue }) => {
+        try {
+            const data = await deleteDriversService(ids);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to delete drivers"
+            );
+        }
+    }
+);
+
+export const updateDriverStatus = createAsyncThunk(
+    "drivers/updateDriverStatus",
+    async ({ driverId, action }, { rejectWithValue }) => {
+        try {
+            const data = await updateDriverStatusService(driverId, action);
+            return { data, driverId };
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update driver status"
+            );
+        }
+    }
+);
 
 const driverSlice = createSlice({
     name: "drivers",
@@ -244,11 +228,9 @@ const driverSlice = createSlice({
         profile: null,
         settings: null,
         applications: [],
-        notifications: [],
         resume: null,
-        routeTypes: [],
-        vehicleTypes: [],
-        skillsMaster: [],
+        inactiveDrivers: [],
+
     },
     reducers: {},
 
@@ -272,6 +254,22 @@ const driverSlice = createSlice({
             })
 
             .addCase(fetchSuperAdminDrivers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            //  get all inactive drivers - SuperAdmin
+            .addCase(fetchInactiveDrivers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchInactiveDrivers.fulfilled, (state, action) => {
+                state.inactiveLoading = false;
+                state.inactiveDrivers = action.payload?.data || [];
+            })
+
+            .addCase(fetchInactiveDrivers.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
@@ -395,21 +393,6 @@ const driverSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-
-            //get drivers all notifications
-            .addCase(fetchDriverNotifications.pending, (state) => {
-                state.loading = true;
-                state.error = null;
-            })
-            .addCase(fetchDriverNotifications.fulfilled, (state, action) => {
-                state.loading = false;
-                state.notifications = action.payload;
-            })
-            .addCase(fetchDriverNotifications.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
             // Fetch My Resume
             .addCase(fetchMyResume.pending, (state) => {
                 state.loading = true;
@@ -423,49 +406,6 @@ const driverSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-
-            // Route Types
-            .addCase(fetchRouteTypes.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchRouteTypes.fulfilled, (state, action) => {
-                state.loading = false;
-                state.routeTypes = action.payload || [];
-            })
-            .addCase(fetchRouteTypes.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
-
-            // vehicle Types
-            .addCase(fetchVehicleTypes.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchVehicleTypes.fulfilled, (state, action) => {
-                state.loading = false;
-                state.vehicleTypes = action.payload || [];
-            })
-            .addCase(fetchVehicleTypes.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
-
-
-            // skills Types
-            .addCase(fetchSkills.pending, (state) => {
-                state.loading = true;
-            })
-            .addCase(fetchSkills.fulfilled, (state, action) => {
-                state.loading = false;
-                state.skillsMaster = action.payload || [];
-            })
-            .addCase(fetchSkills.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload;
-            })
-
 
             // Post resume builder
             .addCase(postDriverResume.pending, (state) => {
@@ -482,9 +422,39 @@ const driverSlice = createSlice({
             })
 
 
+            // delete drivers (SuperAdmin)
+            .addCase(deleteSuperAdminDrivers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteSuperAdminDrivers.fulfilled, (state, action) => {
+                state.loading = false;
+                const deletedIds = action.meta.arg;
+                state.data = state.data.filter(driver => !deletedIds.includes(driver._id));
+
+                state.success = true;
+            })
+            .addCase(deleteSuperAdminDrivers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
 
 
+            //update driver status  approve // reject
+            .addCase(updateDriverStatus.fulfilled, (state, action) => {
+                const id = action.payload.driverId;
 
+                state.data = state.data.map(driver =>
+                    driver._id === id
+                        ? { ...driver, isActive: action.payload.data.isActive }
+                        : driver
+                );
+
+                state.inactiveDrivers = state.inactiveDrivers.filter(d => d._id !== id);
+            })
+            .addCase(updateDriverStatus.rejected, (state, action) => {
+                state.error = action.payload;
+            });
 
 
 

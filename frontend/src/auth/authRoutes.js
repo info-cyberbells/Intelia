@@ -8,6 +8,17 @@ export const USER_ENDPOINTS = {
 
     SUPER_ADMIN_GET_DRIVERS: `${API_BASE_URL}/superAdmin/drivers`,
     SUPER_ADMIN_GET_OWNERS: `${API_BASE_URL}/superAdmin/clients`,
+    SUPER_ADMIN_DELETE_DRIVERS: `${API_BASE_URL}/superAdmin/drivers/delete`,
+    SUPER_ADMIN_UPDATE_DRIVER_STATUS: `${API_BASE_URL}/superAdmin/drivers/status`,
+    SUPER_ADMIN_DELETE_OWNER: `${API_BASE_URL}/superAdmin/clients`,
+    SUPER_ADMIN_ADD_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
+    SUPER_ADMIN_CLIENTS: `${API_BASE_URL}/superAdmin/clients`,
+    UPDATE_CLIENT: `${API_BASE_URL}/superAdmin/clients`,
+    GET_SINGLE_CIENT_DATA: `${API_BASE_URL}/superAdmin/clients`,
+    GET_SINGLE_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
+    UPDATE_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
+
+
 
 
     OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,

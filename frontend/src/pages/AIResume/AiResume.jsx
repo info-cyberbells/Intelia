@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from '../../context/ToastContext';
-import { fetchMyResume, fetchRouteTypes, fetchVehicleTypes, fetchSkills, postDriverResume } from "../../features/Drivers/driverSlice";
-
+import { fetchMyResume, postDriverResume } from "../../features/Drivers/driverSlice";
+import { fetchRouteTypes, fetchVehicleTypes, fetchSkills } from "../../features/masterData/masterDataSlice";
 
 const DriverResumeForm = () => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
-  const { resume, loading, routeTypes, vehicleTypes, skillsMaster } = useSelector((state) => state.drivers);
+  const { resume, loading } = useSelector((state) => state.drivers);
+  const { routeTypes, vehicleTypes, skills } = useSelector((state) => state.masterData);
 
   const tabs = [
     "Basic Info",
@@ -829,8 +830,8 @@ const DriverResumeForm = () => {
                   {/* Dropdown menu */}
                   {isDropdownOpen && (
                     <div className="absolute z-10 mt-2 w-full bg-white border border-[#DFEAF2] rounded-xl shadow-lg max-h-56 overflow-y-auto">
-                      {skillsMaster && skillsMaster.length > 0 ? (
-                        skillsMaster.map((item) => (
+                      {skills && skills.length > 0 ? (
+                        skills.map((item) => (
                           <label
                             key={item._id}
                             className="flex items-center px-4 py-2 text-sm text-[#718EBF] cursor-pointer hover:bg-[#F8FBFD]"

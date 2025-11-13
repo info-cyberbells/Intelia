@@ -9,9 +9,12 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDrivers } from "../../features/Drivers/driverSlice";
+import { useNavigate } from "react-router-dom";
+import reviewSvg from "/menuicons/Review.svg"
 
 const Drivers = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     loading,
     data: drivers,
@@ -55,7 +58,9 @@ const Drivers = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800">Drivers</h1>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-colors">
+        <button
+          onClick={() => navigate("/add-driver")}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-colors">
           Add Driver
           <Plus className="w-5 h-5" />
         </button>
@@ -151,7 +156,7 @@ const Drivers = () => {
                   className="bg-gray-100 hover:bg-gray-200 p-3 rounded-lg flex items-center justify-center transition-colors"
                   title={`Email ${driver.driverName}`}
                 >
-                  <Mail className="w-5 h-5 text-gray-600" />
+                  <Mail className="w-5 h-5 text-yellow-400" />
                 </a>
 
                 {/* 💬 WhatsApp Chat */}
@@ -162,20 +167,22 @@ const Drivers = () => {
                   className="bg-gray-100 hover:bg-gray-200 p-3 rounded-lg flex items-center justify-center transition-colors"
                   title={`Chat with ${driver.driverName}`}
                 >
-                  <MessageSquare className="w-5 h-5 text-gray-600" />
+                  <MessageSquare className="w-5 h-5 text-yellow-400" />
                 </a>
 
                 {/* 🎥 Video Call (Placeholder) */}
                 <a
                   href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    alert(`Starting video call with ${driver.driverName}`);
-                  }}
+                  onClick={() => navigate("/driver-reviews")}
                   className="bg-gray-100 hover:bg-gray-200 p-3 rounded-lg flex items-center justify-center transition-colors"
                   title={`Video call with ${driver.driverName}`}
                 >
-                  <Video className="w-5 h-5 text-gray-600" />
+                  <img
+                    src={reviewSvg}
+                    alt="Video Call"
+                    className="w-6 h-6 object-contain"
+                  />
+
                 </a>
               </div>
             </div>
@@ -211,8 +218,8 @@ const Drivers = () => {
                 key={i}
                 onClick={() => handlePageChange(i + 1)}
                 className={`w-8 h-8 rounded-md font-semibold shadow-sm transition-all border ${page === i + 1
-                  ? "bg-yellow-500 text-white border-yellow-500"
-                  : "bg-[#F3CD484A] text-[#F3CD48] border-yellow-200 hover:bg-yellow-200"
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "bg-[#F3CD484A] text-[#F3CD48] border-blue-200 hover:bg-blue-200"
                   }`}
               >
                 {i + 1}

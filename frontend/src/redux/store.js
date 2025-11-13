@@ -3,6 +3,11 @@ import authReducer from "../features/userSlice/userSlice"
 import ownerReducer from '../features/ownerSlice/ownerSlice';
 import driverReducer from "../features/Drivers/driverSlice";
 import jobsReducer from "../features/Jobs/JobsSlice";
+import SuperAdminReducer from "../features/SuperAdminSlice/SuperAdminSlice";
+import notificationReducer from "../features/notifications/notificationSlice";
+import masterDataReducer from "../features/masterData/masterDataSlice";
+
+
 
 
 export const store = configureStore({
@@ -11,6 +16,10 @@ export const store = configureStore({
         owner: ownerReducer,
         drivers: driverReducer,
         jobs: jobsReducer,
+        SuperAdmin: SuperAdminReducer,
+        notifications: notificationReducer,
+        masterData: masterDataReducer,
+
     }
 })
 

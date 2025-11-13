@@ -71,8 +71,99 @@ export const superAdminOwnerListingService = async (search = "", status = "", pa
 
 };
 
+//deleet driver in bulk
+export const deleteDriversService = async (ids) => {
+    const response = await axios.delete(
+        USER_ENDPOINTS.SUPER_ADMIN_DELETE_DRIVERS,
+        {
+            data: { ids },
+            ...getAuthHeader()
+        }
+    );
+
+    return response.data;
+};
+
+//update  driver status approve or reject
+export const updateDriverStatusService = async (driverId, action) => {
+    const response = await axios.patch(
+        `${USER_ENDPOINTS.SUPER_ADMIN_UPDATE_DRIVER_STATUS}/${driverId}`,
+        { action },
+        getAuthHeader()
+    );
+
+    return response.data;
+};
+
+//delete owner
+export const deleteOwnerService = async (ownerId) => {
+    const response = await axios.delete(
+        `${USER_ENDPOINTS.SUPER_ADMIN_DELETE_OWNER}/${ownerId}`,
+        getAuthHeader()
+    );
+
+    return response.data;
+};
+
+//add driver
+export const addDriverService = async (formData) => {
+    const response = await axios.post(
+        USER_ENDPOINTS.SUPER_ADMIN_ADD_DRIVER,
+        formData,
+        getAuthHeader()
+    );
+
+    return response.data;
+};
+
+//get client
+export const addSuperAdminOwnerService = async (data) => {
+    const res = await axios.post(
+        USER_ENDPOINTS.SUPER_ADMIN_CLIENTS,
+        data,
+        getAuthHeader()
+    );
+    return res.data;
+};
 
 
+// Get single owner by ID
+export const getSingleOwnerService = async (ownerId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_SINGLE_CIENT_DATA}/${ownerId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+// Update owner
+export const updateSuperAdminOwnerService = async (ownerId, data) => {
+    const response = await axios.put(
+        `${USER_ENDPOINTS.UPDATE_CLIENT}/${ownerId}`,
+        data,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//get single driver
+export const getSingleDriverService = async (driverId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_SINGLE_DRIVER}/${driverId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//update single driver
+export const updateSuperAdminDriverService = async (driverId, formData) => {
+    const response = await axios.put(
+        `${USER_ENDPOINTS.UPDATE_DRIVER}/${driverId}`,
+        formData,
+        getAuthHeader()
+    );
+    return response.data;
+};
 
 
 

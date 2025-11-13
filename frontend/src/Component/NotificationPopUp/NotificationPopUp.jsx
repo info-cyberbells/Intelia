@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchDriverNotifications } from "../../features/Drivers/driverSlice";
+import { fetchDriverNotifications } from "../../features/notifications/notificationSlice";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 
@@ -21,7 +21,7 @@ const NotificationModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { notifications, loading } = useSelector((state) => state.drivers);
+  const { data: notifications, loading } = useSelector((state) => state.notifications);
 
   useEffect(() => {
     if (isOpen) dispatch(fetchDriverNotifications());
@@ -73,7 +73,7 @@ const NotificationModal = ({ isOpen, onClose }) => {
       <style>{fadeInStyle}</style>
       <div
         ref={modalRef}
-        className="relative mt-14 mr-32 w-[340px] bg-white rounded-2xl shadow-2xl p-4 border border-gray-100 animate-fadeIn"
+        className="relative mt-16 mr-40 w-[340px] bg-white rounded-2xl shadow-2xl p-4 border border-gray-100 animate-fadeIn"
       >
         <div className="absolute -top-2 right-10 w-4 h-4 bg-white rotate-45 border-t border-gray-200"></div>
 

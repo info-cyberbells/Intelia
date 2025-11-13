@@ -23,6 +23,11 @@ import ManageDrivers from './pages/SuperAdmin/ManageDrivers/ManageDrivers';
 import ManageOwners from './pages/SuperAdmin/ManageOwners/ManageOwner';
 import ManageJobs from './pages/SuperAdmin/ManageJobs/ManageJobs';
 import MyApplications from './pages/MyApplications/MyApplications';
+import AddDriver from './pages/Model/AddDriver/AddDriver';
+import AddOwner from './pages/Model/AddOwner/AddOwner';
+import DriverReviews from './pages/DriverReviews/DriverReviews';
+import AddDriverReview from './pages/DriverReviews/AddDriverReview';
+
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -99,6 +104,13 @@ function App() {
             <Route path="/manage-drivers" element={<ManageDrivers />} />
             <Route path="/manage-owners" element={<ManageOwners />} />
             <Route path="/manage-jobs" element={<ManageJobs />} />
+            <Route path="/add-driver" element={<AddDriver />} />
+            <Route path="/edit-driver/:id" element={<AddDriver />} />
+            <Route path="/add-owner" element={<AddOwner />} />
+            <Route path="/edit-owner/:id" element={<AddOwner />} />
+            <Route path="/driver-reviews" element={<DriverReviews />} />
+            <Route path="/add-review" element={<AddDriverReview />} />
+
           </>
         ) : (
           // If no token → redirect everything else to "/"

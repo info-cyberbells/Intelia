@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSuperAdminDrivers } from "../../../features/Drivers/driverSlice";
+import { useNavigate } from "react-router-dom";
+import { fetchSuperAdminDrivers, fetchInactiveDrivers, deleteSuperAdminDrivers, updateDriverStatus } from "../../../features/Drivers/driverSlice";
+import { useToast } from '../../../context/ToastContext';
+import VerificationRequestsModal from '../../Model/VerificationRequestsModal';
+import PendingDriverDetailModal from '../../Model/PendingDriverDetailModal';
+
 
 const ManageDriversTable = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { showToast } = useToast();
     const {
         loading,
         data: drivers,
@@ -16,9 +23,14 @@ const ManageDriversTable = () => {
     const [page, setPage] = useState(1);
     const limit = 10;
     const [search, setSearch] = useState("");
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [selectedRows, setSelectedRows] = useState([]);
+    const [verificationRequests, setVerificationRequests] = useState([]);
+    const [verificationCount, setVerificationCount] = useState(0);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [selectedDriverForView, setSelectedDriverForView] = useState(null);
+    const [showDriverDetailModal, setShowDriverDetailModal] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -38,6 +50,91 @@ const ManageDriversTable = () => {
         }
     };
 
+    useEffect(() => {
+        const fetchVerificationRequests = async () => {
+            try {
+                const result = await dispatch(fetchInactiveDrivers());
+
+                if (result.payload && result.payload.data) {
+                    setVerificationRequests(result.payload.data);
+                    setVerificationCount(result.payload.data.length);
+                }
+            } catch (error) {
+                console.error("Failed to fetch verification requests:", error);
+            }
+        };
+
+        fetchVerificationRequests();
+    }, [dispatch]);
+
+
+    const handleApprove = async (driverId) => {
+        const result = await dispatch(updateDriverStatus({ driverId, action: "approve" }));
+
+        if (result.meta.requestStatus === "fulfilled") {
+            showToast("Driver approved successfully!", "success");
+
+            setVerificationRequests(prev => prev.filter(d => d._id !== driverId));
+            setVerificationCount(prev => prev - 1);
+
+            dispatch(fetchSuperAdminDrivers({
+                search,
+                status: "active",
+                page,
+                limit
+            }));
+        }
+    };
+
+    const handleReject = async (driverId) => {
+        if (!window.confirm("Are you sure you want to reject this driver?")) return;
+
+        const result = await dispatch(updateDriverStatus({ driverId, action: "reject" }));
+
+        if (result.meta.requestStatus === "fulfilled") {
+            showToast("Driver rejected successfully!", "success");
+
+            setVerificationRequests(prev => prev.filter(d => d._id !== driverId));
+            setVerificationCount(prev => prev - 1);
+        }
+    };
+
+    const handleViewDriver = (driver) => {
+        setSelectedDriverForView(driver);
+        setShowDriverDetailModal(true);
+    };
+
+    const handleDelete = async (ids) => {
+        const deleteIds = Array.isArray(ids) ? ids : [ids];
+
+        if (deleteIds.length === 0) {
+            showToast("Please select at least one driver to delete");
+            return;
+        }
+
+        if (!window.confirm("Are you sure you want to delete?")) return;
+
+        const res = await dispatch(deleteSuperAdminDrivers(deleteIds));
+
+        if (res.meta.requestStatus === "fulfilled") {
+            showToast("Driver(s) deleted successfully!", "success");
+
+            // remove selected rows if multiple delete
+            setSelectedRows(prev => prev.filter(id => !deleteIds.includes(id)));
+
+            // OPTIONAL refresh
+            dispatch(fetchSuperAdminDrivers({
+                search,
+                status: showActiveOnly ? "active" : "",
+                page,
+                limit
+            }));
+        } else {
+            showToast(res.payload || "Failed to delete drivers", "error");
+        }
+    };
+
+
     const toggleRowSelection = (id) => {
         setSelectedRows((prev) =>
             prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
@@ -50,6 +147,64 @@ const ManageDriversTable = () => {
         } else {
             setSelectedRows(drivers?.map((driver) => driver._id) || []);
         }
+    };
+
+    const handleExport = () => {
+        if (selectedRows.length === 0) {
+            showToast("Please select at least one driver to export");
+            return;
+        }
+
+        // Filter selected drivers
+        const selectedDrivers = drivers.filter(driver => selectedRows.includes(driver._id));
+
+        // Prepare CSV headers
+        const headers = [
+            "Sr.No",
+            "Driver Name",
+            "Email",
+            "Phone Number",
+            "License Number",
+            "Municipality",
+            "Valid Until",
+            "Registered On",
+            "Status"
+        ];
+
+        // Prepare CSV rows
+        const csvRows = selectedDrivers.map((driver, index) => {
+            return [
+                index + 1,
+                driver.fullName || "N/A",
+                driver.email || "N/A",
+                driver.phoneNumber || "N/A",
+                driver.licenseNumber || "N/A",
+                driver.municipality || "N/A",
+                driver.validUntil ? new Date(driver.validUntil).toLocaleDateString() : "N/A",
+                new Date(driver.createdAt).toLocaleDateString(),
+                driver.isActive ? "Active" : "Inactive"
+            ];
+        });
+
+        // Combine headers and rows
+        const csvContent = [
+            headers.join(","),
+            ...csvRows.map(row => row.map(cell => `"${cell}"`).join(","))
+        ].join("\n");
+
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", `drivers_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = "hidden";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Drivers exported successfully!", "success");
     };
 
     const formatDate = (dateString) => {
@@ -72,14 +227,14 @@ const ManageDriversTable = () => {
     const getStatusBadge = (isActive) => {
         if (isActive) {
             return (
-                <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-medium">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 rounded-full text-xs font-medium">
                     <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
                     Active
                 </span>
             );
         }
         return (
-            <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
                 <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
                 Inactive
             </span>
@@ -90,8 +245,28 @@ const ManageDriversTable = () => {
         <div className="min-h-screen font-[Poppins] bg-gray-50 p-8 lg:ml-56 mt-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Driver Managment</h1>
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <h1 className="text-2xl font-bold text-gray-800">Driver Management</h1>
+
+                {/* ADD THIS VERIFICATION BUTTON */}
+                <div className="relative">
+                    <button
+                        onClick={() => setShowVerificationModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-all relative"
+                    >
+                        Verification Requests
+                        {verificationCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-[1px] rounded-full">
+                                {verificationCount}
+                            </span>
+                        )}
+                    </button>
+                </div>
+
+            </div>
+
+            {/* ADD THIS SECTION - Action Buttons */}
+            <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-lg">
+                <div className="flex items-center gap-2">
                     <input
                         type="text"
                         placeholder="Search drivers..."
@@ -100,35 +275,41 @@ const ManageDriversTable = () => {
                             setSearch(e.target.value);
                             setPage(1);
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 w-full md:w-64"
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 w-full md:w-56"
                     />
+
+                </div>
+
+
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={() => {
-                            setShowActiveOnly((prev) => !prev);
-                            setPage(1);
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${showActiveOnly
-                            ? "bg-blue-100 text-blue-700 border-blue-400"
-                            : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-                            }`}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
+                        onClick={() => handleDelete(selectedRows)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        {showActiveOnly ? "Active Only" : "Show Active"}
+                        Delete
+                    </button>
+
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/add-driver")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add New Driver
                     </button>
                 </div>
+
             </div>
 
             {/* Loading / Error */}
@@ -147,7 +328,7 @@ const ManageDriversTable = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-left">
+                                <th className="w-12 px-3 py-4 text-left">
                                     <input
                                         type="checkbox"
                                         checked={selectedRows.length === drivers?.length}
@@ -155,28 +336,31 @@ const ManageDriversTable = () => {
                                         className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                                <th className="w-16 px-3 py-4 text-left text-sm font-semibold text-gray-700">
                                     Sr.No
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                                <th className="w-48 px-3 py-4 text-left text-sm font-semibold text-gray-700">
                                     Driver Name
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                                <th className="w-56 px-3 py-4 text-left text-sm font-semibold text-gray-700">
                                     Email
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                                    Phone Number
+                                <th className="w-36 px-3 py-4 text-left text-sm font-semibold text-gray-700">
+                                    Phone
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                                    License Number
-                                </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+
+                                <th className="w-40 px-3 py-4 text-left text-sm font-semibold text-gray-700">
                                     Registered On
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                                <th className="w-28 px-3 py-4 text-left text-sm font-semibold text-gray-700">
                                     Status
                                 </th>
-                                <th className="px-6 py-4"></th>
+                                <th className="w-24 px-3 py-4 text-left text-sm font-semibold text-gray-700">
+                                    Reviews
+                                </th>
+                                <th className="w-48 px-3 py-4 text-left text-sm font-semibold text-gray-700">
+                                    Action
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -186,7 +370,7 @@ const ManageDriversTable = () => {
                                     className={`hover:bg-gray-50 transition-colors ${selectedRows.includes(driver._id) ? "bg-blue-50" : ""
                                         }`}
                                 >
-                                    <td className="px-6 py-4">
+                                    <td className="px-3 py-4">
                                         <input
                                             type="checkbox"
                                             checked={selectedRows.includes(driver._id)}
@@ -194,38 +378,37 @@ const ManageDriversTable = () => {
                                             className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                    <td className="px-3 py-4 text-sm text-gray-600">
                                         {(page - 1) * limit + index + 1}
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-3 py-4">
                                         <div className="flex items-center gap-3">
                                             <img
                                                 src={
                                                     driver.profileImage ||
                                                     "https://via.placeholder.com/40?text=D"
                                                 }
-                                                alt={driver.firstName}
-                                                className="w-10 h-10 rounded-full object-cover"
+                                                alt={driver.fullName}
+                                                className="w-9 h-9 rounded-full object-cover flex-shrink-0"
                                             />
-                                            <span className="text-sm font-medium text-gray-800">
-                                                {`${driver.fullName || ""}`.trim() ||
-                                                    "Unknown"}
+                                            <span className="text-sm font-medium text-gray-800 truncate">
+                                                {driver.fullName || "Unknown"}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
-                                        {driver.email || "N/A"}
+                                    <td className="px-3 py-4 text-sm text-gray-600">
+                                        <div className="truncate" title={driver.email}>
+                                            {driver.email || "N/A"}
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                    <td className="px-3 py-4 text-sm text-gray-600">
                                         {driver.phoneNumber || "N/A"}
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
-                                        {driver.licenseNumber || "N/A"}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
+
+                                    <td className="px-3 py-4 text-sm text-gray-600">
                                         <div className="flex items-center gap-2">
                                             <svg
-                                                className="w-4 h-4 text-gray-400"
+                                                className="w-4 h-4 text-gray-400 flex-shrink-0"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -237,14 +420,28 @@ const ManageDriversTable = () => {
                                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                                 />
                                             </svg>
-                                            {formatDate(driver.createdAt)}
+                                            <span className="truncate">{formatDate(driver.createdAt)}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">{getStatusBadge(driver.isActive)}</td>
-                                    <td className="px-6 py-4">
-                                        <button className="text-gray-400 hover:text-gray-600">
-                                            <MoreVertical className="w-5 h-5" />
+                                    <td className="px-3 py-4">{getStatusBadge(driver.isActive)}</td>
+                                    <td className="px-3 py-4">
+                                        <button className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
+                                            View
                                         </button>
+                                    </td>
+                                    <td className="px-3 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => navigate(`/edit-driver/${driver._id}`)}
+                                                className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap">
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(driver._id)}
+                                                className="text-red-600 hover:text-red-700 text-sm font-medium whitespace-nowrap">
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -296,6 +493,28 @@ const ManageDriversTable = () => {
                         </button>
                     </div>
                 </div>
+            )}
+            {/* Add this before the last closing </div> */}
+            <VerificationRequestsModal
+                isOpen={showVerificationModal}
+                onClose={() => setShowVerificationModal(false)}
+                drivers={verificationRequests}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onViewDriver={handleViewDriver}
+            />
+
+            {showDriverDetailModal && selectedDriverForView && (
+                <PendingDriverDetailModal
+                    isOpen={showDriverDetailModal}
+                    onClose={() => {
+                        setShowDriverDetailModal(false);
+                        setSelectedDriverForView(null);
+                    }}
+                    driver={selectedDriverForView}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                />
             )}
         </div>
     );
