@@ -592,7 +592,7 @@ const DriverResumeForm = () => {
                 <div>
                   <label className="text-sm text-[#232323]">Start Date</label>
                   <input
-                    type="text"
+                     type="date"
                     name="startDate"
                     value={formData.startDate}
                     onChange={handleChange}
@@ -604,7 +604,7 @@ const DriverResumeForm = () => {
                 <div>
                   <label className="text-sm text-[#23232]">End Date</label>
                   <input
-                    type="text"
+                     type="date"
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}

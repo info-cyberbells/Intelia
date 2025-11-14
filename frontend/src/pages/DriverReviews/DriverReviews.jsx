@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDriverReviews } from "../../features/SuperAdminSlice/SuperAdminSlice";
 import { useParams, useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import addicon from "/menuicons/add_circle.svg";
 
 const Reviews = () => {
   const { id } = useParams();

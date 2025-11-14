@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -47,12 +47,68 @@ export const searchDriverByLicense = createAsyncThunk(
     }
 );
 
+//get my vehicles
+export const fetchOwnerVehicles = createAsyncThunk(
+    "owner/fetchOwnerVehicles",
+    async (_, thunkAPI) => {
+        try {
+            return await fetchOwnerVehiclesService();
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || "Failed to fetch vehicles"
+            );
+        }
+    }
+);
+
+export const addOwnerVehicle = createAsyncThunk(
+    "owner/addOwnerVehicle",
+    async (formData, { rejectWithValue }) => {
+        try {
+            return await addOwnerVehicleService(formData);
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to add vehicle"
+            );
+        }
+    }
+);
+
+
+// UPDATE VEHICLE
+export const updateOwnerVehicle = createAsyncThunk(
+    "owner/updateOwnerVehicle",
+    async ({ formData, vehicleId }, { rejectWithValue }) => {
+        try {
+            const res = await updateOwnerVehicleService({ formData, vehicleId });
+            return res;
+        } catch (err) {
+            return rejectWithValue(err.response?.data);
+        }
+    }
+);
+
+
+// DELETE VEHICLE
+export const deleteOwnerVehicle = createAsyncThunk(
+    "owner/deleteOwnerVehicle",
+    async (vehicleId, { rejectWithValue }) => {
+        try {
+            const res = await deleteOwnerVehicleService(vehicleId);
+            return { ...res, vehicleId };
+        } catch (err) {
+            return rejectWithValue(err.response?.data);
+        }
+    }
+);
+
 
 const initialState = {
     dashboardData: null,
     loading: false,
     error: null,
     searchResult: [],
+    vehicles: [],
 
 };
 
@@ -115,7 +171,66 @@ const ownerSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
                 state.searchResult = [];
-            });
+            })
+
+            //get veicle detials
+            .addCase(fetchOwnerVehicles.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(fetchOwnerVehicles.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vehicles = action.payload.data;
+            })
+
+            .addCase(fetchOwnerVehicles.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //add a vehicle in owner side
+            .addCase(addOwnerVehicle.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(addOwnerVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vehicles.push(action.payload.data);
+            })
+            .addCase(addOwnerVehicle.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            // UPDATE VEHICLE
+            .addCase(updateOwnerVehicle.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateOwnerVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                const updated = action.payload.data;
+                state.vehicles = state.vehicles.map(v =>
+                    v._id === updated._id ? updated : v
+                );
+            })
+            .addCase(updateOwnerVehicle.rejected, (state) => {
+                state.loading = false;
+            })
+
+            // DELETE VEHICLE
+            .addCase(deleteOwnerVehicle.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(deleteOwnerVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vehicles = state.vehicles.filter(v => v._id !== action.payload.vehicleId);
+            })
+            .addCase(deleteOwnerVehicle.rejected, (state) => {
+                state.loading = false;
+            })
+
 
     },
 });

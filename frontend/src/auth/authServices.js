@@ -258,6 +258,64 @@ export const getOwnerNotificationsService = async () => {
     return response.data;
 };
 
+//get owners vehicles
+export const fetchOwnerVehiclesService = async () => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.FETCH_OWNER_VEHICLES}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//add a new vehicle in owner
+export const addOwnerVehicleService = async (formData) => {
+    const config = {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            ...getAuthHeader().headers
+        }
+    };
+
+    const response = await axios.post(
+        USER_ENDPOINTS.ADD_VEHICLE,
+        formData,
+        config
+    );
+
+    return response.data;
+};
+
+
+// Update existing vehicle
+export const updateOwnerVehicleService = async ({ formData, vehicleId }) => {
+    const response = await axios.put(
+        `${USER_ENDPOINTS.UPDATE_VEHICLE}/${vehicleId}`,
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                ...getAuthHeader().headers
+            }
+        }
+    );
+    return response.data;
+};
+
+
+// Delete vehicle
+export const deleteOwnerVehicleService = async (vehicleId) => {
+    const response = await axios.delete(
+        `${USER_ENDPOINTS.DELETE_VEHICLE}/${vehicleId}`,
+        {
+            headers: {
+                ...getAuthHeader().headers
+            }
+        }
+    );
+    return response.data;
+};
+
+
 
 
 

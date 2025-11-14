@@ -31,6 +31,11 @@ export const USER_ENDPOINTS = {
   POST_DRIVER_REVIEW: `${API_BASE_URL}/owner/driver-reviews`,
   SEARCH_DRIVER: `${API_BASE_URL}/owner/driver/search`,
   OWNER_NOTIFICATIONS: `${API_BASE_URL}/owner/my-notifications`,
+  FETCH_OWNER_VEHICLES: `${API_BASE_URL}/owner/vehicles`,
+  ADD_VEHICLE: `${API_BASE_URL}/owner/vehicle`,
+  UPDATE_VEHICLE: `${API_BASE_URL}/owner/vehicle`,
+  DELETE_VEHICLE: `${API_BASE_URL}/owner/vehicle`,
+
 
 
 
