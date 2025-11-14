@@ -432,3 +432,13 @@ export const postDriverResumeService = async (resumeData) => {
 
     return response.data;
 };
+
+
+export const getMyReviewsService = async (driverId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.FETCH_MY_REVIEWS}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+

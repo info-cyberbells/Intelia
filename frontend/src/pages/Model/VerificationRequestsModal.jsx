@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { X } from 'lucide-react';
 
 const VerificationRequestsModal = ({ isOpen, onClose, drivers, onApprove, onReject, onViewDriver }) => {
+    const navigate = useNavigate();
     const [selectedRows, setSelectedRows] = useState([]);
 
     useEffect(() => {
@@ -145,7 +147,7 @@ const VerificationRequestsModal = ({ isOpen, onClose, drivers, onApprove, onReje
                                                     <img
                                                         src={
                                                             driver.profileImage ||
-                                                            "https://via.placeholder.com/40?text=D"
+                                                            "https://ui-avatars.com/api/?name=" + (driver.fullName || "Driver") + "&background=3B82F6&color=fff&size=40"
                                                         }
                                                         alt={driver.fullName}
                                                         className="w-9 h-9 rounded-full object-cover flex-shrink-0"
@@ -189,7 +191,9 @@ const VerificationRequestsModal = ({ isOpen, onClose, drivers, onApprove, onReje
                                                 </span>
                                             </td>
                                             <td className="px-3 py-4">
-                                                <button className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
+                                                <button
+                                                    onClick={() => navigate(`/view-rating/${driver._id}`)}
+                                                    className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
                                                     View Reviews
                                                 </button>
                                             </td>

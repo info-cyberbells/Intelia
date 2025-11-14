@@ -386,7 +386,8 @@ const ManageDriversTable = () => {
                                             <img
                                                 src={
                                                     driver.profileImage ||
-                                                    "https://via.placeholder.com/40?text=D"
+                                                    "https://ui-avatars.com/api/?name=" + (driver.fullName || "Driver") + "&background=3B82F6&color=fff&size=40"
+
                                                 }
                                                 alt={driver.fullName}
                                                 className="w-9 h-9 rounded-full object-cover flex-shrink-0"

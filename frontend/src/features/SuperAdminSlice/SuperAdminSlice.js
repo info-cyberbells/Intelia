@@ -89,7 +89,7 @@ export const updateSuperAdminDriver = createAsyncThunk(
     }
 );
 
-///fetch driver thunk
+//fetch driver thunk
 export const fetchDriverReviews = createAsyncThunk(
     "drivers/fetchDriverReviews",
     async (driverId, { rejectWithValue }) => {

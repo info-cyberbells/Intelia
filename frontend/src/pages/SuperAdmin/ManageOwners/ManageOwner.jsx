@@ -295,7 +295,8 @@ const ManageOwnersTable = () => {
                                             <img
                                                 src={
                                                     owner.profileImage ||
-                                                    "https://via.placeholder.com/40?text=O"
+                                                    "https://ui-avatars.com/api/?name=" + (owner.fullName || "Owner") + "&background=3B82F6&color=fff&size=40"
+
                                                 }
                                                 alt={owner.fullName}
                                                 className="w-9 h-9 rounded-full object-cover flex-shrink-0"

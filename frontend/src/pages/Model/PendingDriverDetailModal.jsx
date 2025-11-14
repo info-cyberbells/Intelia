@@ -39,7 +39,8 @@ const PendingDriverDetailModal = ({ isOpen, onClose, driver, onApprove, onReject
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="relative">
                                     <img
-                                        src={driver.profileImage || "https://via.placeholder.com/100?text=D"}
+                                        src={driver.profileImage || "https://ui-avatars.com/api/?name=" + (driver.fullName || "Driver") + "&background=3B82F6&color=fff&size=40"
+                                        }
                                         alt={driver.fullName}
                                         className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
                                     />
@@ -131,6 +132,19 @@ const PendingDriverDetailModal = ({ isOpen, onClose, driver, onApprove, onReject
                                 <p className="text-sm font-medium text-gray-800 mt-2">
                                     {driver.address}
                                 </p>
+                            </div>
+                        )}
+                        {/* License Photo */}
+                        {driver.licensePhoto && (
+                            <div className="bg-gray-50 rounded-lg p-6">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 block">
+                                    License Photo
+                                </label>
+                                <img
+                                    src={driver.licensePhoto}
+                                    alt="Driver License"
+                                    className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200 shadow-sm"
+                                />
                             </div>
                         )}
                     </div>

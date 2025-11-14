@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, getDriverReviewsOwnerService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getMyResumeService, postDriverResumeService, deleteDriversService, updateDriverStatusService, postDriverReviewService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, getDriverReviewsOwnerService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getMyResumeService, postDriverResumeService, deleteDriversService, updateDriverStatusService, postDriverReviewService, getMyReviewsService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -245,6 +245,22 @@ export const postDriverReview = createAsyncThunk(
         }
     }
 );
+
+//fetch MyReview thunk
+export const fetchMyReviews = createAsyncThunk(
+    "drivers/fetchMyReviews",
+    async (driverId, { rejectWithValue }) => {
+        try {
+            const data = await getMyReviewsService(driverId);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch driver reviews"
+            );
+        }
+    }
+);
+
 
 
 
@@ -519,7 +535,27 @@ const driverSlice = createSlice({
             .addCase(postDriverReview.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+
+
+            //show my reviews on driver side
+            .addCase(fetchMyReviews.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(fetchMyReviews.fulfilled, (state, action) => {
+                state.loading = false;
+                state.reviews = action.payload.reviews || [];
+                state.averageRating = action.payload.averageRating || 0;
+                state.totalReviews = action.payload.totalReviews || 0;
+            })
+
+            .addCase(fetchMyReviews.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
 
 
 

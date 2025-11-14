@@ -3,7 +3,7 @@ import { Home, Search, Users, Briefcase } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../features/userSlice/userSlice";
-import logoimage from "../../assets/image.png";
+import logoimage from "../../assets/mainlogo.png";
 
 const MenuItems = () => {
   const dispatch = useDispatch();
@@ -78,10 +78,10 @@ const MenuItems = () => {
     },
 
     {
-      to: "/my-resume",
+      to: "/my-reviews",
       icon: "/menuicons/review _active.svg",
       activeIcon: "/menuicons/Review_menu.svg",
-      label: "My Resume",
+      label: "My Reviews",
     },
   ];
 

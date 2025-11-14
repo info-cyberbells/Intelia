@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { register, registerDriver, reset } from '../../features/userSlice/userSlice';
 import { useNavigate } from "react-router-dom";
 import { useToast } from '../../context/ToastContext';
-import image from '../../assets/border.png';
-import border from '../../assets/faceimage.png';
+import image from '../../assets/image.png';
+import license from '../../assets/license_dummy.png';
 import verification from '../../assets/verification-pending.png'
 import imageCompression from 'browser-image-compression';
 
@@ -36,7 +36,8 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
     const [driverStep, setDriverStep] = useState(1);
-    const [selectedImage, setSelectedImage] = useState(null);
+    // const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedLicenseImage, setSelectedLicenseImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [previousRole, setPreviousRole] = useState('');
     const [showUploadArea, setShowUploadArea] = useState(false);
@@ -69,7 +70,8 @@ const Register = () => {
                 setConfirmPassword('');
                 setFieldErrors({});
                 setDriverStep(1);
-                setSelectedImage(null);
+                // setSelectedImage(null);
+                setSelectedLicenseImage(null);
                 setImagePreview(null);
                 setPreviousRole(value);
                 showToast("Role changed. Please fill in the details again.", 'info');
@@ -149,7 +151,8 @@ const Register = () => {
                     file.name || `photo-${Date.now()}.jpg`,
                     { type: compressedFile.type }
                 );
-                setSelectedImage(fileWithName);
+                // setSelectedImage(fileWithName);
+                setSelectedLicenseImage(fileWithName);
 
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -192,8 +195,8 @@ const Register = () => {
 
             const compressedFile = await imageCompression(file, options);
 
-            setSelectedImage(compressedFile);
-
+            // setSelectedImage(compressedFile);
+            setSelectedLicenseImage(compressedFile);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -318,7 +321,10 @@ const Register = () => {
                 }
             }
             if (driverStep === 2) {
-                if (!selectedImage) {
+                // if (!selectedImage) {
+                //     errors.image = true;
+                // }
+                if (!selectedLicenseImage) {
                     errors.image = true;
                 }
             }
@@ -345,7 +351,9 @@ const Register = () => {
                 licenseNumber: "License number is required",
                 municipality: "Municipality is required",
                 validUntil: "Valid until date is required and must be in future",
-                image: "Please upload your photo"
+                // image: "Please upload your photo"
+                image: "Please upload your license photo"
+
             };
             showToast(errorMessages[errorField], 'error');
         } else {
@@ -388,8 +396,12 @@ const Register = () => {
                 driverFormData.append('validUntil', formData.validUntil);
 
                 // Append image file
-                if (selectedImage) {
-                    driverFormData.append('profileImage', selectedImage);
+                // if (selectedImage) {
+                //     driverFormData.append('profileImage', selectedImage);
+                // }
+                // Append license image file
+                if (selectedLicenseImage) {
+                    driverFormData.append('licensePhoto', selectedLicenseImage);
                 }
 
                 dispatch(registerDriver(driverFormData));
@@ -904,15 +916,15 @@ const Register = () => {
                                     {!showVerificationComplete ? (
                                         // Original Step 2 Form
                                         <>
-                                            <h2 className="text-2xl font-semibold mb-2 text-center mt-3" style={{ color: "#424242" }}>
-                                                Upload Your Photo
+                                            <h2 className="text-2xl font-semibold mb-1 text-center mt-4" style={{ color: "#424242" }}>
+                                                {showCamera ? "Capture Your License Photo" : "Upload Your License Photo"}
                                             </h2>
-                                            <p className="mb-6 text-center text-sm" style={{ color: "#BDBDBD" }}>
-                                                Please upload a clear photo for verification
+                                            <p className="mb-3 text-center text-sm" style={{ color: "#BDBDBD" }}>
+                                                {showCamera ? "Hold your phone still when the frame turns blue take a photo." : "Please upload a clear photo of your license for verification"}
                                             </p>
 
                                             {/* Image Upload Area */}
-                                            <div className="mb-6">
+                                            <div className="mb-4">
                                                 {!showUploadArea ? (
                                                     // Face Scan Screen (shows first)
                                                     <div className="space-y-6">
@@ -920,14 +932,14 @@ const Register = () => {
                                                         <div className="relative rounded-xl p-8 flex items-center justify-center" style={{ minHeight: '320px' }}>
                                                             <div className="relative w-64 h-64">
                                                                 <img
-                                                                    src={border}
+                                                                    src={license}
                                                                     alt="Face mesh"
                                                                     className="absolute inset-0 w-full h-full object-contain"
                                                                 />
                                                                 <img
                                                                     src={image}
                                                                     alt="Frame"
-                                                                    className="absolute inset-0 w-full h-full object-contain"
+                                                                    className="absolute inset-0 w-full h-full object-contain -translate-y-1.5"
                                                                 />
                                                             </div>
                                                         </div>
@@ -938,7 +950,7 @@ const Register = () => {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                             </svg>
                                                             <p className="text-sm text-blue-800">
-                                                                The data you share will be encrypted, stored securely, and only used to verify your identity
+                                                                Your license photo will be encrypted, stored securely, and only used to verify your identity
                                                             </p>
                                                         </div>
 
@@ -1028,7 +1040,8 @@ const Register = () => {
                                                                             type="button"
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
-                                                                                setSelectedImage(null);
+                                                                                // setSelectedImage(null);
+                                                                                setSelectedLicenseImage(null);
                                                                                 setImagePreview(null);
                                                                                 setShowUploadArea(false);
                                                                             }}

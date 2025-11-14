@@ -29,6 +29,7 @@ import AddOwner from './pages/Model/AddOwner/AddOwner';
 import DriverReviews from './pages/DriverReviews/DriverReviews';
 import DriverReviewByOwnerside from './pages/DriverReviews/DriverReviewByOwnerside';
 import AddDriverReview from './pages/DriverReviews/AddDriverReview';
+import MyReviews from "./pages/MyReviews/MyReviews";
 
 
 function App() {
@@ -115,6 +116,7 @@ function App() {
             <Route path="/view-rating/:id" element={<DriverReviews />} />
             <Route path="/view-review/:id" element={<DriverReviewByOwnerside />} />
             <Route path="/add-review/:id" element={<AddDriverReview />} />
+            <Route path="/my-reviews" element={<MyReviews />} />
 
           </>
         ) : (
