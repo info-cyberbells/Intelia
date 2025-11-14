@@ -23,6 +23,8 @@ export const getProfile = async (req, res) => {
       });
     }
 
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+
     // Single role (string)
     const role = user.role?.toLowerCase();
     let roleData = {};
@@ -39,6 +41,7 @@ export const getProfile = async (req, res) => {
           city: user.city,
           country: user.country,
           dob: user.dob,
+          licensePhoto: `${baseURL}${user.licensePhoto}` || `${baseURL}${user.licensePhoto}`,
         };
         break;
 
@@ -63,7 +66,6 @@ export const getProfile = async (req, res) => {
         };
     }
 
-    const baseURL = `${req.protocol}://${req.get("host")}`;
     return res.status(200).json({
       success: true,
       message: "Profile fetched successfully",

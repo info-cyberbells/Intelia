@@ -14,10 +14,14 @@ export const register = async (req, res) => {
       return res.status(403).json({ message: "You cannot assign this role manually" });
     }
 
-    let profileImage = null;
-    if (req.file) {
-      profileImage = `/uploads/profiles/${req.file.filename}`;
-    }
+    // let profileImage = null;
+    // if (req.file) {
+    //   profileImage = `/uploads/profiles/${req.file.filename}`;
+    // }
+
+    const profileImage = req.files?.profileImage ? `/uploads/profiles/${req.files.profileImage[0].filename}`: null;
+    const licensePhoto = req.files?.licensePhoto ? `/uploads/profiles/${req.files.licensePhoto[0].filename}` : null;
+
 
     // Create user with all fields
     const user = await User.create({
@@ -30,6 +34,7 @@ export const register = async (req, res) => {
       municipality,
       validUntil,
       profileImage,
+      licensePhoto,
       isActive: false, // Default inactive until approval
       status: "pending"
     });
@@ -38,6 +43,10 @@ export const register = async (req, res) => {
     const userData = user.toObject();
     if (userData.profileImage && !userData.profileImage.startsWith("http")) {
       userData.profileImage = `${baseURL}${userData.profileImage}`;
+    }
+
+    if (userData.licensePhoto && !userData.licensePhoto.startsWith("http")) {
+      userData.licensePhoto = `${baseURL}${userData.licensePhoto}`;
     }
 
     res.status(201).json({ message: "Driver registered successfully", user: userData });
