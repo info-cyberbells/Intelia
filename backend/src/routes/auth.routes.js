@@ -9,7 +9,18 @@ import { uploadAvatar } from "../middleware/upload.middleware.js";
 const router = express.Router();
 
 // Public routes
-router.post("/register", uploadAvatar.single("profileImage"), validateRegister, register);
+// router.post("/register", uploadAvatar.single("profileImage"), validateRegister, register);
+
+router.post(
+  "/register",
+  uploadAvatar.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "licensePhoto", maxCount: 1 },
+  ]),
+  validateRegister,
+  register
+);
+
 router.post("/login", login);
 
 // Logout (All authenticated users)
