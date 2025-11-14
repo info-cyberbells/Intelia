@@ -12,6 +12,7 @@ import { getOwnerDashboard } from "../controllers/owner/dashboard.controller.js"
 import { getMyDrivers ,getMyDriverProfile, searchDriverByLicense } from "../controllers/owner/ownerDriverController.js";
 import { addReview, getClientReviews } from "../controllers/review.controller.js";
 import { uploadVehicleImage } from "../middleware/upload.middleware.js";
+import { getSystemNotifications } from "../controllers/systemNotificationController.js";
 
 const router = express.Router();
 
@@ -109,5 +110,8 @@ router.get("/driver/search", searchDriverByLicense);
 // Reviews
 router.post("/driver-reviews", addReview);
 router.get("/driver-reviews/:driverId", getClientReviews);
+
+//Notifications
+router.get("/my-notifications", getSystemNotifications);
 
 export default router;
