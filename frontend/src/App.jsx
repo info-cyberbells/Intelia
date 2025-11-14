@@ -26,6 +26,7 @@ import MyApplications from './pages/MyApplications/MyApplications';
 import AddDriver from './pages/Model/AddDriver/AddDriver';
 import AddOwner from './pages/Model/AddOwner/AddOwner';
 import DriverReviews from './pages/DriverReviews/DriverReviews';
+import DriverReviewByOwnerside from './pages/DriverReviews/DriverReviewByOwnerside';
 import AddDriverReview from './pages/DriverReviews/AddDriverReview';
 
 
@@ -109,6 +110,8 @@ function App() {
             <Route path="/add-owner" element={<AddOwner />} />
             <Route path="/edit-owner/:id" element={<AddOwner />} />
             <Route path="/driver-reviews" element={<DriverReviews />} />
+            <Route path="/view-rating/:id" element={<DriverReviews />} />
+            <Route path="/view-review/:id" element={<DriverReviewByOwnerside />} />
             <Route path="/add-review" element={<AddDriverReview />} />
 
           </>

@@ -425,7 +425,9 @@ const ManageDriversTable = () => {
                                     </td>
                                     <td className="px-3 py-4">{getStatusBadge(driver.isActive)}</td>
                                     <td className="px-3 py-4">
-                                        <button className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
+                                        <button
+                                         onClick={() => navigate(`/view-rating/${driver._id}`)}
+                                          className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
                                             View
                                         </button>
                                     </td>

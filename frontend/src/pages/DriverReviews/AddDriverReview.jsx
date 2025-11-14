@@ -12,17 +12,17 @@ const AddReview = () => {
   const display = hoverValue ?? rating;
 
   const getStarIcon = (value, index) => {
-  const starNum = index + 1;
+    const starNum = index + 1;
 
-  if (value >= starNum) 
-    return <FaStar className="text-yellow-400" size={28} />;
+    if (value >= starNum)
+      return <FaStar className="text-yellow-400" size={28} />;
 
-  if (value >= starNum - 0.5)
-    return <FaStarHalfAlt className="text-yellow-400" size={28} />;
+    if (value >= starNum - 0.5)
+      return <FaStarHalfAlt className="text-yellow-400" size={28} />;
 
 
-  return <FaStar className="text-[#D9D9D9]" size={28} />;
-};
+    return <FaStar className="text-[#D9D9D9]" size={28} />;
+  };
 
 
   const handleMove = (e) => {
@@ -36,14 +36,15 @@ const AddReview = () => {
     const val = parseFloat(value);
 
     setHoverValue(val);
-    setRating(val); 
+    setRating(val);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     alert("Review submitted successfully!");
-    navigate("/driver-reviews");
+    navigate(-1);
+
   };
 
   return (
@@ -54,7 +55,7 @@ const AddReview = () => {
         </h2>
 
         <div className="max-w-3xl bg-white shadow-lg rounded-2xl p-8">
-          
+
           {/* Rating */}
           <label className="block text-[#232323] text-base font-medium mb-2">
             Rate the Driver
@@ -88,7 +89,7 @@ const AddReview = () => {
           {/* Buttons */}
           <div className="flex justify-start gap-4 mt-6">
             <button
-              onClick={() => navigate("/driver-reviews")}
+              onClick={() => navigate(-1)}
               className="px-6 py-2 text-[#3565E3] border border-[#3565E3] rounded-xl"
             >
               Cancel

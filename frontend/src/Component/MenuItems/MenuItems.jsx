@@ -129,24 +129,27 @@ const MenuItems = () => {
 
       <div className="px-4 pb-6 flex flex-col justify-end space-y-2">
         {/* Settings */}
-        <Link
-          to="/settings"
-          className={`flex items-center cursor-pointer px-4 py-3 rounded-xl transition-colors ${location.pathname === "/settings"
-            ? "bg-[#3565E3] text-white"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-            }`}
-        >
-          <img
-            src={
-              location.pathname === "/settings"
-                ? "/menuicons/settings_active.svg"
-                : "/menuicons/Setting.svg"
-            }
-            alt="Settings"
-            className="w-6 h-6 mr-3"
-          />
-          Settings
-        </Link>
+        {role !== "superadmin" && (
+          <Link
+            to="/settings"
+            className={`flex items-center cursor-pointer px-4 py-3 rounded-xl transition-colors ${location.pathname === "/settings"
+              ? "bg-[#3565E3] text-white"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+              }`}
+          >
+            <img
+              src={
+                location.pathname === "/settings"
+                  ? "/menuicons/settings_active.svg"
+                  : "/menuicons/Setting.svg"
+              }
+              alt="Settings"
+              className="w-6 h-6 mr-3"
+            />
+            Settings
+          </Link>
+        )}
+
 
 
         {/* Logout */}

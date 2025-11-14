@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService } from "../../auth/authServices";
+import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService } from "../../auth/authServices";
 
 // Thunk: Delete Owner
 export const deleteOwner = createAsyncThunk(
@@ -89,6 +89,21 @@ export const updateSuperAdminDriver = createAsyncThunk(
     }
 );
 
+///fetch driver thunk
+export const fetchDriverReviews = createAsyncThunk(
+    "drivers/fetchDriverReviews",
+    async (driverId, { rejectWithValue }) => {
+        try {
+            const data = await getDriverReviewsService(driverId);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch driver reviews"
+            );
+        }
+    }
+);
+
 
 const SuperAdminSlice = createSlice({
     name: "superAdmin",
@@ -98,6 +113,9 @@ const SuperAdminSlice = createSlice({
         success: false,
         deletedId: null,
         currentOwner: null,
+        reviews: [],
+        averageRating: 0,
+        totalReviews: 0,
     },
 
     reducers: {
@@ -211,6 +229,25 @@ const SuperAdminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+            //driver  reviews
+            .addCase(fetchDriverReviews.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+
+            .addCase(fetchDriverReviews.fulfilled, (state, action) => {
+                state.loading = false;
+                state.reviews = action.payload.reviews || [];
+                state.averageRating = action.payload.averageRating || 0;
+                state.totalReviews = action.payload.totalReviews || 0;
+            })
+
+            .addCase(fetchDriverReviews.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
 
 
     }

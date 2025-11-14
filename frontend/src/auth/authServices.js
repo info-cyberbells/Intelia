@@ -165,6 +165,14 @@ export const updateSuperAdminDriverService = async (driverId, formData) => {
     return response.data;
 };
 
+//get driver reviews superadmin
+export const getDriverReviewsService = async (driverId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.DRIVER_REVIEWS}/${driverId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
 
 
 
@@ -200,6 +208,17 @@ export const driverListingService = async (page = 1, limit = 10) => {
     );
     return response.data;
 }
+
+
+//get driver reviews ownerside
+export const getDriverReviewsOwnerService = async (driverId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.DRIVER_REVIEWS_ON_OWNER}/${driverId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
 
 
 

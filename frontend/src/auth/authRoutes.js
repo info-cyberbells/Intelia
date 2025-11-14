@@ -17,12 +17,15 @@ export const USER_ENDPOINTS = {
     GET_SINGLE_CIENT_DATA: `${API_BASE_URL}/superAdmin/clients`,
     GET_SINGLE_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
     UPDATE_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
+    DRIVER_REVIEWS: `${API_BASE_URL}/superAdmin/driver-reviews`,
+
 
 
 
 
     OWNER_DASHBOARD: `${API_BASE_URL}/owner/dashboard`,
     GET_ALL_DRIVERS: `${API_BASE_URL}/owner/drivers`,
+      DRIVER_REVIEWS_ON_OWNER: `${API_BASE_URL}/owner/driver-reviews`,
 
 
 

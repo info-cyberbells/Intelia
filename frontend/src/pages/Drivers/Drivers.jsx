@@ -172,11 +172,14 @@ const Drivers = () => {
 
                 {/* 🎥 Video Call (Placeholder) */}
                 <a
-                  href="#"
-                  onClick={() => navigate("/driver-reviews")}
-                  className="bg-gray-100 hover:bg-gray-200 p-3 rounded-lg flex items-center justify-center transition-colors"
-                  title={`Video call with ${driver.driverName}`}
+                  href=""
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/view-review/${driver.driverId}`);
+                  }}
+                  className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-3 rounded-lg flex items-center justify-center transition-colors"
                 >
+
                   <img
                     src={reviewSvg}
                     alt="Video Call"
