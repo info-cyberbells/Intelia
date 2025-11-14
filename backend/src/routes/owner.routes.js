@@ -108,6 +108,6 @@ router.get("/driver/search", searchDriverByLicense);
 
 // Reviews
 router.post("/driver-reviews", addReview);
-router.get("/driver-reviews/:clientId", getClientReviews);
+router.get("/driver-reviews/:driverId", getClientReviews);
 
 export default router;

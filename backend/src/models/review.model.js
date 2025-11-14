@@ -7,7 +7,7 @@ const reviewSchema = new mongoose.Schema(
       ref: "User", // reviewer
       required: true,
     },
-    client: {
+    driver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // receiver
       required: true,
