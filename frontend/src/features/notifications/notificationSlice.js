@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getDriverNotificationsService } from "../../auth/authServices";
+import { getDriverNotificationsService, getOwnerNotificationsService } from "../../auth/authServices";
 
 // Fetch driver notifications
 export const fetchDriverNotifications = createAsyncThunk(
@@ -15,6 +15,22 @@ export const fetchDriverNotifications = createAsyncThunk(
         }
     }
 );
+
+// Fetch Owner notifications
+export const fetchOwnerNotifications = createAsyncThunk(
+    "notifications/fetchOwnerNotifications",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getOwnerNotificationsService();
+            return data.notifications || [];
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch notifications"
+            );
+        }
+    }
+);
+
 
 const notificationSlice = createSlice({
     name: "notifications",
@@ -40,6 +56,20 @@ const notificationSlice = createSlice({
                 state.data = action.payload;
             })
             .addCase(fetchDriverNotifications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Fetch owner notifications
+            .addCase(fetchOwnerNotifications.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOwnerNotifications.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload;
+            })
+            .addCase(fetchOwnerNotifications.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

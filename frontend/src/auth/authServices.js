@@ -249,6 +249,15 @@ export const searchDriverByLicenseService = async (licenseNumber) => {
     return response.data;
 };
 
+// Get owner notifications
+export const getOwnerNotificationsService = async () => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.OWNER_NOTIFICATIONS}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
 
 
 
@@ -370,7 +379,7 @@ export const getDriverNotificationsService = async () => {
     return response.data;
 };
 
-// Get driver notifications
+// Get driver resume
 export const getMyResumeService = async () => {
     const response = await axios.get(
         `${USER_ENDPOINTS.GET_MY_RESUME}`,

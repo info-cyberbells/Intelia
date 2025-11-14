@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationModal from "../NotificationPopUp/NotificationPopUp";
+import OwnerNotificationModal from "../NotificationPopUp/OwnerNotificationModal";
 import { useSelector } from "react-redux";
 
 const TopBar = () => {
@@ -77,7 +78,14 @@ const TopBar = () => {
           />
         </div>
       </div>
-      <NotificationModal isOpen={open} onClose={() => setOpen(false)} />
+      {user?.role === "owner" && (
+        <OwnerNotificationModal isOpen={open} onClose={() => setOpen(false)} />
+      )}
+
+      {/* Driver Notification (KEEP YOUR ORIGINAL) */}
+      {user?.role === "driver" && (
+        <NotificationModal isOpen={open} onClose={() => setOpen(false)} />
+      )}
     </div>
   );
 };

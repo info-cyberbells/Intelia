@@ -76,6 +76,13 @@ const MenuItems = () => {
       activeIcon: "/menuicons/resonance-active.svg",
       label: "Resources",
     },
+
+    {
+      to: "/my-resume",
+      icon: "/menuicons/review _active.svg",
+      activeIcon: "/menuicons/Review_menu.svg",
+      label: "My Resume",
+    },
   ];
 
   let activeMenu;

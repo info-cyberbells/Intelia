@@ -17,6 +17,7 @@ import MyProfile from "./pages/MyProfile/MyProfile";
 import Settings from "./pages/Settings/Settings";
 import DriverJobs from "./pages/DriverJobs/DriverJobs";
 import NotificationPages from "./pages/NotificationPage/NotificationPage";
+import OwnerNotificationFullPage from "./pages/NotificationPage/OwnerNotificationFullPage";
 import AiResume from "./pages/AIResume/AiResume";
 import SuperadminDasboard from './pages/SuperAdmin/SuperAdminDashboard/Superadmindashboard';
 import ManageDrivers from './pages/SuperAdmin/ManageDrivers/ManageDrivers';
@@ -101,6 +102,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/driver-jobs" element={<DriverJobs />} />
             <Route path="/notifications" element={<NotificationPages />} />
+            <Route path="/all-notifications" element={<OwnerNotificationFullPage />} />
             <Route path="/ai-resumes" element={<AiResume />} />
             <Route path="/manage-drivers" element={<ManageDrivers />} />
             <Route path="/manage-owners" element={<ManageOwners />} />

@@ -30,6 +30,7 @@ export const USER_ENDPOINTS = {
   DRIVER_REVIEWS_ON_OWNER: `${API_BASE_URL}/owner/driver-reviews`,
   POST_DRIVER_REVIEW: `${API_BASE_URL}/owner/driver-reviews`,
   SEARCH_DRIVER: `${API_BASE_URL}/owner/driver/search`,
+  OWNER_NOTIFICATIONS: `${API_BASE_URL}/owner/my-notifications`,
 
 
 
