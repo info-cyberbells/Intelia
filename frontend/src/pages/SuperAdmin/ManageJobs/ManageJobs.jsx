@@ -1,194 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchSuperAdminJobs } from "../../../features/SuperAdminSlice/SuperAdminSlice";
+
 
 const ManageJobsTable = () => {
-    // Dummy data for jobs
-    const dummyJobs = [
-        {
-            _id: "job001",
-            jobTitle: "Delivery to Downtown",
-            customerName: "John Smith",
-            customerEmail: "john.smith@gmail.com",
-            customerPhone: "+1234567890",
-            pickupLocation: "123 Main St, New York",
-            dropoffLocation: "456 Park Ave, New York",
-            isActive: true,
-            status: "in-progress",
-            createdAt: "2025-11-10T10:30:00.000Z"
-        },
-        {
-            _id: "job002",
-            jobTitle: "Airport Transfer",
-            customerName: "Sarah Johnson",
-            customerEmail: "sarah.j@gmail.com",
-            customerPhone: "+1234567891",
-            pickupLocation: "789 Oak Rd, Boston",
-            dropoffLocation: "Logan Airport, Boston",
-            isActive: true,
-            status: "pending",
-            createdAt: "2025-11-11T08:15:00.000Z"
-        },
-        {
-            _id: "job003",
-            jobTitle: "Grocery Delivery",
-            customerName: "Michael Brown",
-            customerEmail: "m.brown@gmail.com",
-            customerPhone: "+1234567892",
-            pickupLocation: "Walmart, Chicago",
-            dropoffLocation: "321 Elm St, Chicago",
-            isActive: false,
-            status: "completed",
-            createdAt: "2025-11-09T14:20:00.000Z"
-        },
-        {
-            _id: "job004",
-            jobTitle: "Office Supplies Transport",
-            customerName: "Emily Davis",
-            customerEmail: "emily.d@company.com",
-            customerPhone: "+1234567893",
-            pickupLocation: "Office Depot, Miami",
-            dropoffLocation: "Corporate Tower, Miami",
-            isActive: true,
-            status: "in-progress",
-            createdAt: "2025-11-11T11:45:00.000Z"
-        },
-        {
-            _id: "job005",
-            jobTitle: "Furniture Moving",
-            customerName: "Robert Wilson",
-            customerEmail: "robert.w@gmail.com",
-            customerPhone: "+1234567894",
-            pickupLocation: "IKEA, Seattle",
-            dropoffLocation: "555 Pine St, Seattle",
-            isActive: false,
-            status: "cancelled",
-            createdAt: "2025-11-08T16:00:00.000Z"
-        },
-        {
-            _id: "job006",
-            jobTitle: "Restaurant Food Delivery",
-            customerName: "Lisa Anderson",
-            customerEmail: "lisa.a@gmail.com",
-            customerPhone: "+1234567895",
-            pickupLocation: "Pizza Palace, LA",
-            dropoffLocation: "678 Sunset Blvd, LA",
-            isActive: true,
-            status: "pending",
-            createdAt: "2025-11-11T12:00:00.000Z"
-        },
-        {
-            _id: "job007",
-            jobTitle: "Medical Supplies Transport",
-            customerName: "David Martinez",
-            customerEmail: "david.m@hospital.com",
-            customerPhone: "+1234567896",
-            pickupLocation: "Medical Center, Houston",
-            dropoffLocation: "Clinic East, Houston",
-            isActive: true,
-            status: "in-progress",
-            createdAt: "2025-11-11T09:30:00.000Z"
-        },
-        {
-            _id: "job008",
-            jobTitle: "Package Pickup",
-            customerName: "Jennifer Lee",
-            customerEmail: "jennifer.l@gmail.com",
-            customerPhone: "+1234567897",
-            pickupLocation: "UPS Store, Phoenix",
-            dropoffLocation: "890 Desert Ave, Phoenix",
-            isActive: false,
-            status: "completed",
-            createdAt: "2025-11-07T13:15:00.000Z"
-        },
-        {
-            _id: "job009",
-            jobTitle: "Document Courier",
-            customerName: "William Taylor",
-            customerEmail: "w.taylor@legal.com",
-            customerPhone: "+1234567898",
-            pickupLocation: "Law Office, San Francisco",
-            dropoffLocation: "Court House, San Francisco",
-            isActive: true,
-            status: "pending",
-            createdAt: "2025-11-11T10:00:00.000Z"
-        },
-        {
-            _id: "job010",
-            jobTitle: "Pet Transport",
-            customerName: "Amanda White",
-            customerEmail: "amanda.w@gmail.com",
-            customerPhone: "+1234567899",
-            pickupLocation: "Pet Store, Denver",
-            dropoffLocation: "123 Mountain Rd, Denver",
-            isActive: true,
-            status: "in-progress",
-            createdAt: "2025-11-10T15:45:00.000Z"
-        },
-        {
-            _id: "job011",
-            jobTitle: "Electronics Delivery",
-            customerName: "Christopher Garcia",
-            customerEmail: "chris.g@gmail.com",
-            customerPhone: "+1234567800",
-            pickupLocation: "Best Buy, Atlanta",
-            dropoffLocation: "456 Tech Ave, Atlanta",
-            isActive: false,
-            status: "completed",
-            createdAt: "2025-11-06T11:30:00.000Z"
-        },
-        {
-            _id: "job012",
-            jobTitle: "Flower Delivery",
-            customerName: "Jessica Martinez",
-            customerEmail: "jessica.m@gmail.com",
-            customerPhone: "+1234567801",
-            pickupLocation: "Flower Shop, Portland",
-            dropoffLocation: "789 Rose St, Portland",
-            isActive: true,
-            status: "pending",
-            createdAt: "2025-11-11T08:00:00.000Z"
-        }
-    ];
-
-    const [jobs, setJobs] = useState(dummyJobs);
+    const dispatch = useDispatch();
+    const { jobs, loading, error } = useSelector((state) => state.SuperAdmin);
     const [page, setPage] = useState(1);
     const limit = 10;
-    const [search, setSearch] = useState("");
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
-    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    // const [search, setSearch] = useState("");
+    // const [showActiveOnly, setShowActiveOnly] = useState(false);
+    // const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [selectedRows, setSelectedRows] = useState([]);
-    const [loading] = useState(false);
-    const [error] = useState(null);
+    // const [filteredJobs, setFilteredJobs] = useState([]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
+        dispatch(fetchSuperAdminJobs());
+    }, [dispatch]);
 
-    useEffect(() => {
-        // Filter jobs based on search and active status
-        let filteredJobs = dummyJobs;
+    // useEffect(() => {
+    //     let filtered = jobs || [];
 
-        if (debouncedSearch) {
-            filteredJobs = filteredJobs.filter(job =>
-                job.jobTitle.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                job.customerName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                job.customerEmail.toLowerCase().includes(debouncedSearch.toLowerCase())
-            );
-        }
+    //     if (debouncedSearch) {
+    //         filtered = filtered.filter(job =>
+    //             job.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    //             job.owner?.fullName?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    //             job.ownerId?.fullName?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    //             job.owner?.email?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    //             job.ownerId?.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+    //         );
+    //     }
 
-        if (showActiveOnly) {
-            filteredJobs = filteredJobs.filter(job => job.isActive);
-        }
+    //     if (showActiveOnly) {
+    //         filtered = filtered.filter(job => job.status === "open");
+    //     }
 
-        setJobs(filteredJobs);
-        setPage(1);
-    }, [debouncedSearch, showActiveOnly]);
+    //     setFilteredJobs(filtered);
+    //     setPage(1);
+    // }, [debouncedSearch, showActiveOnly, jobs]);
 
-    const totalPages = Math.ceil(jobs.length / limit);
-    const paginatedJobs = jobs.slice((page - 1) * limit, page * limit);
+    const totalPages = Math.ceil((jobs?.length || 0) / limit);
+    const paginatedJobs = jobs?.slice((page - 1) * limit, page * limit) || [];
+
 
     const handlePageChange = (pageNumber) => {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
@@ -229,13 +83,20 @@ const ManageJobsTable = () => {
 
     const getStatusBadge = (status) => {
         const statusConfig = {
+            open: { bg: "bg-green-50", text: "text-green-600", dot: "bg-green-600", label: "Open" },
+            closed: { bg: "bg-gray-50", text: "text-gray-600", dot: "bg-gray-600", label: "Closed" },
             pending: { bg: "bg-yellow-50", text: "text-yellow-600", dot: "bg-yellow-600", label: "Pending" },
             "in-progress": { bg: "bg-blue-50", text: "text-blue-600", dot: "bg-blue-600", label: "In Progress" },
             completed: { bg: "bg-green-50", text: "text-green-600", dot: "bg-green-600", label: "Completed" },
             cancelled: { bg: "bg-red-50", text: "text-red-600", dot: "bg-red-600", label: "Cancelled" }
         };
 
-        const config = statusConfig[status] || statusConfig.pending;
+        const config = statusConfig[status] || {
+            bg: "bg-gray-50",
+            text: "text-gray-600",
+            dot: "bg-gray-600",
+            label: status || "Unknown"
+        };
 
         return (
             <span className={`flex items-center gap-1.5 px-3 py-1 ${config.bg} ${config.text} rounded-full text-sm font-medium`}>
@@ -249,8 +110,8 @@ const ManageJobsTable = () => {
         <div className="min-h-screen font-[Poppins] bg-gray-50 p-8 lg:ml-56 mt-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Jobs</h1>
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <h1 className="text-2xl font-bold text-gray-800">Jobs Listing</h1>
+                {/* <div className="flex items-center gap-4 w-full md:w-auto">
                     <input
                         type="text"
                         placeholder="Search jobs..."
@@ -285,7 +146,7 @@ const ManageJobsTable = () => {
                         </svg>
                         {showActiveOnly ? "Active Only" : "Show Active"}
                     </button>
-                </div>
+                </div> */}
             </div>
 
             {/* Loading / Error */}
@@ -304,28 +165,32 @@ const ManageJobsTable = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-left">
+                                {/* <th className="px-6 py-4 text-left">
                                     <input
                                         type="checkbox"
                                         checked={selectedRows.length === paginatedJobs?.length}
                                         onChange={toggleSelectAll}
                                         className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
-                                </th>
+                                </th> */}
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                                     Sr.No
                                 </th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                                     Job Title
                                 </th>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                                    Customer Name
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap">
+                                    Owner Name
                                 </th>
+
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                                     Email
                                 </th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
-                                    Phone Number
+                                    Location
+                                </th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
+                                    Salary
                                 </th>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                                     Created On
@@ -343,37 +208,40 @@ const ManageJobsTable = () => {
                                     className={`hover:bg-gray-50 transition-colors ${selectedRows.includes(job._id) ? "bg-blue-50" : ""
                                         }`}
                                 >
-                                    <td className="px-6 py-4">
+                                    {/* <td className="px-6 py-4">
                                         <input
                                             type="checkbox"
                                             checked={selectedRows.includes(job._id)}
                                             onChange={() => toggleRowSelection(job._id)}
                                             className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
-                                    </td>
+                                    </td> */}
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {(page - 1) * limit + index + 1}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                            {/* <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                                                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                 </svg>
-                                            </div>
+                                            </div> */}
                                             <span className="text-sm font-medium text-gray-800">
-                                                {job.jobTitle || "Unknown"}
+                                                {job.title || "N/A"}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
-                                        {job.customerName || "N/A"}
+                                        {job.owner?.fullName || job.ownerId?.fullName || "N/A"}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
-                                        {job.customerEmail || "N/A"}
+                                        {job.owner?.email || job.ownerId?.email || "N/A"}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
-                                        {job.customerPhone || "N/A"}
+                                        {job.location ? `${job.location.city}, ${job.location.state}` : "N/A"}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                        ${job.salary?.toLocaleString() || 0}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <div className="flex items-center gap-2">
