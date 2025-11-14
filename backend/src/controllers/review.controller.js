@@ -7,7 +7,7 @@ export const addReview = async (req, res) => {
   try {
     const { driverId, rating, comment } = req.body;
     const ownerId = req.user._id;
-    console.log('ownerId',ownerId)
+
     if (!driverId || !rating) {
       return res.status(400).json({
         success: false,
@@ -54,18 +54,19 @@ export const addReview = async (req, res) => {
 // Get reviews of a client + average rating
 export const getClientReviews = async (req, res) => {
   try {
-    const { driverId } = req.params;
+    let { driverId } = req.params;
+    if(!driverId){
+      driverId = req.user._id;
+    }
+    
     const baseURL = `${req.protocol}://${req.get("host")}`;
-    // console.log('driverId',driverId)
     const reviews = await Review.find({ driver: driverId }).populate("owner", "fullName profileImage").sort({ createdAt: -1 });
-
     const avgRating = await Review.aggregate([
       { $match: { driver: new mongoose.Types.ObjectId(driverId) } },
       { $group: { _id: "$driver", avgRating: { $avg: "$rating" } } },
     ]);
 
     const average = avgRating[0]?.avgRating?.toFixed(1) || 0;
-    // console.log('reviews',reviews);
     const formatted = reviews.map((r) => ({
       reviewerName: r.owner?.fullName || "Unknown",
       reviewerPhoto: r.owner?.profileImage ? `${baseURL}${r.owner.profileImage}` : null,
