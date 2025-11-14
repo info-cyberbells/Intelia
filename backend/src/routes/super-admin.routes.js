@@ -10,6 +10,7 @@ import { getProfile, updateProfile } from "../controllers/profile.controller.js"
 import { getAllFeedbacks } from "../controllers/driver/feedback.controller.js";
 import { uploadProfile, uploadLicensePhoto } from "../middleware/upload.middleware.js";
 import { getClientReviews } from "../controllers/review.controller.js";
+import { getAllJobs } from "../controllers/master.controller.js";
 
 const router = express.Router();
 
@@ -73,5 +74,8 @@ router.get("/feedbacks", getAllFeedbacks);
 
 // Reviews
 router.get("/driver-reviews/:clientId", getClientReviews);
+
+// Jobs
+router.get("/jobs/all", getAllJobs);
 
 export default router;

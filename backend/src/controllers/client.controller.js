@@ -14,16 +14,12 @@ export const getAllClients = async (req, res) => {
   try {
     const { search, status, page = 1, limit = 10 } = req.query;
 
-    // Build query
     const query = { role: "owner" };
-
-    // Search filter
     if (search) {
       query.$or = [
-        { firstName: { $regex: search, $options: "i" } },
-        { surname: { $regex: search, $options: "i" } },
+        { fullName: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
-        { companyName: { $regex: search, $options: "i" } },
+        // { companyName: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -34,13 +30,7 @@ export const getAllClients = async (req, res) => {
 
     // Pagination
     const skip = (page - 1) * limit;
-
-    const clients = await User.find(query)
-      .select("-password")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
+    const clients = await User.find(query).select("-password").sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit));
     const total = await User.countDocuments(query);
 
     res.json({

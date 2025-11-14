@@ -5,37 +5,37 @@ import mongoose from "mongoose";
 // Add a review
 export const addReview = async (req, res) => {
   try {
-    const { clientId, rating, comment } = req.body;
+    const { driverId, rating, comment } = req.body;
     const ownerId = req.user._id;
     console.log('ownerId',ownerId)
-    if (!clientId || !rating) {
+    if (!driverId || !rating) {
       return res.status(400).json({
         success: false,
-        message: "Client ID and rating are required",
+        message: "Driver ID and rating are required",
       });
     }
 
-    // check valid client
-    const client = await User.findById(clientId);
-    if (!client) {
+    // check valid Driver
+    const driver = await User.findById(driverId);
+    if (!driver) {
       return res.status(404).json({
         success: false,
-        message: "Client not found",
+        message: "Driver not found",
       });
     }
 
     // check if already reviewed
-    const existingReview = await Review.findOne({ owner: ownerId, client: clientId });
+    const existingReview = await Review.findOne({ owner: ownerId, driver: driverId });
     if (existingReview) {
       return res.status(400).json({
         success: false,
-        message: "You have already reviewed this client",
+        message: "You have already reviewed this driver",
       });
     }
 
     const review = await Review.create({
       owner: ownerId,
-      client: clientId,
+      driver: driverId,
       rating,
       comment,
     });
@@ -54,18 +54,18 @@ export const addReview = async (req, res) => {
 // Get reviews of a client + average rating
 export const getClientReviews = async (req, res) => {
   try {
-    const { clientId } = req.params;
+    const { driverId } = req.params;
     const baseURL = `${req.protocol}://${req.get("host")}`;
-    console.log('clientId',clientId)
-    const reviews = await Review.find({ client: clientId }).populate("owner", "fullName profileImage").sort({ createdAt: -1 });
+    // console.log('driverId',driverId)
+    const reviews = await Review.find({ driver: driverId }).populate("owner", "fullName profileImage").sort({ createdAt: -1 });
 
     const avgRating = await Review.aggregate([
-      { $match: { client: new mongoose.Types.ObjectId(clientId) } },
-      { $group: { _id: "$client", avgRating: { $avg: "$rating" } } },
+      { $match: { driver: new mongoose.Types.ObjectId(driverId) } },
+      { $group: { _id: "$driver", avgRating: { $avg: "$rating" } } },
     ]);
 
     const average = avgRating[0]?.avgRating?.toFixed(1) || 0;
-
+    // console.log('reviews',reviews);
     const formatted = reviews.map((r) => ({
       reviewerName: r.owner?.fullName || "Unknown",
       reviewerPhoto: r.owner?.profileImage ? `${baseURL}${r.owner.profileImage}` : null,
