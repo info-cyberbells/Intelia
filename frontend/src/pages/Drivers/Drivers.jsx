@@ -58,12 +58,12 @@ const Drivers = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800">Drivers</h1>
-        <button
+        {/* <button
           onClick={() => navigate("/add-driver")}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-colors">
           Add Driver
           <Plus className="w-5 h-5" />
-        </button>
+        </button> */}
       </div>
 
       {/* Stats Grid */}

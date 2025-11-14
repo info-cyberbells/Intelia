@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { postDriverReview } from "../../features/Drivers/driverSlice";
+import { useToast } from "../../context/ToastContext";
+
 
 const AddReview = () => {
   const navigate = useNavigate();
-
+  const { id: driverId } = useParams();
+  const dispatch = useDispatch();
+  const { showToast } = useToast();
   const [rating, setRating] = useState(0);
   const [hoverValue, setHoverValue] = useState(null);
   const [text, setText] = useState("");
@@ -39,13 +45,30 @@ const AddReview = () => {
     setRating(val);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    alert("Review submitted successfully!");
-    navigate(-1);
+    if (!rating || !text.trim()) {
+      showToast("Please provide rating and review");
+      return;
+    }
 
+    try {
+      await dispatch(
+        postDriverReview({
+          driverId,
+          rating,
+          comment: text,
+        })
+      ).unwrap();
+
+      showToast("Review submitted successfully!", "success");
+      navigate(-1);
+    } catch (error) {
+      showToast(error || "Failed to submit review", "error");
+    }
   };
+
 
   return (
     <div className="mt-16 ml-56 p-10 bg-[#F5F5F7] min-h-screen">

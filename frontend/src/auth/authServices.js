@@ -174,6 +174,16 @@ export const getDriverReviewsService = async (driverId) => {
     return response.data;
 };
 
+//get  all jobs in superadmin
+export const fetchSuperAdminJobsService = async () => {
+    const response = await axios.get(
+        USER_ENDPOINTS.SUPERADMIN_JOBS,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
 
 
 
@@ -214,6 +224,26 @@ export const driverListingService = async (page = 1, limit = 10) => {
 export const getDriverReviewsOwnerService = async (driverId) => {
     const response = await axios.get(
         `${USER_ENDPOINTS.DRIVER_REVIEWS_ON_OWNER}/${driverId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//post driver review
+export const postDriverReviewService = async (formData) => {
+    const response = await axios.post(
+        USER_ENDPOINTS.POST_DRIVER_REVIEW,
+        formData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
+//search  driving license
+export const searchDriverByLicenseService = async (licenseNumber) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.SEARCH_DRIVER}?licenseNumber=${licenseNumber}`,
         getAuthHeader()
     );
     return response.data;

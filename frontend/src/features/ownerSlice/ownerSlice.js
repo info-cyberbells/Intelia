@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -32,10 +32,28 @@ export const fetchOwnerDashboard = createAsyncThunk(
     }
 );
 
+//serach driving license
+export const searchDriverByLicense = createAsyncThunk(
+    "owner/searchDriverByLicense",
+    async (licenseNumber, { rejectWithValue }) => {
+        try {
+            const res = await searchDriverByLicenseService(licenseNumber);
+            return res;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Driver not found"
+            );
+        }
+    }
+);
+
+
 const initialState = {
     dashboardData: null,
     loading: false,
     error: null,
+    searchResult: [],
+
 };
 
 const ownerSlice = createSlice({
@@ -82,7 +100,23 @@ const ownerSlice = createSlice({
             .addCase(fetchOwnerDashboard.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+
+            //search kicense builder
+            .addCase(searchDriverByLicense.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(searchDriverByLicense.fulfilled, (state, action) => {
+                state.loading = false;
+                state.searchResult = action.payload?.drivers || [];
+            })
+            .addCase(searchDriverByLicense.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.searchResult = [];
             });
+
     },
 });
 

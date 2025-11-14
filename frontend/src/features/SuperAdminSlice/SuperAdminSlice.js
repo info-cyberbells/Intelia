@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService } from "../../auth/authServices";
+import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService, fetchSuperAdminJobsService } from "../../auth/authServices";
 
 // Thunk: Delete Owner
 export const deleteOwner = createAsyncThunk(
@@ -104,6 +104,21 @@ export const fetchDriverReviews = createAsyncThunk(
     }
 );
 
+//get  all jobs in suepradmin
+export const fetchSuperAdminJobs = createAsyncThunk(
+    "jobs/fetchSuperAdminJobs",
+    async (_, thunkAPI) => {
+        try {
+            return await fetchSuperAdminJobsService();
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || "Failed to load jobs"
+            );
+        }
+    }
+);
+
+
 
 const SuperAdminSlice = createSlice({
     name: "superAdmin",
@@ -116,6 +131,7 @@ const SuperAdminSlice = createSlice({
         reviews: [],
         averageRating: 0,
         totalReviews: 0,
+        jobs: [],
     },
 
     reducers: {
@@ -244,6 +260,20 @@ const SuperAdminSlice = createSlice({
             })
 
             .addCase(fetchDriverReviews.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //get all jobs in superadmin
+            .addCase(fetchSuperAdminJobs.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchSuperAdminJobs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.jobs = action.payload.jobs;
+            })
+            .addCase(fetchSuperAdminJobs.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

@@ -426,8 +426,8 @@ const ManageDriversTable = () => {
                                     <td className="px-3 py-4">{getStatusBadge(driver.isActive)}</td>
                                     <td className="px-3 py-4">
                                         <button
-                                         onClick={() => navigate(`/view-rating/${driver._id}`)}
-                                          className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
+                                            onClick={() => navigate(`/view-rating/${driver._id}`)}
+                                            className="text-blue-600 hover:underline text-sm font-medium whitespace-nowrap">
                                             View
                                         </button>
                                     </td>
@@ -451,6 +451,13 @@ const ManageDriversTable = () => {
                     </table>
                 </div>
             )}
+
+            {!loading && !error && drivers?.length === 0 && (
+                <div className="text-center text-gray-500 text-lg py-10">
+                    No drivers found matching your search.
+                </div>
+            )}
+
 
             {/* Pagination */}
             {!loading && !error && totalPages >= 1 && (

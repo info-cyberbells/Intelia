@@ -1,8 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { searchDriverByLicense } from "../../features/ownerSlice/ownerSlice";
+import { useToast } from '../../context/ToastContext';
+
+
 
 const SearchDriverRecords = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [license, setLicense] = useState("");
+  const dispatch = useDispatch();
+  const { searchResult } = useSelector((state) => state.owner);
+  const [inputError, setInputError] = useState(false);
+
+
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    if (!license.trim()) {
+      setInputError(true);
+      showToast("Please enter a license number", "error");
+      return;
+    }
+    setInputError(false);
+    const res = await dispatch(searchDriverByLicense(license));
+
+    if (res.meta.requestStatus === "fulfilled") {
+      showToast("Driver found!", "success");
+
+      navigate("/detail-page", { state: { driver: res.payload.drivers[0] } });
+    }
+    else {
+      showToast(res.payload || "No driver found", "error");
+      setInputError(true);
+    }
+  };
+
+
+
   return (
     <div className="min-h-screen ml-56 mt-12 font-[Poppins] bg-gray-50 flex flex-col">
       <div className="w-full max-w-3xl rounded-2xl p-8">
@@ -16,63 +53,29 @@ const SearchDriverRecords = () => {
 
         {/* Form */}
         <form className="space-y-6" autoComplete="off">
-          {/* Hidden fake fields to block browser autofill */}
-          <input type="text" name="fakeuser" autoComplete="username" className="hidden" />
-          <input type="password" name="fakepass" autoComplete="new-password" className="hidden" />
-          {/* Name */}
-          <div>
-            <label className="block text-[#5E6366] text-xs font-medium mb-2">
-              Name
-            </label>
-            <input
-              type="text"
-              placeholder="name"
-              className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
 
-          {/* Email */}
-          <div>
-            <label className="block text-[#5E6366] text-xs font-medium mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="email"
-              autoComplete="off"
-              className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
-
-          {/* Phone Number */}
-          <div>
-            <label className="block text-[#5E6366] text-xs font-medium mb-2">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              placeholder="phone number"
-              className="w-2/3 px-4 py-3 rounded-md  shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
-
-          {/* Driving License Number */}
           <div>
             <label className="block text-[#5E6366] text-xs font-medium mb-2">
               Driving License Number
             </label>
             <input
-              type="password"
-              placeholder="driving license number"
-              autoComplete="off"
-              className="w-2/3 px-4 py-3 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              type="text"
+              placeholder="Enter License Number"
+              value={license}
+              onChange={(e) => {
+                setLicense(e.target.value);
+                if (e.target.value.trim()) setInputError(false);
+              }}
+              className={`w-2/3 px-4 py-3 rounded-md shadow-sm outline-none transition-all
+  ${inputError ? "border border-red-500 focus:ring-red-500" : "border border-gray-300 focus:ring-blue-500"}
+`}
             />
           </div>
 
           {/* Button */}
           <div className="pt-2">
             <button
-              onClick={() => navigate('/detail-page')}
+              onClick={handleSearch}
               className="bg-[#3565E3] hover:bg-blue-700 text-white text-xs font-thin px-8 py-2 rounded-md shadow transition-all w-full sm:w-auto"
             >
               Search

@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOwnerSideDriverReviews } from "../../features/Drivers/driverSlice";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import addicon from "/menuicons/add_circle.svg";
 
 const Reviews = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { reviews, averageRating, totalReviews, loading } = useSelector(
         (state) => state.drivers
@@ -21,17 +22,30 @@ const Reviews = () => {
 
     return (
         <div className="ml-56 mt-16 font-[Poppins]  min-h-screen bg-[#F5F5F7] p-10">
+            <div className="flex justify-end gap-4 mb-6">
+                
+                 <span className="px-4 py-2 bg-[#3565E3] text-white  text-sm rounded-2xl">
+                        Average Rating : {averageRating}
+                    </span>
+
+                    <Link
+                        to={`/add-review/${id}`}
+                        className="flex gap-2 px-5 py-2 text-sm border border-[#3565E3] text-[#3565E3] rounded-2xl hover:bg-blue-50" >
+                        Add Review <img src={addicon} alt="" /> </Link>
+            </div>
+
             <div className="flex justify-between items-center mb-10">
                 <h1 className="text-3xl font-[Poppins] text-[#363B64] font-bold">
                     Driver Ratings & Reviews
                 </h1>
 
                 <div className="flex gap-4 items-center">
-                    <span className="px-4 py-2 bg-[#3565E3] text-white text-sm rounded-2xl">
-                        Average Rating : {averageRating}
-                    </span>
-
-                    <Link to="/add-review" className="flex gap-2 px-5 py-2 text-sm border border-[#3565E3] text-[#3565E3] rounded-2xl hover:bg-blue-50" > Add Review <img src={addicon} alt="" /> </Link>
+                   <button
+                    onClick={() => navigate("/drivers")}
+                    className="px-6 py-2 text-[#3565E3] border border-[#3565E3] rounded-xl hover:bg-blue-50 transition"
+                >
+                    ← Back to Drivers
+                </button>
 
                 </div>
 

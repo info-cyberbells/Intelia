@@ -341,8 +341,8 @@ const ManageOwnersTable = () => {
                                     <td className="px-3 py-4">
                                         <div className="flex items-center gap-3">
                                             <button
-                                             onClick={() => navigate(`/edit-owner/${owner._id}`)}
-                                            className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap">
+                                                onClick={() => navigate(`/edit-owner/${owner._id}`)}
+                                                className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap">
                                                 Edit
                                             </button>
                                             <button
@@ -358,6 +358,13 @@ const ManageOwnersTable = () => {
                     </table>
                 </div>
             )}
+
+            {!loading && !error && owners?.length === 0 && (
+                <div className="text-center text-gray-500 text-lg py-10">
+                    No owners found matching your search.
+                </div>
+            )}
+
 
             {/* Pagination */}
             {!loading && !error && totalPages >= 1 && (

@@ -6,7 +6,7 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/register/Register";
 import Dashboard from "./pages/AdminDashboard/Dashboard";
 import Drivers from "./pages/Drivers/Drivers";
-import Search from "./pages/Search/Search";
+// import Search from "./pages/Search/Search";
 import TalentHub from "./pages/TalentHub/TalentHub";
 import Resources from "./pages/Resources/Resources";
 import Activity from "./pages/Activity/Activity";
@@ -90,7 +90,7 @@ function App() {
             <Route path="/admin-dashboard" element={<Dashboard />} />
             <Route path="/driver-dashboard" element={<DriverDashboard />} />
             <Route path="/drivers" element={<Drivers />} />
-            <Route path="/search" element={<Search />} />
+            {/* <Route path="/search" element={<Search />} /> */}
             <Route path="/talent-hub" element={<TalentHub />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/my-applications" element={<MyApplications />} />
@@ -112,7 +112,7 @@ function App() {
             <Route path="/driver-reviews" element={<DriverReviews />} />
             <Route path="/view-rating/:id" element={<DriverReviews />} />
             <Route path="/view-review/:id" element={<DriverReviewByOwnerside />} />
-            <Route path="/add-review" element={<AddDriverReview />} />
+            <Route path="/add-review/:id" element={<AddDriverReview />} />
 
           </>
         ) : (

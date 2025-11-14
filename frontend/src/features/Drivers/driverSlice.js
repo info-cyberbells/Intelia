@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { driverListingService, superAdminDriverListingService, getMyProfileService, getDriverReviewsOwnerService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getMyResumeService, postDriverResumeService, deleteDriversService, updateDriverStatusService } from "../../auth/authServices";
+import { driverListingService, superAdminDriverListingService, getMyProfileService, getDriverReviewsOwnerService, updateDriverProfileService, changePasswordService, getDriverSettingService, updateDriverSettingsService, postDriverFeedbackService, getMyJobApplicationsService, getMyResumeService, postDriverResumeService, deleteDriversService, updateDriverStatusService, postDriverReviewService } from "../../auth/authServices";
 
 
 // get all drivers - SuperAdmin
@@ -230,6 +230,22 @@ export const fetchOwnerSideDriverReviews = createAsyncThunk(
         }
     }
 );
+
+
+export const postDriverReview = createAsyncThunk(
+    "drivers/postDriverReview",
+    async ({ driverId, rating, comment }, { rejectWithValue }) => {
+        try {
+            const data = await postDriverReviewService({ driverId, rating, comment });
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to submit review"
+            );
+        }
+    }
+);
+
 
 
 const driverSlice = createSlice({
@@ -492,6 +508,18 @@ const driverSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+            //post driver builder
+            .addCase(postDriverReview.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(postDriverReview.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(postDriverReview.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
 
 
 
