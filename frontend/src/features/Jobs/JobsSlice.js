@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { jobsListingService } from "../../auth/authServices";
+import { jobsListingService, driverSaveJobService, driverApplyJobService } from "../../auth/authServices";
 
 //get all jobs
 export const fetchAllJobs = createAsyncThunk(
@@ -15,6 +15,34 @@ export const fetchAllJobs = createAsyncThunk(
         }
     }
 );
+
+
+// SAVE JOB thunk
+export const saveJob = createAsyncThunk(
+    "jobs/saveJob",
+    async ({ jobId }, { rejectWithValue }) => {
+        try {
+            const data = await driverSaveJobService(jobId);
+            return { jobId, data }; // return jobId so reducer can mark as saved
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to save job");
+        }
+    }
+);
+
+// APPLY JOB thunk
+export const applyJob = createAsyncThunk(
+    "jobs/applyJob",
+    async ({ jobId, driverId }, { rejectWithValue }) => {
+        try {
+            const data = await driverApplyJobService(jobId, driverId);
+            return { jobId, data }; // return jobId so reducer can mark as applied
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to apply for job");
+        }
+    }
+);
+
 
 
 
@@ -48,7 +76,43 @@ const JobsSlice = createSlice({
             .addCase(fetchAllJobs.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+
+            //save job builder
+            .addCase(saveJob.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(saveJob.fulfilled, (state, action) => {
+                state.loading = false;
+                const { jobId } = action.payload;
+                state.data = state.data.map(job =>
+                    job._id === jobId ? { ...job, isSaved: true } : job
+                );
+            })
+            .addCase(saveJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //apply job builder
+            .addCase(applyJob.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(applyJob.fulfilled, (state, action) => {
+                state.loading = false;
+                const { jobId } = action.payload;
+                // mark job as applied in state.data if present
+                state.data = state.data.map(job =>
+                    job._id === jobId ? { ...job, alreadyApplied: true } : job
+                );
+            })
+            .addCase(applyJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
     },
 });
 

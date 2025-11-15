@@ -54,6 +54,8 @@ export const USER_ENDPOINTS = {
   POST_RESUME: `${API_BASE_URL}/driver/post-resume`,
   LOGOUT: `${API_BASE_URL}/auth/logout`,
   FETCH_MY_REVIEWS: `${API_BASE_URL}/driver/driver-reviews`,
+  DRIVER_SAVE_JOB: `${API_BASE_URL}/driver/job/save-job`,
+  DRIVER_APPLY_JOB: `${API_BASE_URL}/driver/job/apply`,
 
   SETTINGS: `${API_BASE_URL}/driver/settings`,
   UPDATE_SETTINGS: `${API_BASE_URL}/driver/update-settings`,

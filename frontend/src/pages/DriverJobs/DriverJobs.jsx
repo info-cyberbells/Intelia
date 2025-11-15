@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Search, MapPin, Truck, DollarSign, SlidersHorizontal, X, Bookmark, BookmarkCheck } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllJobs } from "../../features/Jobs/JobsSlice";
+import { fetchAllJobs, saveJob, applyJob } from "../../features/Jobs/JobsSlice";
+import { useToast } from "../../context/ToastContext";
+import ConfirmationModal from "../Model/ConfirmationModal";
+
+
 
 const JobListingInterface = () => {
     const dispatch = useDispatch();
+    const { showToast } = useToast();
     const { loading, data: jobs, totalPages, currentPage, totalJobs, error } = useSelector(
         (state) => state.jobs
     );
+
+    const driverId = useSelector((state) => state.auth.user?._id);
+
+
 
     const [page, setPage] = useState(1);
     const limit = 10;
@@ -18,6 +27,9 @@ const JobListingInterface = () => {
     const [keyword, setKeyword] = useState("");
     const [showSaved, setShowSaved] = useState(false);
     const [showApplied, setShowApplied] = useState(false);
+    const [showApplyModal, setShowApplyModal] = useState(false);
+    const [jobToApply, setJobToApply] = useState(null);
+
 
     const isFirstRender = React.useRef(true);
 
@@ -33,7 +45,31 @@ const JobListingInterface = () => {
 
         return () => clearTimeout(delayDebounce);
     }, [dispatch, city, minSalary, maxSalary, keyword]);
-    ;
+
+    const handleSaveJob = async (jobId) => {
+        try {
+            const res = await dispatch(saveJob({ jobId })).unwrap();
+            showToast(res.data?.message || "Job saved successfully", "success");
+        } catch (err) {
+            showToast(err || "Failed to save job", "error");
+        }
+    };
+
+
+    const confirmApply = async () => {
+        if (!jobToApply) return;
+
+        try {
+            const res = await dispatch(applyJob({ jobId: jobToApply, driverId })).unwrap();
+            showToast(res.data?.message || "Applied successfully!", "success");
+            setShowApplyModal(false);
+            setJobToApply(null);
+        } catch (err) {
+            showToast(err || "Failed to apply!", "error");
+        }
+    };
+
+
 
     // Immediate pagination
     useEffect(() => {
@@ -110,15 +146,15 @@ const JobListingInterface = () => {
                         />
 
                         {/* Saved Jobs Filter */}
+
                         <button
                             onClick={() => {
                                 setShowSaved((prev) => !prev);
                                 setShowApplied(false);
                             }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 
-    ${showSaved
-                                    ? "bg-blue-100 text-blue-700 border-blue-500 shadow-sm"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${showSaved
+                                ? "bg-blue-100 text-blue-700 border-blue-500 shadow-sm"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                                 }`}
                         >
                             {showSaved ? "Saved Jobs (Active)" : "Saved Jobs"}
@@ -130,15 +166,13 @@ const JobListingInterface = () => {
                                 setShowApplied((prev) => !prev);
                                 setShowSaved(false);
                             }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 
-    ${showApplied
-                                    ? "bg-green-100 text-green-700 border-green-500 shadow-sm"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${showApplied
+                                ? "bg-green-100 text-green-700 border-green-500 shadow-sm"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                                 }`}
                         >
                             {showApplied ? "Applied Jobs (Active)" : "Applied Jobs"}
                         </button>
-
 
 
                         {/* Reset Filters */}
@@ -168,14 +202,15 @@ const JobListingInterface = () => {
 
 
             {/* Job Cards Grid */}
-            {/* Job Cards Grid */}
+
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {(() => {
                     const filteredJobs = jobs.filter((job) => {
-                        if (showSaved) return job.isSaved;
-                        if (showApplied) return job.alreadyApplied;
+                        if (showSaved) return job.isSaved === true;
+                        if (showApplied) return job.alreadyApplied === true;
                         return true;
                     });
+
 
                     if (loading) {
                         return <div className="text-center py-20 text-gray-600">Loading jobs...</div>;
@@ -261,22 +296,45 @@ const JobListingInterface = () => {
                                     </div>
 
                                     {/* Actions */}
+
                                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+
+                                        {/* SAVE JOB */}
                                         <button
-                                            onClick={() => toggleSave(job.id)}
-                                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                                            onClick={() => handleSaveJob(job._id)}
+                                            className={`flex items-center gap-2 text-sm font-medium transition ${job.isSaved
+                                                ? "text-green-600"   // saved color
+                                                : "text-blue-600 hover:text-blue-700"
+                                                }`}
                                         >
-                                            {savedJobs.has(job.id) ? (
-                                                <BookmarkCheck className="w-4 h-4" />
+                                            {job.isSaved ? (
+                                                <>
+                                                    <BookmarkCheck className="w-4 h-4" />
+                                                    Saved
+                                                </>
                                             ) : (
-                                                <Bookmark className="w-4 h-4" />
+                                                <>
+                                                    <Bookmark className="w-4 h-4" />
+                                                    Save
+                                                </>
                                             )}
-                                            Save
                                         </button>
-                                        <button className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors">
-                                            Apply Now
+
+                                        {/* APPLY JOB */}
+                                        <button
+                                            onClick={() => {
+                                                setJobToApply(job._id);
+                                                setShowApplyModal(true);
+                                            }}
+                                            className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors"
+                                            disabled={job.alreadyApplied}
+                                        >
+                                            {job.alreadyApplied ? "Applied" : "Apply Now"}
                                         </button>
+
+
                                     </div>
+
                                 </div>
                             ))}
                         </div>
@@ -334,6 +392,16 @@ const JobListingInterface = () => {
                 </div>
             )
             }
+            <ConfirmationModal
+                open={showApplyModal}
+                title="Apply for Job"
+                message="Are you sure you want to apply for this job?"
+                onCancel={() => {
+                    setShowApplyModal(false);
+                    setJobToApply(null);
+                }}
+                onConfirm={confirmApply}
+            />
 
         </div >
     );

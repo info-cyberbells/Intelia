@@ -492,6 +492,7 @@ export const postDriverResumeService = async (resumeData) => {
 };
 
 
+//get my reviews 
 export const getMyReviewsService = async (driverId) => {
     const response = await axios.get(
         `${USER_ENDPOINTS.FETCH_MY_REVIEWS}`,
@@ -500,3 +501,26 @@ export const getMyReviewsService = async (driverId) => {
     return response.data;
 };
 
+
+
+// Save job (POST { jobId })
+export const driverSaveJobService = async (jobId) => {
+    const payload = { jobId };
+    const response = await axios.post(
+        USER_ENDPOINTS.DRIVER_SAVE_JOB,
+        payload,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+// Apply job (POST to /apply/:jobId with { driverId })
+export const driverApplyJobService = async (jobId, driverId) => {
+    const payload = { driverId };
+    const response = await axios.post(
+        `${USER_ENDPOINTS.DRIVER_APPLY_JOB}/${jobId}`,
+        payload,
+        getAuthHeader()
+    );
+    return response.data;
+};

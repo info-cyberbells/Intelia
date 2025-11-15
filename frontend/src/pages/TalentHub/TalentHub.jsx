@@ -1,20 +1,38 @@
 import React from "react";
-import { Mic } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import addicon from "/menuicons/add_circle.svg";
+
 
 const TalentHub = () => {
+
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen font-[Poppins] mt-12 bg-gray-50 flex flex-col py-10 px-6 md:px-14 lg:ml-56">
       {/* Header */}
-      <div className="mb-10">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-[#3565E3] mb-2">
-          Talent Hub
-        </h2>
-        <p className="text-gray-500 text-base">
-          Create your job ads by simply talking to Mia, your smart assistant.
-        </p>
+      <div className="flex justify-between mb-10">
+        <div className="">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-[#3565E3] mb-2">
+            Talent Hub
+          </h2>
+          <p className="text-gray-500 text-base">
+            Create your job ads by simply talking to Mia, your smart assistant.
+          </p>
+        </div>
+        <div>
+
+
+          <Link
+            to={`/add-job-manually`}
+            className="px-5 py-3 text-sm bg-[#3565E3] border border-[#3565E3] text-white rounded-xl flex items-center gap-2 hover:bg-blue-700 transition">
+            Add Job Manually <img src={addicon} alt="" className="w-5 h-5 filter invert brightness-0" /> </Link>
+
       </div>
 
-      {/* Main Grid */}
+    </div>
+
+      {/* Main Grid */ }
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* ---------- Left Column ---------- */}
         <div className="bg-white rounded-2xl shadow p-6">
@@ -189,7 +207,9 @@ const TalentHub = () => {
 
             {/* Videos Section */}
             <div className="font-titillium">
-              <p className="text-[#3565E3] text-sm font-semibold mb-2">Videos</p>
+              <p className="text-[#3565E3] text-sm font-semibold mb-2">
+                Videos
+              </p>
               <div className="bg-blue-50 rounded-xl">
                 <div className="bg-blue-50 p-3 rounded-xl flex items-center justify-between mb-1 cursor-pointer transition">
                   <div className="flex items-center space-x-3">
@@ -285,7 +305,7 @@ const TalentHub = () => {
           transform-origin: bottom;
         }
       `}</style>
-    </div>
+    </div >
   );
 };
 

@@ -85,6 +85,7 @@ const authSlice = createSlice({
                 const user = action.payload.user;
 
                 const minimalUser = {
+                     _id: user._id,
                     name: user.fullName || user.firstName || user.name || "",
                     profileImage: user.profileImage || "",
                     role: user.role || "",

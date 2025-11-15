@@ -31,6 +31,7 @@ import DriverReviewByOwnerside from './pages/DriverReviews/DriverReviewByOwnersi
 import AddDriverReview from './pages/DriverReviews/AddDriverReview';
 import MyReviews from "./pages/MyReviews/MyReviews";
 import MyVehicle from "./pages/MyVehicle/MyVehicle";
+import AddJobManually from "./pages/AddJobManually/AddJobManually";
 
 
 function App() {
@@ -119,6 +120,8 @@ function App() {
             <Route path="/add-review/:id" element={<AddDriverReview />} />
             <Route path="/my-reviews" element={<MyReviews />} />
             <Route path="/my-vehicle" element={<MyVehicle />} />
+            <Route path="/add-job-manually" element={<AddJobManually />} />
+
 
           </>
         ) : (
