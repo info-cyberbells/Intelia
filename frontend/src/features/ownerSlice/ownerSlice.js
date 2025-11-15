@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -61,6 +61,7 @@ export const fetchOwnerVehicles = createAsyncThunk(
     }
 );
 
+///add owner vehicle
 export const addOwnerVehicle = createAsyncThunk(
     "owner/addOwnerVehicle",
     async (formData, { rejectWithValue }) => {
@@ -103,12 +104,89 @@ export const deleteOwnerVehicle = createAsyncThunk(
 );
 
 
+
+// Create Job owner
+export const createJob = createAsyncThunk(
+    "jobs/createJob",
+    async (jobData, thunkAPI) => {
+        try {
+            return await createJobService(jobData);
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || "Failed to create job"
+            );
+        }
+    }
+);
+
+//fetch owner jobs
+export const fetchOwnerJobs = createAsyncThunk(
+    "owner/fetchOwnerJobs",
+    async (_, thunkAPI) => {
+        try {
+            return await fetchOwnerJobsService();
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || "Failed to fetch owner jobs"
+            );
+        }
+    }
+);
+
+
+// Fetch single job
+export const fetchSingleJob = createAsyncThunk(
+    "owner/fetchSingleJob",
+    async (jobId, { rejectWithValue }) => {
+        try {
+            return await fetchSingleJobService(jobId);
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch job details"
+            );
+        }
+    }
+);
+
+// Update job
+export const updateJob = createAsyncThunk(
+    "owner/updateJob",
+    async ({ jobId, jobData }, { rejectWithValue }) => {
+        try {
+            return await updateJobService(jobId, jobData);
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update job"
+            );
+        }
+    }
+);
+
+// Delete job
+export const deleteJob = createAsyncThunk(
+    "owner/deleteJob",
+    async (jobId, { rejectWithValue }) => {
+        try {
+            const res = await deleteJobService(jobId);
+            return { ...res, jobId };
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to delete job"
+            );
+        }
+    }
+)
+
+
 const initialState = {
     dashboardData: null,
     loading: false,
     error: null,
     searchResult: [],
     vehicles: [],
+    ownerJobs: [],
+    currentJob: null,
+
 
 };
 
@@ -230,6 +308,80 @@ const ownerSlice = createSlice({
             .addCase(deleteOwnerVehicle.rejected, (state) => {
                 state.loading = false;
             })
+
+            //create job builder
+            .addCase(createJob.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(createJob.fulfilled, (state, action) => {
+                state.loading = false;
+                state.isSuccess = true;
+            })
+            .addCase(createJob.rejected, (state, action) => {
+                state.loading = false;
+                state.isError = true;
+                state.error = action.payload;
+            })
+
+            //fetch owner jobs
+            .addCase(fetchOwnerJobs.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchOwnerJobs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.ownerJobs = action.payload.data;
+            })
+            .addCase(fetchOwnerJobs.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+
+            // Fetch single job
+            .addCase(fetchSingleJob.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchSingleJob.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentJob = action.payload.data;
+            })
+            .addCase(fetchSingleJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Update job
+            .addCase(updateJob.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(updateJob.fulfilled, (state, action) => {
+                state.loading = false;
+                const updated = action.payload.data;
+                state.ownerJobs = state.ownerJobs.map(job =>
+                    job._id === updated._id ? updated : job
+                );
+            })
+            .addCase(updateJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Delete job
+            .addCase(deleteJob.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(deleteJob.fulfilled, (state, action) => {
+                state.loading = false;
+                state.ownerJobs = state.ownerJobs.filter(
+                    job => job._id !== action.payload.jobId
+                );
+            })
+            .addCase(deleteJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
 
 
     },

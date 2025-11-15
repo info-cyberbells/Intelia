@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Search, MapPin, Truck, DollarSign, SlidersHorizontal, X, Bookmark, BookmarkCheck } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllJobs, saveJob, applyJob } from "../../features/Jobs/JobsSlice";
+import { fetchAllJobs, saveJob, applyJob, withdrawJob } from "../../features/Jobs/JobsSlice";
 import { useToast } from "../../context/ToastContext";
 import ConfirmationModal from "../Model/ConfirmationModal";
+import WithdrawJobModal from "../Model/WithdrawJobModal";
+
 
 
 
@@ -29,6 +31,8 @@ const JobListingInterface = () => {
     const [showApplied, setShowApplied] = useState(false);
     const [showApplyModal, setShowApplyModal] = useState(false);
     const [jobToApply, setJobToApply] = useState(null);
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [jobToWithdraw, setJobToWithdraw] = useState(null);
 
 
     const isFirstRender = React.useRef(true);
@@ -69,6 +73,20 @@ const JobListingInterface = () => {
         }
     };
 
+    const confirmWithdraw = async () => {
+        if (!jobToWithdraw) return;
+
+        try {
+            const res = await dispatch(
+                withdrawJob({ jobId: jobToWithdraw, driverId })
+            ).unwrap();
+            showToast(res.data?.message || "Application withdrawn!", "success");
+            setShowWithdrawModal(false);
+            setJobToWithdraw(null);
+        } catch (err) {
+            showToast(err || "Failed to withdraw!", "error");
+        }
+    };
 
 
     // Immediate pagination
@@ -321,7 +339,7 @@ const JobListingInterface = () => {
                                         </button>
 
                                         {/* APPLY JOB */}
-                                        <button
+                                        {/* <button
                                             onClick={() => {
                                                 setJobToApply(job._id);
                                                 setShowApplyModal(true);
@@ -330,7 +348,42 @@ const JobListingInterface = () => {
                                             disabled={job.alreadyApplied}
                                         >
                                             {job.alreadyApplied ? "Applied" : "Apply Now"}
-                                        </button>
+                                        </button> */}
+
+                                        {job.applicationStatus === "withdrawn" ? (
+                                            // Withdrawn → show disabled button
+                                            <button
+                                                disabled
+                                                className="px-4 py-2 bg-gray-200 border border-gray-300 
+                   text-gray-500 text-sm rounded cursor-not-allowed"
+                                            >
+                                                Withdrawn
+                                            </button>
+                                        ) : job.alreadyApplied ? (
+                                            // Applied → allow withdraw
+                                            <button
+                                                onClick={() => {
+                                                    setJobToWithdraw(job._id);
+                                                    setShowWithdrawModal(true);
+                                                }}
+                                                className="px-4 py-2 bg-red-50 border border-red-600 
+                   text-red-600 text-sm rounded hover:bg-red-100 transition-colors"
+                                            >
+                                                Withdraw
+                                            </button>
+                                        ) : (
+                                            // Not applied → allow apply
+                                            <button
+                                                onClick={() => {
+                                                    setJobToApply(job._id);
+                                                    setShowApplyModal(true);
+                                                }}
+                                                className="px-4 py-2 bg-white border border-blue-600 
+                   text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors"
+                                            >
+                                                Apply Now
+                                            </button>
+                                        )}
 
 
                                     </div>
@@ -403,6 +456,15 @@ const JobListingInterface = () => {
                 onConfirm={confirmApply}
             />
 
+            <WithdrawJobModal
+                isOpen={showWithdrawModal}
+                onClose={() => {
+                    setShowWithdrawModal(false);
+                    setJobToWithdraw(null);
+                }}
+                onConfirm={confirmWithdraw}
+                jobTitle={jobs.find((j) => j._id === jobToWithdraw)?.title}
+            />
         </div >
     );
 };

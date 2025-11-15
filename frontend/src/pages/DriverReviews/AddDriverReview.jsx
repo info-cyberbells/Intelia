@@ -73,7 +73,7 @@ const AddReview = () => {
   return (
     <div className="mt-16 ml-56 p-10 bg-[#F5F5F7] min-h-screen">
       <div>
-        <h2 className="text-3xl text-[#363B64] font-bold mb-10 ">
+        <h2 className="text-2xl text-[#363B64] font-bold mb-10 ">
           Add Driver Ratings & Reviews
         </h2>
 

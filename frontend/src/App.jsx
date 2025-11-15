@@ -8,6 +8,7 @@ import Dashboard from "./pages/AdminDashboard/Dashboard";
 import Drivers from "./pages/Drivers/Drivers";
 // import Search from "./pages/Search/Search";
 import TalentHub from "./pages/TalentHub/TalentHub";
+import OwnerJobs from "./pages/OwnerJobs/OwnerJobs";
 import Resources from "./pages/Resources/Resources";
 import Activity from "./pages/Activity/Activity";
 import DetailPage from "./pages/DetailPage/DetailPage";
@@ -96,6 +97,7 @@ function App() {
             <Route path="/drivers" element={<Drivers />} />
             {/* <Route path="/search" element={<Search />} /> */}
             <Route path="/talent-hub" element={<TalentHub />} />
+              <Route path="/owner-jobs" element={<OwnerJobs />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/my-applications" element={<MyApplications />} />
             <Route path="/activity" element={<Activity />} />
@@ -121,6 +123,8 @@ function App() {
             <Route path="/my-reviews" element={<MyReviews />} />
             <Route path="/my-vehicle" element={<MyVehicle />} />
             <Route path="/add-job-manually" element={<AddJobManually />} />
+            <Route path="/edit-job-manually/:jobId?" element={<AddJobManually />} />
+            
 
 
           </>

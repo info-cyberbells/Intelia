@@ -315,13 +315,52 @@ export const deleteOwnerVehicleService = async (vehicleId) => {
     return response.data;
 };
 
+//create job service
+export const createJobService = async (jobData) => {
+    const response = await axios.post(
+        USER_ENDPOINTS.CREATE_JOB,
+        jobData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
+//get all jobs
+export const fetchOwnerJobsService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.GET_ALL_OWNER_JOBS, getAuthHeader());
+    return response.data;
+};
 
 
 
+// Get single job details
+export const fetchSingleJobService = async (jobId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_SINGLE_JOB}/${jobId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
 
+// Update job
+export const updateJobService = async (jobId, jobData) => {
+    const response = await axios.put(
+        `${USER_ENDPOINTS.UPDATE_JOB}/${jobId}`,
+        jobData,
+        getAuthHeader()
+    );
+    return response.data;
+};
 
-
-
+// Delete job
+export const deleteJobService = async (jobId) => {
+    const response = await axios.delete(
+        `${USER_ENDPOINTS.DELETE_JOB}/${jobId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
 
 
 
@@ -524,3 +563,15 @@ export const driverApplyJobService = async (jobId, driverId) => {
     );
     return response.data;
 };
+
+//withdraw job driver side
+export const driverWithdrawJobService = async (jobId, driverId) => {
+    const payload = {driverId};
+    const response = await axios.put(
+        `${USER_ENDPOINTS.DRIVER_WITHDRAW_JOB}/${jobId}`,
+        payload,
+        getAuthHeader()
+    );
+    return response.data;
+}
+

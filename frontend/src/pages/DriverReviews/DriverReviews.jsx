@@ -31,7 +31,7 @@ const Reviews = () => {
         </span>
       </div>
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-[Poppins] text-[#363B64] font-bold">
+        <h1 className="text-2xl font-[Poppins] text-[#363B64] font-bold">
           Driver Ratings & Reviews
         </h1>
 

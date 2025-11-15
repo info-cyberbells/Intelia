@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Home, Search, Users, Briefcase, Car, FolderOpen   } from "lucide-react";
+import { Home, Search, Users, Briefcase, Car, FolderOpen } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../features/userSlice/userSlice";
@@ -27,9 +27,10 @@ const MenuItems = () => {
     { to: "/admin-dashboard", icon: <Home className="w-5 h-5 mr-3" />, label: "Dashboard" },
     { to: "/search-driver-records", icon: <Search className="w-5 h-5 mr-3" />, label: "Search" },
     { to: "/drivers", icon: <Users className="w-5 h-5 mr-3" />, label: "My Drivers" },
-    { to: "/my-vehicle", icon: <Car  className="w-5 h-5 mr-3" />, label: "My Vehicle" },
+    { to: "/my-vehicle", icon: <Car className="w-5 h-5 mr-3" />, label: "My Vehicle" },
     { to: "/talent-hub", icon: <Briefcase className="w-5 h-5 mr-3" />, label: "Talent Hub" },
-      { to: "/resources", icon: <FolderOpen  className="w-5 h-5 mr-3" />, label: "Resources" },
+    { to: "/owner-jobs", icon: <Briefcase className="w-5 h-5 mr-3" />, label: "My Jobs" },
+    { to: "/resources", icon: <FolderOpen className="w-5 h-5 mr-3" />, label: "Resources" },
   ];
 
   const superAdminMenu = [

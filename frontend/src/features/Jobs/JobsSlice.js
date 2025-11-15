@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { jobsListingService, driverSaveJobService, driverApplyJobService } from "../../auth/authServices";
+import { jobsListingService, driverSaveJobService, driverApplyJobService, driverWithdrawJobService } from "../../auth/authServices";
 
 //get all jobs
 export const fetchAllJobs = createAsyncThunk(
@@ -36,12 +36,28 @@ export const applyJob = createAsyncThunk(
     async ({ jobId, driverId }, { rejectWithValue }) => {
         try {
             const data = await driverApplyJobService(jobId, driverId);
-            return { jobId, data }; // return jobId so reducer can mark as applied
+            return { jobId, data };
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || "Failed to apply for job");
         }
     }
 );
+
+
+// withdraw job thunk
+export const withdrawJob = createAsyncThunk(
+    "jobs/withdrawJob",
+    async ({ jobId, driverId }, { rejectWithValue }) => {
+        try {
+            const data = await driverWithdrawJobService(jobId, driverId);
+            return { jobId, data };
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to withdraw application");
+        }
+    }
+);
+
 
 
 
@@ -109,6 +125,24 @@ const JobsSlice = createSlice({
                 );
             })
             .addCase(applyJob.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //withdarw job
+            .addCase(withdrawJob.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(withdrawJob.fulfilled, (state, action) => {
+                state.loading = false;
+                const { jobId } = action.payload;
+                state.data = state.data.map(job =>
+                    job._id === jobId
+                        ? { ...job, alreadyApplied: false, applicationStatus: "withdrawn" } : job
+                );
+            })
+            .addCase(withdrawJob.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

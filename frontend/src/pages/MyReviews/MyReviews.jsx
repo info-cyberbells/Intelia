@@ -20,8 +20,8 @@ const MyReviews = () => {
         <div className="ml-56 mt-16 font-[Poppins]  min-h-screen bg-[#F5F5F7] p-10">
 
             <div className="flex justify-between items-center mb-10">
-                <h1 className="text-3xl font-[Poppins] text-[#363B64] font-bold">
-                    Driver Ratings & Reviews
+                <h1 className="text-2xl font-[Poppins] text-[#363B64] font-bold">
+                  My Reviews
                 </h1>
 
                 <div className="flex gap-4 items-center">
