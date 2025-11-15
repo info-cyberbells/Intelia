@@ -40,6 +40,7 @@ export const USER_ENDPOINTS = {
   GET_SINGLE_JOB: `${API_BASE_URL}/owner/job`,
   UPDATE_JOB: `${API_BASE_URL}/owner/job`,
   DELETE_JOB: `${API_BASE_URL}/owner/job`,
+  GET_JOB_APPLICATIONS: `${API_BASE_URL}/owner/jobs`,
 
 
 
@@ -61,8 +62,8 @@ export const USER_ENDPOINTS = {
   FETCH_MY_REVIEWS: `${API_BASE_URL}/driver/driver-reviews`,
   DRIVER_SAVE_JOB: `${API_BASE_URL}/driver/job/save-job`,
   DRIVER_APPLY_JOB: `${API_BASE_URL}/driver/job/apply`,
-    DRIVER_WITHDRAW_JOB: `${API_BASE_URL}/driver/job/withdraw`,
-  
+  DRIVER_WITHDRAW_JOB: `${API_BASE_URL}/driver/job/withdraw`,
+
 
   SETTINGS: `${API_BASE_URL}/driver/settings`,
   UPDATE_SETTINGS: `${API_BASE_URL}/driver/update-settings`,

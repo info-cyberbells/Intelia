@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -178,6 +178,20 @@ export const deleteJob = createAsyncThunk(
 )
 
 
+// fetch job applications thunk
+export const fetchJobApplications = createAsyncThunk(
+    "owner/fetchJobApplications",
+    async (jobId, { rejectWithValue }) => {
+        try {
+            return await fetchJobApplicationsService(jobId);
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch job applications"
+            );
+        }
+    }
+)
+
 const initialState = {
     dashboardData: null,
     loading: false,
@@ -186,6 +200,7 @@ const initialState = {
     vehicles: [],
     ownerJobs: [],
     currentJob: null,
+    jobApplications: null,
 
 
 };
@@ -382,6 +397,18 @@ const ownerSlice = createSlice({
                 state.error = action.payload;
             })
 
+            // Fetch job applications
+            .addCase(fetchJobApplications.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchJobApplications.fulfilled, (state, action) => {
+                state.loading = false;
+                state.jobApplications = action.payload;
+            })
+            .addCase(fetchJobApplications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
 
 
     },

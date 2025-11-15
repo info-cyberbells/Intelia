@@ -362,6 +362,15 @@ export const deleteJobService = async (jobId) => {
     return response.data;
 };
 
+// Get job applications
+export const fetchJobApplicationsService = async (jobId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_JOB_APPLICATIONS}/${jobId}/applications`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
 
 
 

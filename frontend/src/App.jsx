@@ -33,6 +33,7 @@ import AddDriverReview from './pages/DriverReviews/AddDriverReview';
 import MyReviews from "./pages/MyReviews/MyReviews";
 import MyVehicle from "./pages/MyVehicle/MyVehicle";
 import AddJobManually from "./pages/AddJobManually/AddJobManually";
+import JobApplications from "./pages/JobApplications/JobApplications";
 
 
 function App() {
@@ -124,6 +125,8 @@ function App() {
             <Route path="/my-vehicle" element={<MyVehicle />} />
             <Route path="/add-job-manually" element={<AddJobManually />} />
             <Route path="/edit-job-manually/:jobId?" element={<AddJobManually />} />
+            <Route path="/job-applications/:jobId" element={<JobApplications />} />
+
             
 
 

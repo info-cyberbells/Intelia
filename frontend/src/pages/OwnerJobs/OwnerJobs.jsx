@@ -182,6 +182,7 @@ const JobListingTable = () => {
                                     <td className="px-6 py-4">
                                         <span className="flex items-center gap-2">
                                             <button
+                                                onClick={() => navigate(`/job-applications/${job._id}`)}
                                                 className="text-sm text-gray-700 hover:text-blue-600 font-medium transition-colors"
                                             >
                                                 View
