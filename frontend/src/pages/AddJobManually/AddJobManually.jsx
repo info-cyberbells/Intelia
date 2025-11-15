@@ -13,6 +13,7 @@ const AddJobManually = () => {
   const { jobId } = useParams();
   const [fieldErrors, setFieldErrors] = useState({});
   const { loading } = useSelector((state) => state.jobs);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { vehicles, currentJob } = useSelector((state) => state.owner);
   const [formData, setFormData] = useState({
     title: "",
@@ -44,10 +45,14 @@ const AddJobManually = () => {
   };
 
 
-  useEffect(() => {
-    dispatch(fetchOwnerVehicles());
+ useEffect(() => {
+    const loadData = async () => {
+      setIsInitialLoading(true);
+      await dispatch(fetchOwnerVehicles());
+      setIsInitialLoading(false);
+    };
+    loadData();
   }, [dispatch]);
-
   useEffect(() => {
     if (jobId) {
       dispatch(fetchSingleJob(jobId));
@@ -72,6 +77,57 @@ const AddJobManually = () => {
       });
     }
   }, [currentJob, jobId]);
+
+
+ // NOW CHECK isInitialLoading FIRST
+  if (isInitialLoading) {
+    return (
+      <div className="ml-56 mt-16 p-10">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#3565E3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // SECOND: Check if no vehicles 
+  if (vehicles?.length === 0 && !jobId) {
+    return (
+      <div className="ml-56 mt-16 p-10">
+        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Vehicles Available</h3>
+            <p className="text-gray-600 mb-6">
+              You need to add at least one vehicle before creating a job posting.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={() => navigate('/my-vehicle')}
+                className="px-6 py-2 bg-[#3565E3] text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Add Vehicle
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   const validateForm = () => {
     const errors = {};

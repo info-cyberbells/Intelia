@@ -8,7 +8,7 @@ import Dashboard from "./pages/AdminDashboard/Dashboard";
 import Drivers from "./pages/Drivers/Drivers";
 // import Search from "./pages/Search/Search";
 import TalentHub from "./pages/TalentHub/TalentHub";
-import OwnerJobs from "./pages/OwnerJobs/OwnerJobs";
+import JobWithAI from "./pages/JobWithAI/JobWithAI";
 import Resources from "./pages/Resources/Resources";
 import Activity from "./pages/Activity/Activity";
 import DetailPage from "./pages/DetailPage/DetailPage";
@@ -34,6 +34,7 @@ import MyReviews from "./pages/MyReviews/MyReviews";
 import MyVehicle from "./pages/MyVehicle/MyVehicle";
 import AddJobManually from "./pages/AddJobManually/AddJobManually";
 import JobApplications from "./pages/JobApplications/JobApplications";
+import DriverApplicationProfile from "./pages/JobApplications/DriverApplicationProfile";
 
 
 function App() {
@@ -98,7 +99,7 @@ function App() {
             <Route path="/drivers" element={<Drivers />} />
             {/* <Route path="/search" element={<Search />} /> */}
             <Route path="/talent-hub" element={<TalentHub />} />
-              <Route path="/owner-jobs" element={<OwnerJobs />} />
+            <Route path="//create-job-with-ai" element={<JobWithAI />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/my-applications" element={<MyApplications />} />
             <Route path="/activity" element={<Activity />} />
@@ -126,8 +127,10 @@ function App() {
             <Route path="/add-job-manually" element={<AddJobManually />} />
             <Route path="/edit-job-manually/:jobId?" element={<AddJobManually />} />
             <Route path="/job-applications/:jobId" element={<JobApplications />} />
+            <Route path="/driver-application/:jobId/:applicantId" element={<DriverApplicationProfile />} />
 
-            
+
+
 
 
           </>

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService, fetchDriverProfileService, shortlistApplicantService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -192,6 +192,35 @@ export const fetchJobApplications = createAsyncThunk(
     }
 )
 
+
+// Update thunk
+export const fetchDriverProfile = createAsyncThunk(
+    "owner/fetchDriverProfile",
+    async (driverId, { rejectWithValue }) => {
+        try {
+            return await fetchDriverProfileService(driverId);
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch driver profile"
+            );
+        }
+    }
+);
+
+// shortlist thunk 
+export const shortlistApplicant = createAsyncThunk(
+    "owner/shortlistApplicant",
+    async ({ jobId, applicantId }, { rejectWithValue }) => {
+        try {
+            return await shortlistApplicantService({ jobId, applicantId });
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to shortlist applicant"
+            );
+        }
+    }
+);
+
 const initialState = {
     dashboardData: null,
     loading: false,
@@ -201,6 +230,7 @@ const initialState = {
     ownerJobs: [],
     currentJob: null,
     jobApplications: null,
+    driverProfile: null,
 
 
 };
@@ -406,6 +436,31 @@ const ownerSlice = createSlice({
                 state.jobApplications = action.payload;
             })
             .addCase(fetchJobApplications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Fetch driver profile
+            .addCase(fetchDriverProfile.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchDriverProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.driverProfile = action.payload.data || action.payload;
+            })
+            .addCase(fetchDriverProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Shortlist builder
+            .addCase(shortlistApplicant.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(shortlistApplicant.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(shortlistApplicant.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

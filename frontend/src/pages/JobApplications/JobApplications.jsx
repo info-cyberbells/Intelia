@@ -22,7 +22,7 @@ const JobApplications = () => {
             rejected: { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-600" },
         };
         const c = config[status] || config.applied;
-        
+
         return (
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
@@ -111,7 +111,9 @@ const JobApplications = () => {
                                     </td>
                                     <td className="px-6 py-4">{getStatusBadge(app.status)}</td>
                                     <td className="px-6 py-4">
-                                        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                        <button
+                                            onClick={() => navigate(`/driver-application/${jobId}/${app.driverId?._id}`)}
+                                            className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                                             View Profile
                                         </button>
                                     </td>

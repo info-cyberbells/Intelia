@@ -61,6 +61,16 @@ const AddVehicle = () => {
         setEditVehicle(null);
     };
 
+    if (loading) {
+        return (
+            <div className="ml-56 mt-16 min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-[#3565E3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-lg font-semibold text-gray-600">Loading vehicles...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="ml-56 mt-16 font-[Poppins] min-h-screen bg-[#F5F5F7] p-10">
@@ -212,6 +222,29 @@ const AddVehicle = () => {
                     </div>
                 ))}
             </div>
+
+
+            {vehicles?.length === 0 && (
+                <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-12 h-12 text-[#3565E3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-[#363B64] mb-3">No Vehicles Found</h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        You haven't added any vehicles yet. Add your first vehicle to start your journey and create job postings.
+                    </p>
+                    <button
+                        onClick={() => { setEditVehicle(null); setIsModalOpen(true); }}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#3565E3] text-white font-medium rounded-lg hover:bg-[#2851c7] transition-colors"
+                    >
+                        <img src={addicon} alt="" className="w-5 h-5 filter invert brightness-0" />
+                        Add Your First Vehicle
+                    </button>
+                </div>
+            )}
+
             <AddVehicleModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

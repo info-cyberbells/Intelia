@@ -41,6 +41,8 @@ export const USER_ENDPOINTS = {
   UPDATE_JOB: `${API_BASE_URL}/owner/job`,
   DELETE_JOB: `${API_BASE_URL}/owner/job`,
   GET_JOB_APPLICATIONS: `${API_BASE_URL}/owner/jobs`,
+GET_DRIVER_PROFILE: `${API_BASE_URL}/owner/driver/profile`,
+SHORTLIST_APPLICANT: `${API_BASE_URL}/owner/job`,
 
 
 

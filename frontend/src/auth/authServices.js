@@ -371,6 +371,25 @@ export const fetchJobApplicationsService = async (jobId) => {
     return response.data;
 };
 
+// Get driver profile
+export const fetchDriverProfileService = async (driverId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_DRIVER_PROFILE}/${driverId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+// Shortlist applicant - PUT method
+export const shortlistApplicantService = async ({ jobId, applicantId }) => {
+    const response = await axios.put(
+        `${USER_ENDPOINTS.SHORTLIST_APPLICANT}/${jobId}/applicants/${applicantId}/shortlist`,
+        {},
+        getAuthHeader()
+    );
+    return response.data;
+};
+
 
 
 
