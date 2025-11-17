@@ -104,10 +104,8 @@ export const deleteJob = async (req, res) => {
  */
 export const listJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ status: "open", isExpired: false })
-      .populate("ownerId", "fullName companyName")
-      .populate("vehicleId", "make model plateNo");
-
+    const ownerId = req.user._id;
+    const jobs = await Job.find({ status: "open", isExpired: false, ownerId:ownerId }).populate("ownerId", "fullName companyName").populate("vehicleId", "make model plateNo");
     return res.status(200).json({
       success: true,
       count: jobs.length,
@@ -317,6 +315,16 @@ export const getJobApplications = async (req, res) => {
     if (!job) {
       return res.status(404).json({ success: false, message: "Job not found or unauthorized." });
     }
+
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+
+    // Attach full URL to profile image
+    job.applicants = job.applicants.map(app => {
+      if (app.driverId?.profileImage) {
+        app.driverId.profileImage = baseURL + app.driverId.profileImage;
+      }
+      return app;
+    });
 
     return res.status(200).json({
       success: true,

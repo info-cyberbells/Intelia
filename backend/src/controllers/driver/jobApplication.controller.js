@@ -13,18 +13,35 @@ export const applyJob = async (req, res) => {
 
     const job = await Job.findById(jobId);
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
+
     if (job.isExpired || job.status !== "open")
       return res.status(400).json({ success: false, message: "Job is closed or expired" });
 
-    const alreadyApplied = job.applicants.some(
+    // Find existing application
+    const existingApp = job.applicants.find(
       (a) => a.driverId.toString() === driverId.toString()
     );
-    if (alreadyApplied)
-      return res.status(400).json({ success: false, message: "You have already applied for this job" });
 
-    job.applicants.push({ driverId });
+    // If exists and not withdrawn → block
+    if (existingApp && existingApp.status !== "withdrawn") {
+      return res.status(400).json({
+        success: false,
+        message: "You have already applied for this job",
+      });
+    }
+
+    // If exists but withdrawn // reapply
+    if (existingApp && existingApp.status === "withdrawn") {
+      existingApp.status = "applied";
+      existingApp.appliedAt = new Date();
+    } else {
+      // Fresh application
+      job.applicants.push({ driverId });
+    }
+
     await job.save();
 
+    // Notification to owner
     await createNotification({
       userId: job.ownerId,
       title: "New Job Application",
