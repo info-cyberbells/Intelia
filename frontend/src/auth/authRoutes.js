@@ -19,6 +19,7 @@ export const USER_ENDPOINTS = {
   UPDATE_DRIVER: `${API_BASE_URL}/superAdmin/drivers`,
   DRIVER_REVIEWS: `${API_BASE_URL}/superAdmin/driver-reviews`,
   SUPERADMIN_JOBS: `${API_BASE_URL}/superAdmin/jobs/all`,
+  SEARCH_DRIVER_IN_SUPERADMIN: `${API_BASE_URL}/superAdmin/driver/search`,
 
 
 
@@ -41,8 +42,8 @@ export const USER_ENDPOINTS = {
   UPDATE_JOB: `${API_BASE_URL}/owner/job`,
   DELETE_JOB: `${API_BASE_URL}/owner/job`,
   GET_JOB_APPLICATIONS: `${API_BASE_URL}/owner/jobs`,
-GET_DRIVER_PROFILE: `${API_BASE_URL}/owner/driver/profile`,
-SHORTLIST_APPLICANT: `${API_BASE_URL}/owner/job`,
+  GET_DRIVER_PROFILE: `${API_BASE_URL}/owner/driver/profile`,
+  SHORTLIST_APPLICANT: `${API_BASE_URL}/owner/job`,
 
 
 
@@ -65,6 +66,10 @@ SHORTLIST_APPLICANT: `${API_BASE_URL}/owner/job`,
   DRIVER_SAVE_JOB: `${API_BASE_URL}/driver/job/save-job`,
   DRIVER_APPLY_JOB: `${API_BASE_URL}/driver/job/apply`,
   DRIVER_WITHDRAW_JOB: `${API_BASE_URL}/driver/job/withdraw`,
+  SEARCH_ALL_JOBS: `${API_BASE_URL}/driver/jobs`,
+  GET_SINGLE_JOB: `${API_BASE_URL}/driver/job`,
+
+
 
 
   SETTINGS: `${API_BASE_URL}/driver/settings`,

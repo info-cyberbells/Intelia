@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService, fetchSuperAdminJobsService } from "../../auth/authServices";
+import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService, fetchSuperAdminJobsService, searchDriverByLicenseServiceInSuperadmin } from "../../auth/authServices";
 
 // Thunk: Delete Owner
 export const deleteOwner = createAsyncThunk(
@@ -117,6 +117,23 @@ export const fetchSuperAdminJobs = createAsyncThunk(
         }
     }
 );
+
+
+//serach driving license
+export const searchDriverByLicenseSuperadmin = createAsyncThunk(
+    "owner/searchDriverByLicense",
+    async (licenseNumber, { rejectWithValue }) => {
+        try {
+            const res = await searchDriverByLicenseServiceInSuperadmin(licenseNumber);
+            return res;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Driver not found"
+            );
+        }
+    }
+);
+
 
 
 
@@ -277,6 +294,23 @@ const SuperAdminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+
+            //search kicense builder in superadmin
+            .addCase(searchDriverByLicenseSuperadmin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(searchDriverByLicenseSuperadmin.fulfilled, (state, action) => {
+                state.loading = false;
+                state.searchResult = action.payload?.drivers || [];
+            })
+            .addCase(searchDriverByLicenseSuperadmin.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.searchResult = [];
+            })
+
 
 
 

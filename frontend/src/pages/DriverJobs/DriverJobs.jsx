@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, MapPin, Truck, DollarSign, SlidersHorizontal, X, Bookmark, BookmarkCheck } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllJobs, saveJob, applyJob, withdrawJob } from "../../features/Jobs/JobsSlice";
+import { fetchAllJobs, saveJob, applyJob, withdrawJob, fetchSingleJob } from "../../features/Jobs/JobsSlice";
 import { useToast } from "../../context/ToastContext";
 import ConfirmationModal from "../Model/ConfirmationModal";
 import WithdrawJobModal from "../Model/WithdrawJobModal";
@@ -12,10 +12,9 @@ import WithdrawJobModal from "../Model/WithdrawJobModal";
 const JobListingInterface = () => {
     const dispatch = useDispatch();
     const { showToast } = useToast();
-    const { loading, data: jobs, totalPages, currentPage, totalJobs, error } = useSelector(
+    const { loading, data: jobs, totalPages, currentPage, totalJobs, error, selectedJob, loadingJob } = useSelector(
         (state) => state.jobs
     );
-
     const driverId = useSelector((state) => state.auth.user?._id);
 
 
@@ -50,7 +49,11 @@ const JobListingInterface = () => {
         return () => clearTimeout(delayDebounce);
     }, [dispatch, city, minSalary, maxSalary, keyword]);
 
-    const handleSaveJob = async (jobId) => {
+    const handleSaveJob = async (jobId, isAlreadySaved) => {
+        if (isAlreadySaved) {
+            showToast("Job is already saved", "info");
+            return;
+        }
         try {
             const res = await dispatch(saveJob({ jobId })).unwrap();
             showToast(res.data?.message || "Job saved successfully", "success");
@@ -120,6 +123,11 @@ const JobListingInterface = () => {
         <div className="min-h-screen bg-gray-50 font-sans lg:ml-56 mt-20">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 px-6 py-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <h1 className="text-2xl font-bold text-gray-800">All Jobs</h1>
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                    </div>
+                </div>
                 <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap">
                     {/* Search Bar */}
                     <div className="flex items-center bg-white border border-gray-300 rounded-lg px-4 py-2 flex-1 min-w-[250px] max-w-md">
@@ -319,9 +327,10 @@ const JobListingInterface = () => {
 
                                         {/* SAVE JOB */}
                                         <button
-                                            onClick={() => handleSaveJob(job._id)}
+                                            onClick={() => handleSaveJob(job._id, job.isSaved)}
+                                            disabled={job.isSaved}
                                             className={`flex items-center gap-2 text-sm font-medium transition ${job.isSaved
-                                                ? "text-green-600"   // saved color
+                                                ? "text-green-600 cursor-default"
                                                 : "text-blue-600 hover:text-blue-700"
                                                 }`}
                                         >
@@ -338,53 +347,39 @@ const JobListingInterface = () => {
                                             )}
                                         </button>
 
-                                        {/* APPLY JOB */}
-                                        {/* <button
-                                            onClick={() => {
-                                                setJobToApply(job._id);
-                                                setShowApplyModal(true);
-                                            }}
-                                            className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors"
-                                            disabled={job.alreadyApplied}
-                                        >
-                                            {job.alreadyApplied ? "Applied" : "Apply Now"}
-                                        </button> */}
 
-                                        {job.applicationStatus === "withdrawn" ? (
-                                            // Withdrawn → show disabled button
-                                            <button
-                                                disabled
-                                                className="px-4 py-2 bg-gray-200 border border-gray-300 
-                   text-gray-500 text-sm rounded cursor-not-allowed"
-                                            >
-                                                Withdrawn
-                                            </button>
-                                        ) : job.alreadyApplied ? (
-                                            // Applied → allow withdraw
-                                            <button
-                                                onClick={() => {
-                                                    setJobToWithdraw(job._id);
-                                                    setShowWithdrawModal(true);
-                                                }}
-                                                className="px-4 py-2 bg-red-50 border border-red-600 
-                   text-red-600 text-sm rounded hover:bg-red-100 transition-colors"
-                                            >
-                                                Withdraw
-                                            </button>
-                                        ) : (
-                                            // Not applied → allow apply
-                                            <button
-                                                onClick={() => {
-                                                    setJobToApply(job._id);
-                                                    setShowApplyModal(true);
-                                                }}
-                                                className="px-4 py-2 bg-white border border-blue-600 
-                   text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors"
-                                            >
-                                                Apply Now
-                                            </button>
-                                        )}
+                                        {(() => {
+                                            const userApplication = job.applicants?.find(
+                                                applicant => applicant.driverId === driverId
+                                            );
 
+                                            if (!userApplication || userApplication.status === "withdrawn") {
+                                                return (
+                                                    <button
+                                                        onClick={() => {
+                                                            setJobToApply(job._id);
+                                                            dispatch(fetchSingleJob(job._id));
+                                                            setShowApplyModal(true);
+                                                        }}
+                                                        className="px-4 py-2 bg-white border border-blue-600 text-blue-600 text-sm rounded hover:bg-blue-50 transition-colors"
+                                                    >
+                                                        Apply Now
+                                                    </button>
+                                                );
+                                            }
+
+                                            return (
+                                                <button
+                                                    onClick={() => {
+                                                        setJobToWithdraw(job._id);
+                                                        setShowWithdrawModal(true);
+                                                    }}
+                                                    className="px-4 py-2 bg-red-50 border border-red-600 text-red-600 text-sm rounded hover:bg-red-100 transition-colors"
+                                                >
+                                                    Withdraw
+                                                </button>
+                                            );
+                                        })()}
 
                                     </div>
 
@@ -447,8 +442,8 @@ const JobListingInterface = () => {
             }
             <ConfirmationModal
                 open={showApplyModal}
-                title="Apply for Job"
-                message="Are you sure you want to apply for this job?"
+                jobData={selectedJob}
+                loading={loadingJob}
                 onCancel={() => {
                     setShowApplyModal(false);
                     setJobToApply(null);

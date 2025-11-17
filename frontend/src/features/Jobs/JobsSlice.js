@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { jobsListingService, driverSaveJobService, driverApplyJobService, driverWithdrawJobService } from "../../auth/authServices";
+import { jobsListingService, driverSaveJobService, driverApplyJobService, driverWithdrawJobService, SearchjobsListingService, getSingleJobService } from "../../auth/authServices";
 
 //get all jobs
 export const fetchAllJobs = createAsyncThunk(
@@ -59,6 +59,36 @@ export const withdrawJob = createAsyncThunk(
 );
 
 
+//get all jobs
+export const SearchAllJobs = createAsyncThunk(
+    "jobs/searchJobs",
+    async (filters = {}, { rejectWithValue }) => {
+        try {
+            const data = await SearchjobsListingService(filters);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch Jobs"
+            );
+        }
+    }
+);
+
+
+// Get single job details
+export const fetchSingleJob = createAsyncThunk(
+    "jobs/fetchSingleJob",
+    async (jobId, { rejectWithValue }) => {
+        try {
+            const data = await getSingleJobService(jobId);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch job details"
+            );
+        }
+    }
+);
 
 
 
@@ -71,6 +101,8 @@ const JobsSlice = createSlice({
         currentPage: 1,
         totalJobs: 0,
         error: null,
+        selectedJob: null,
+        loadingJob: false,
     },
     reducers: {},
 
@@ -118,11 +150,33 @@ const JobsSlice = createSlice({
             })
             .addCase(applyJob.fulfilled, (state, action) => {
                 state.loading = false;
-                const { jobId } = action.payload;
-                // mark job as applied in state.data if present
-                state.data = state.data.map(job =>
-                    job._id === jobId ? { ...job, alreadyApplied: true } : job
-                );
+                const { jobId, driverId } = action.meta.arg;
+
+                state.data = state.data.map(job => {
+                    if (job._id === jobId) {
+                        const existingIndex = job.applicants?.findIndex(
+                            app => app.driverId === driverId
+                        );
+
+                        let updatedApplicants = [...(job.applicants || [])];
+
+                        if (existingIndex >= 0) {
+                            updatedApplicants[existingIndex] = {
+                                ...updatedApplicants[existingIndex],
+                                status: "applied"
+                            };
+                        } else {
+                            updatedApplicants.push({
+                                driverId: driverId,
+                                status: "applied",
+                                appliedAt: new Date().toISOString()
+                            });
+                        }
+
+                        return { ...job, applicants: updatedApplicants };
+                    }
+                    return job;
+                });
             })
             .addCase(applyJob.rejected, (state, action) => {
                 state.loading = false;
@@ -136,14 +190,55 @@ const JobsSlice = createSlice({
             })
             .addCase(withdrawJob.fulfilled, (state, action) => {
                 state.loading = false;
-                const { jobId } = action.payload;
-                state.data = state.data.map(job =>
-                    job._id === jobId
-                        ? { ...job, alreadyApplied: false, applicationStatus: "withdrawn" } : job
-                );
+                const { jobId, driverId } = action.meta.arg;
+
+                state.data = state.data.map(job => {
+                    if (job._id === jobId && job.applicants) {
+                        const updatedApplicants = job.applicants.map(applicant =>
+                            applicant.driverId === driverId
+                                ? { ...applicant, status: "withdrawn" }
+                                : applicant
+                        );
+                        return { ...job, applicants: updatedApplicants };
+                    }
+                    return job;
+                });
             })
             .addCase(withdrawJob.rejected, (state, action) => {
                 state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            //search all jobs builder
+            .addCase(SearchAllJobs.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(SearchAllJobs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.data = action.payload?.jobs || [];
+                state.totalPages = action.payload?.totalPages || 0;
+                state.currentPage = action.payload?.currentPage || 1;
+                state.totalJobs = action.payload?.totalJobs || 0;
+
+            })
+            .addCase(SearchAllJobs.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Fetch single job
+            .addCase(fetchSingleJob.pending, (state) => {
+                state.loadingJob = true;
+                state.error = null;
+            })
+            .addCase(fetchSingleJob.fulfilled, (state, action) => {
+                state.loadingJob = false;
+                state.selectedJob = action.payload.data;
+            })
+            .addCase(fetchSingleJob.rejected, (state, action) => {
+                state.loadingJob = false;
                 state.error = action.payload;
             });
 

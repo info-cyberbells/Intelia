@@ -184,6 +184,16 @@ export const fetchSuperAdminJobsService = async () => {
 };
 
 
+//search  driving license in superadmin
+export const searchDriverByLicenseServiceInSuperadmin = async (licenseNumber) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.SEARCH_DRIVER_IN_SUPERADMIN}?licenseNumber=${licenseNumber}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+
 
 
 
@@ -594,7 +604,7 @@ export const driverApplyJobService = async (jobId, driverId) => {
 
 //withdraw job driver side
 export const driverWithdrawJobService = async (jobId, driverId) => {
-    const payload = {driverId};
+    const payload = { driverId };
     const response = await axios.put(
         `${USER_ENDPOINTS.DRIVER_WITHDRAW_JOB}/${jobId}`,
         payload,
@@ -602,4 +612,34 @@ export const driverWithdrawJobService = async (jobId, driverId) => {
     );
     return response.data;
 }
+
+
+//driver job search
+export const SearchjobsListingService = async ({ keyword }) => {
+    if (!keyword || keyword.trim() === "") {
+        throw new Error("Keyword is required");
+    }
+
+    const params = new URLSearchParams();
+    params.append("page", 1);
+    params.append("limit", 10);
+    params.append("keyword", keyword);
+
+    const response = await axios.get(
+        `${USER_ENDPOINTS.SEARCH_ALL_JOBS}?${params.toString()}`,
+        getAuthHeader()
+    );
+
+    return response.data;
+};
+
+
+//get single job by id
+export const getSingleJobService = async (jobId) => {
+    const response = await axios.get(
+        `${USER_ENDPOINTS.GET_SINGLE_JOB}/${jobId}`,
+        getAuthHeader()
+    );
+    return response.data;
+};
 

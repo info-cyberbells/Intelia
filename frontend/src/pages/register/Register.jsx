@@ -1171,7 +1171,7 @@ const Register = () => {
                 </div>
                 {/* Scroll indicator - positioned on the right edge */}
                 {formData.role && (
-                    <div className="fixed right-20 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 text-gray-400 animate-bounce">
+                    <div className="hidden lg:flex fixed right-20 top-1/2 -translate-y-1/2 flex-col items-center gap-2 text-gray-400 animate-bounce">
                         <div className="w-px h-8 bg-gray-300"></div>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

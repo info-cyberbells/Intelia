@@ -35,6 +35,8 @@ import MyVehicle from "./pages/MyVehicle/MyVehicle";
 import AddJobManually from "./pages/AddJobManually/AddJobManually";
 import JobApplications from "./pages/JobApplications/JobApplications";
 import DriverApplicationProfile from "./pages/JobApplications/DriverApplicationProfile";
+import SeachJobDriver from "./pages/SearchJobDriver/SearchJobDriver";
+import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 
 
 function App() {
@@ -91,6 +93,7 @@ function App() {
 
 
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         {token ? (
           <>
             <Route path="/dashboard" element={<SuperadminDasboard />} />
@@ -128,6 +131,9 @@ function App() {
             <Route path="/edit-job-manually/:jobId?" element={<AddJobManually />} />
             <Route path="/job-applications/:jobId" element={<JobApplications />} />
             <Route path="/driver-application/:jobId/:applicantId" element={<DriverApplicationProfile />} />
+            <Route path="/search-job-details" element={<SeachJobDriver />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
 
 
 

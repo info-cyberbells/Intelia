@@ -76,14 +76,39 @@ const ManageJobsTable = () => {
     };
 
     const getStatusBadge = (status) => {
+        const normalized = status?.toLowerCase();
+
         const statusConfig = {
-            pending: { bg: "bg-yellow-50", text: "text-yellow-600", dot: "bg-yellow-600", label: "Pending" },
-            "in-progress": { bg: "bg-blue-50", text: "text-blue-600", dot: "bg-blue-600", label: "In Progress" },
-            completed: { bg: "bg-green-50", text: "text-green-600", dot: "bg-green-600", label: "Completed" },
-            cancelled: { bg: "bg-red-50", text: "text-red-600", dot: "bg-red-600", label: "Cancelled" }
+            "in progress": {
+                bg: "bg-blue-50",
+                text: "text-blue-600",
+                dot: "bg-blue-600",
+                label: "In Progress"
+            },
+
+            "withdrawn": {
+                bg: "bg-red-50",
+                text: "text-red-600",
+                dot: "bg-red-600",
+                label: "Withdrawn"
+            },
+
+            "pending": {
+                bg: "bg-yellow-50",
+                text: "text-yellow-600",
+                dot: "bg-yellow-600",
+                label: "Pending"
+            },
+
+            "completed": {
+                bg: "bg-green-50",
+                text: "text-green-600",
+                dot: "bg-green-600",
+                label: "Completed"
+            }
         };
 
-        const config = statusConfig[status] || statusConfig.pending;
+        const config = statusConfig[normalized] || statusConfig["pending"];
 
         return (
             <span className={`flex items-center gap-1.5 px-3 py-1 ${config.bg} ${config.text} rounded-full text-sm font-medium`}>
@@ -93,46 +118,13 @@ const ManageJobsTable = () => {
         );
     };
 
+
     return (
         <div className="min-h-screen font-[Poppins] bg-gray-50 p-8 lg:ml-56 mt-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <h1 className="text-2xl font-bold text-gray-800">My Jobs Application</h1>
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    {/* <input
-                        type="text"
-                        placeholder="Search jobs..."
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                        }}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 w-full md:w-64"
-                    /> */}
-                    {/* <button
-                        onClick={() => {
-                            setShowActiveOnly((prev) => !prev);
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${showActiveOnly
-                            ? "bg-blue-100 text-blue-700 border-blue-400"
-                            : "bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200"
-                            }`}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        {showActiveOnly ? "Active Only" : "Show Active"}
-                    </button> */}
                 </div>
             </div>
 
@@ -152,14 +144,6 @@ const ManageJobsTable = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                {/* <th className="px-6 py-4 text-left">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedRows.length === paginatedJobs?.length}
-                                        onChange={toggleSelectAll}
-                                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                </th> */}
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">
                                     Sr.No
                                 </th>
@@ -189,14 +173,6 @@ const ManageJobsTable = () => {
                                     className={`hover:bg-gray-50 transition-colors ${selectedRows.includes(job._id) ? "bg-blue-50" : ""
                                         }`}
                                 >
-                                    {/* <td className="px-6 py-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRows.includes(job._id)}
-                                            onChange={() => toggleRowSelection(job._id)}
-                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        />
-                                    </td> */}
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {(page - 1) * limit + index + 1}
                                     </td>
@@ -232,11 +208,6 @@ const ManageJobsTable = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">{getStatusBadge(job.status)}</td>
-                                    <td className="px-6 py-4">
-                                        <button className="text-gray-400 hover:text-gray-600">
-                                            <MoreVertical className="w-5 h-5" />
-                                        </button>
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>

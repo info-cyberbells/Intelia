@@ -157,8 +157,11 @@ const JobListingTable = () => {
   }
 
 
+
+
   return (
     <div className="min-h-screen font-[Poppins]  bg-gray-50 ml-56 mt-16 p-10">
+
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Job Listing</h1>
@@ -170,171 +173,202 @@ const JobListingTable = () => {
         </button>
       </div>
 
-      {/* Table Container */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {/* Table Header with Actions */}
-        <div className="flex justify-between items-center px-6 py-4">
-          <div className="flex items-center gap-2">
-            {/* <h2 className="text-lg font-semibold text-gray-700">Job List</h2>
+
+      {ownerJobs?.length === 0 && (
+        <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-12 h-12 text-[#3565E3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+
+          <h3 className="text-2xl font-bold text-[#363B64] mb-3">No Jobs Found</h3>
+
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            You haven't created any jobs yet. Add your first job to get started.
+          </p>
+
+          <button
+            onClick={() => setAddJobModalOpen(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#3565E3] text-white font-medium rounded-lg hover:bg-[#2851c7] transition-colors"
+          >
+            <img src={addicon} alt="" className="w-5 h-5 filter invert brightness-0" />
+            Add Your First Job
+          </button>
+
+        </div>
+      )}
+
+      {ownerJobs?.length > 0 && (
+        <>
+          {/* Table Container */}
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            {/* Table Header with Actions */}
+            <div className="flex justify-between items-center px-6 py-4">
+              <div className="flex items-center gap-2">
+                {/* <h2 className="text-lg font-semibold text-gray-700">Job List</h2>
                         <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">Label text or value</span> */}
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleBulkDeleteClick}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
-              <Trash2 className="w-4 h-4" />
-              <span className="text-sm font-medium">Delete</span>
-            </button>
-            <button
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
-              <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">Filters</span>
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
-              <Download className="w-4 h-4" />
-              <span className="text-sm font-medium">Export</span>
-            </button>
-          </div>
-        </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleBulkDeleteClick}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Delete</span>
+                </button>
+                <button
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
+                  <Filter className="w-4 h-4" />
+                  <span className="text-sm font-medium">Filters</span>
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-100">
+                  <Download className="w-4 h-4" />
+                  <span className="text-sm font-medium">Export</span>
+                </button>
+              </div>
+            </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="w-12 px-3 py-4 text-left">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.length === ownerJobs.length && ownerJobs.length > 0}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="w-12 px-3 py-4 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.length === ownerJobs.length && ownerJobs.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
 
-                  <div
-                    className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Sr.no
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Title
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Date
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Status
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Total Applicants
-                    {/* <ChevronDown className="w-4 h-4" /> */}
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left whitespace-nowrap">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
-                    Action
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {ownerJobs?.map((job, index) => (
-                <tr key={job._id || index}
-                  className="hover:bg-gray-50 transition-colors">
-                  <td className="px-3 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.includes(job._id)}
-                      onChange={() => toggleRowSelection(job._id)}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
+                      <div
+                        className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Sr.no
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Title
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Date
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Status
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Total Applicants
+                        {/* <ChevronDown className="w-4 h-4" /> */}
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase">
+                        Action
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {ownerJobs?.map((job, index) => (
+                    <tr key={job._id || index}
+                      className="hover:bg-gray-50 transition-colors">
+                      <td className="px-3 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.includes(job._id)}
+                          onChange={() => toggleRowSelection(job._id)}
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
 
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{index + 1}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium max-w-[200px] truncate">
-                    {job.title}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{index + 1}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 font-medium max-w-[200px] truncate">
+                        {job.title}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
 
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {new Date(job.createdAt).toLocaleDateString("en-US", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                      })}
-                    </div>
-                  </td>
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          {new Date(job.createdAt).toLocaleDateString("en-US", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                          })}
+                        </div>
+                      </td>
 
 
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${job.status === "Active"
-                        ? "bg-green-50 text-green-700"
-                        : "bg-gray-100 text-gray-600"
-                        }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${job.status === "open" ? "bg-green-600" : "bg-gray-500"
-                          }`}
-                      ></span>
-                      {job.status === "open" ? "Active" : "Inactive"}
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${job.status === "Active"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                            }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${job.status === "open" ? "bg-green-600" : "bg-gray-500"
+                              }`}
+                          ></span>
+                          {job.status === "open" ? "Active" : "Inactive"}
 
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-start pl-6">
-                      <span className="inline-flex items-center justify-center text-sm font-semibold 
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-start pl-6">
+                          <span className="inline-flex items-center justify-center text-sm font-semibold 
       text-blue-600 bg-blue-50 px-3 py-1 rounded-md min-w-[40px]">
-                        {job.applicants?.length || 0}
-                      </span>
-                    </div>
-                  </td>
+                            {job.applicants?.length || 0}
+                          </span>
+                        </div>
+                      </td>
 
-                  <td className="px-6 py-4">
-                    <span className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/job-applications/${job._id}`)}
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap"
-                      >
-                        View
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => handleEdit(job._id)}
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap"
-                      >
-                        Edit
-                      </button>
-                      <span className="text-gray-300">|</span>
-                      <button
-                        onClick={() => handleDeleteClick(job)}
-                        className="text-red-600 hover:text-red-700 text-sm font-medium whitespace-nowrap"
-                      >
-                        Delete
-                      </button>
-                    </span>
-                  </td>
+                      <td className="px-6 py-4">
+                        <span className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/job-applications/${job._id}`)}
+                            className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap"
+                          >
+                            View
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
+                            onClick={() => handleEdit(job._id)}
+                            className="text-gray-600 hover:text-gray-700 text-sm font-medium whitespace-nowrap"
+                          >
+                            Edit
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
+                            onClick={() => handleDeleteClick(job)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium whitespace-nowrap"
+                          >
+                            Delete
+                          </button>
+                        </span>
+                      </td>
 
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       <DeleteJobConfirmationModal
         isOpen={deleteModalOpen}
