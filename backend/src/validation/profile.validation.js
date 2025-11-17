@@ -8,24 +8,13 @@ export const validateUpdateProfile = (data, role) => {
       schema = Joi.object({
         fullName: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
-        phoneNumber: Joi.string()
-          .pattern(/^\+?[1-9]\d{1,14}$/)
-          .optional()
-          .messages({ "string.pattern.base": "Invalid phone number format" }),
-        licenseNumber: Joi.string()
-          .pattern(/^[A-Z0-9-]{5,20}$/i)
-          .max(191)
-          .optional(),
+        phoneNumber: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().messages({ "string.pattern.base": "Invalid phone number format" }),
+        licenseNumber: Joi.string().pattern(/^[A-Z0-9-]{5,20}$/i).max(191).optional(),
         municipality: Joi.string().trim().max(191).optional(),
-        validUntil: Joi.date()
-          .greater("now")
-          .optional()
-          .messages({ "date.greater": "validUntil must be a future date" }),
-           city: Joi.string().trim().max(191).optional(),
+        validUntil: Joi.date().greater("now").optional().messages({ "date.greater": "validUntil must be a future date" }),
+        city: Joi.string().trim().max(191).optional(),
         country: Joi.string().trim().max(191).optional(),
-        dob: Joi.date().less("now").optional().messages({
-          "date.less": "Date of birth must be in the past",
-        }),
+        dob: Joi.date().less("now").optional().messages({ "date.less": "Date of birth must be in the past" }),
       }).unknown(false);
       break;
 
@@ -35,22 +24,17 @@ export const validateUpdateProfile = (data, role) => {
         email: Joi.string().trim().email().optional(),
         companyName: Joi.string().trim().max(191).optional(),
         correspondedMe: Joi.string().trim().max(191).optional(),
-        phoneNumber: Joi.string()
-          .pattern(/^\+?[1-9]\d{1,14}$/)
-          .optional()
-          .messages({ "string.pattern.base": "Invalid phone number format" }),
+        phoneNumber: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().messages({ "string.pattern.base": "Invalid phone number format" }),
       }).unknown(false);
       break;
 
     case "superadmin":
       schema = Joi.object({
         fullName: Joi.string().trim().max(191).optional(),
-        // surname: Joi.string().trim().max(191).optional(),
         email: Joi.string().trim().email().optional(),
-        phoneNumber: Joi.string()
-          .pattern(/^\+?[1-9]\d{1,14}$/)
-          .optional()
-          .messages({ "string.pattern.base": "Invalid phone number format" }),
+        phoneNumber: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).optional().messages({ "string.pattern.base": "Invalid phone number format" }),
+        city: Joi.string().trim().max(191).optional(),
+        country: Joi.string().trim().max(191).optional(),
       }).unknown(false);
       break;
 

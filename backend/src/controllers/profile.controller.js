@@ -57,6 +57,8 @@ export const getProfile = async (req, res) => {
         roleData = {
           message: "Super admin access granted",
           phoneNumber: user.phoneNumber || null,
+          city: user.city,
+          country: user.country,
         };
         break;
 
@@ -191,6 +193,8 @@ export const updateProfile = async (req, res) => {
         // if (data.surname) user.surname = data.surname;
         if (data.phoneNumber) user.phoneNumber = data.phoneNumber;
         if (data.email) user.email = data.email;
+        if (data.city) user.city = data.city;
+        if (data.country) user.country = data.country;
         break;
 
       default:
@@ -249,6 +253,10 @@ export const updateProfile = async (req, res) => {
         ...(role === "owner" && {
           companyName: user.companyName,
           correspondedMe: user.correspondedMe,
+        }),
+        ...(role === "superadmin" && {
+          city: user.city,
+          country: user.country,
         }),
       },
     });

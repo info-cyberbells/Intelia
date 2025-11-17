@@ -10,6 +10,7 @@ import { submitFeedback } from "../controllers/driver/feedback.controller.js";
 import { getSystemNotifications } from "../controllers/systemNotificationController.js";
 import { upsertResume, getResume } from "../controllers/driver/driverResume.controller.js";
 import { getClientReviews } from "../controllers/review.controller.js";
+import { getJobById } from "../controllers/owner/job.controller.js";
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.put("/change-password", validateChangePassword, changePassword);
 // Jobs
 router.get("/jobs", listAvailableJobs);
 router.post("/job/save-job", saveJob);
+router.get("/job/:jobId", getJobById);
 
 // Job Application
 router.post("/job/apply/:jobId", applyJob);

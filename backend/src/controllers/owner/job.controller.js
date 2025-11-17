@@ -105,9 +105,19 @@ export const deleteJob = async (req, res) => {
 export const listJobs = async (req, res) => {
   try {
     const ownerId = req.user._id;
-    const jobs = await Job.find({ status: "open", isExpired: false, ownerId:ownerId }).populate("ownerId", "fullName companyName").populate("vehicleId", "make model plateNo");
+    let { page = 1, limit = 10 } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const skip = (page - 1) * limit;
+
+    const totalJobs = await Job.countDocuments({status: "open",isExpired: false,ownerId: ownerId,});
+    const jobs = await Job.find({ status: "open", isExpired: false, ownerId: ownerId }).populate("ownerId", "fullName companyName").populate("vehicleId", "make model plateNo").skip(skip).limit(limit).sort({ createdAt: -1 });
     return res.status(200).json({
       success: true,
+      page,
+      limit,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / limit),
       count: jobs.length,
       data: jobs,
     });
@@ -122,10 +132,7 @@ export const listJobs = async (req, res) => {
  */
 export const getJobById = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.jobId)
-      .populate("ownerId", "fullName companyName")
-      .populate("vehicleId", "make model plateNo");
-
+    const job = await Job.findById(req.params.jobId).populate("ownerId", "fullName companyName").populate("vehicleId", "make model plateNo");
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
 
     return res.status(200).json({ success: true, data: job });

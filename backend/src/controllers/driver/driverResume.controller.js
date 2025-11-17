@@ -83,7 +83,7 @@ export const upsertResume = async (req, res) => {
 };
 
 
-export const getResume = async (req, res) => {
+export const getResumeOLLDDD = async (req, res) => {
   try {
     const userId = req.user._id;
     const resume = await DriverResume.findOne({ userId });
@@ -106,3 +106,55 @@ export const getResume = async (req, res) => {
   }
 };
 
+export const getResume = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const resume = await DriverResume.findOne({ userId });
+    const user = await User.findById(userId).select(
+      "fullName email phoneNumber profileImage dob licenseNumber municipality validUntil licensePhoto"
+    );
+
+    // Base URL for profile image
+    const baseURL = `${req.protocol}://${req.get("host")}`;
+    const profileImage = user?.profileImage ? baseURL + user.profileImage : null;
+    const licensePhoto = user?.licensePhoto ? baseURL + user.licensePhoto : null;
+
+    // If resume not exist → send user info instead
+    if (!resume) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          basicInfo: {
+            fullName: user?.fullName || "",
+            email: user?.email || "",
+            phoneNumber: user?.phoneNumber || "",
+            profileImage,
+            licensePhoto,
+            dob: user?.dob || null,
+            licenseNumber: user?.licenseNumber || "",
+            municipality: user?.municipality || {},
+            validUntil: user?.validUntil || {},
+          },
+          experience: {},
+          skillPreferences: {},
+        },
+      });
+    }
+
+    // If resume found → attach full profileImage URL
+    const resumeData = resume.toObject();
+    resumeData.basicInfo = {
+      ...resumeData.basicInfo,
+      profileImage,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: resumeData,
+    });
+  } catch (error) {
+    console.error("Error fetching resume:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};

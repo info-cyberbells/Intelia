@@ -6,11 +6,13 @@ import { validateCreateDriver, validateUpdateDriver } from "../validation/driver
 import { verifyVehicle, updateDriverStatus } from "../controllers/superAdmin/moderation.controller.js";
 import { getAllClients, getClientById, createClient, updateClient, deleteClient, toggleClientStatus, getClientStats } from "../controllers/client.controller.js";
 import { validateCreateClient, validateUpdateClient } from "../validation/client.validation.js";
-import { getProfile, updateProfile } from "../controllers/profile.controller.js";
+import { getProfile, updateProfile, changePassword } from "../controllers/profile.controller.js";
+import { validateChangePassword } from "../validation/profile.validation.js";
 import { getAllFeedbacks } from "../controllers/driver/feedback.controller.js";
 import { uploadProfile, uploadLicensePhoto } from "../middleware/upload.middleware.js";
 import { getClientReviews } from "../controllers/review.controller.js";
 import { getAllJobs } from "../controllers/master.controller.js";
+import { searchDriverByLicense } from "../controllers/owner/ownerDriverController.js";
 
 const router = express.Router();
 
@@ -25,6 +27,7 @@ router.get("/dashboard", (req, res) => {
 // =================== Profile ===================
 router.get("/profile", getProfile);
 router.put("/profile", uploadProfile.single("avatar"), updateProfile);
+router.put("/change-password", validateChangePassword, changePassword);
 
 // =================== Client Routes ===================
 router.get("/clients/stats", getClientStats);
@@ -77,5 +80,6 @@ router.get("/driver-reviews/:clientId", getClientReviews);
 
 // Jobs
 router.get("/jobs/all", getAllJobs);
+router.get("/driver/search", searchDriverByLicense);
 
 export default router;

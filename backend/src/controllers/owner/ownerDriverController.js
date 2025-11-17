@@ -199,15 +199,7 @@ export const searchDriverByLicense = async (req, res) => {
     }
 
     // Perform a case-insensitive partial search
-    const drivers = await Driver.find({
-      licenseNumber: { $regex: licenseNumber, $options: "i" },
-    })
-      .select(
-        "fullName email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt"
-      )
-      .limit(10)
-      .lean();
-
+    const drivers = await Driver.find({licenseNumber: { $regex: licenseNumber, $options: "i" }}).select("fullName email phoneNumber profileImage licenseNumber rating experience vehicleType createdAt").limit(10).lean();
     if (!drivers || drivers.length === 0) {
       return res.status(404).json({
         success: false,
