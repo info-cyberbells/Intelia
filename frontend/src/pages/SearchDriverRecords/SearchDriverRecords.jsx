@@ -41,13 +41,13 @@ const SearchDriverRecords = () => {
 
 
   return (
-    <div className="min-h-screen ml-56 mt-12 font-[Poppins] bg-gray-50 flex flex-col">
+    <div className="min-h-screen lg:ml-56 mt-12 font-[Poppins] bg-gray-50 flex flex-col">
       <div className="w-full max-w-3xl rounded-2xl p-8">
         {/* Title */}
         <h2 className="text-2xl md:text-3xl font-semibold text-[#3565E3] mb-2">
           Search Driver Records
         </h2>
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-500 text-sm md:text-base mb-8">
           Create your job ads by simply talking to Mia, your smart assistant.
         </p>
 
@@ -76,7 +76,7 @@ const SearchDriverRecords = () => {
           <div className="pt-2">
             <button
               onClick={handleSearch}
-              className="bg-[#3565E3] hover:bg-blue-700 text-white text-xs font-thin px-8 py-2 rounded-md shadow transition-all w-full sm:w-auto"
+              className="bg-[#3565E3] hover:bg-blue-700 text-white text-xs font-thin px-8 py-2 rounded-md shadow transition-all sm:w-auto"
             >
               Search
             </button>

@@ -57,13 +57,14 @@ const Drivers = () => {
     <div className="min-h-screen font-[Poppins] bg-gray-50 p-8 lg:ml-56 mt-12">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">My Drivers</h1>
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-800">My Drivers</h1>
       </div>
 
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6 mb-8">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
+          <div key={index} className="bg-white rounded-xl p-2 md:p-6 shadow-sm">
             <div className="flex items-center gap-4">
               <div
                 className={`${stat.bgColor} w-14 h-14 rounded-lg flex items-center justify-center text-2xl`}
@@ -71,8 +72,8 @@ const Drivers = () => {
                 {stat.icon}
               </div>
               <div>
-                <p className="text-gray-500 text-sm mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-800">
+                <p className="text-gray-500 text-xs md:text-sm mb-1">{stat.label}</p>
+                <p className="text-xl md:text-3xl font-bold text-gray-800">
                   {stat.value}
                 </p>
               </div>

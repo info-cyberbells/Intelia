@@ -98,18 +98,18 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 p-8 lg:ml-56 mt-12">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-800 mb-8">
           Welcome Back, {user.userName}
         </h1>
 
 
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
           {statsCards.map((stat, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl p-2 md:p-6 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-4">
                 <div
@@ -118,10 +118,10 @@ const Dashboard = () => {
                   {stat.icon}
                 </div>
                 <div>
-                  <p className="text-3xl font-bold text-gray-800">
+                  <p className="text-xl md:text-3xl font-bold text-gray-800">
                     {stat.value}
                   </p>
-                  <p className="text-gray-500 text-sm mt-1">{stat.label}</p>
+                  <p className="text-gray-500 text-xs md:text-sm mt-1">{stat.label}</p>
                 </div>
               </div>
             </div>
