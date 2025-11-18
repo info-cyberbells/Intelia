@@ -20,6 +20,9 @@ export const USER_ENDPOINTS = {
   DRIVER_REVIEWS: `${API_BASE_URL}/superAdmin/driver-reviews`,
   SUPERADMIN_JOBS: `${API_BASE_URL}/superAdmin/jobs/all`,
   SEARCH_DRIVER_IN_SUPERADMIN: `${API_BASE_URL}/superAdmin/driver/search`,
+  SUPER_ADMIN_CHANGE_PASSWORD: `${API_BASE_URL}/superAdmin/change-password`,
+  SUPER_ADMIN_GET_PROFILE: `${API_BASE_URL}/superAdmin/profile`,
+  SUPER_ADMIN_UPDATE_PROFILE: `${API_BASE_URL}/superAdmin/profile`,
 
 
 
@@ -44,6 +47,10 @@ export const USER_ENDPOINTS = {
   GET_JOB_APPLICATIONS: `${API_BASE_URL}/owner/jobs`,
   GET_DRIVER_PROFILE: `${API_BASE_URL}/owner/driver/profile`,
   SHORTLIST_APPLICANT: `${API_BASE_URL}/owner/job`,
+  OWNER_CHANGE_PASSWORD: `${API_BASE_URL}/owner/change-password`,
+  OWNER_GET_PROFILE: `${API_BASE_URL}/owner/profile`,
+  OWNER_UPDATE_PROFILE: `${API_BASE_URL}/owner/profile`,
+
 
 
 

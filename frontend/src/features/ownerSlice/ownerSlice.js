@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService, fetchDriverProfileService, shortlistApplicantService } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService, fetchDriverProfileService, shortlistApplicantService, updateOwnerDetails, getMyProfileOwnerService, changePasswordOwner } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -216,6 +216,52 @@ export const shortlistApplicant = createAsyncThunk(
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to shortlist applicant"
+            );
+        }
+    }
+);
+
+// change Password Owner
+export const changeOwnerPassword = createAsyncThunk(
+    "owner/changePassword",
+    async (passwordData, { rejectWithValue }) => {
+        try {
+            const data = await changePasswordOwner(passwordData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to change password"
+            );
+        }
+    }
+);
+
+// get profile owner
+export const fetchOwnerProfile = createAsyncThunk(
+    "owner/fetchProfile",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getMyProfileOwnerService();
+            return data.user;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch profile"
+            );
+        }
+    }
+);
+
+
+// Update owner profile thunk
+export const updateOwnerProfileDetails = createAsyncThunk(
+    "owner/updateProfile",
+    async (updatedData, { rejectWithValue }) => {
+        try {
+            const data = await updateOwnerDetails(updatedData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update profile"
             );
         }
     }
@@ -461,6 +507,50 @@ const ownerSlice = createSlice({
                 state.loading = false;
             })
             .addCase(shortlistApplicant.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //change owner Password
+            .addCase(changeOwnerPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeOwnerPassword.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+            })
+            .addCase(changeOwnerPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // get owner profile
+            .addCase(fetchOwnerProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOwnerProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.profile = action.payload;
+            })
+            .addCase(fetchOwnerProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //update owner profile details
+            .addCase(updateOwnerProfileDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateOwnerProfileDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload?.user) {
+                    state.profile = action.payload.user;
+                }
+            })
+            .addCase(updateOwnerProfileDetails.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

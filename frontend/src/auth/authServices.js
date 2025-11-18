@@ -193,6 +193,33 @@ export const searchDriverByLicenseServiceInSuperadmin = async (licenseNumber) =>
     return response.data;
 };
 
+// change password superadmin
+export const changePasswordSuperAdmin = async (passwordData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.SUPER_ADMIN_CHANGE_PASSWORD,
+        passwordData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//get my profile superAdmin side
+export const getMyProfileSuperAdminService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.SUPER_ADMIN_GET_PROFILE, getAuthHeader());
+    return response.data;
+};
+
+
+// Update superAdmin profile  side
+export const updateSuperAdminProfile = async (updatedData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.SUPER_ADMIN_UPDATE_PROFILE,
+        updatedData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
 
 
 
@@ -399,6 +426,32 @@ export const shortlistApplicantService = async ({ jobId, applicantId }) => {
     );
     return response.data;
 };
+
+// change owner Password
+export const changePasswordOwner = async (passwordData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.OWNER_CHANGE_PASSWORD,
+        passwordData,
+        getAuthHeader()
+    );
+    return response.data;
+};
+
+//get my profile owner side
+export const getMyProfileOwnerService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.OWNER_GET_PROFILE, getAuthHeader());
+    return response.data;
+};
+
+// Update profile owner side
+export const updateOwnerDetails = async (updatedData) => {
+    const response = await axios.put(
+        USER_ENDPOINTS.OWNER_UPDATE_PROFILE,
+        updatedData,
+        getAuthHeader()
+    );
+    return response.data;
+}
 
 
 

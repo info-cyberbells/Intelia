@@ -38,6 +38,8 @@ import DriverApplicationProfile from "./pages/JobApplications/DriverApplicationP
 import SeachJobDriver from "./pages/SearchJobDriver/SearchJobDriver";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import ChangePassword from "./pages/ForgotPassword/ChangePassword";
+import ManageSettings from "./pages/SuperAdmin/ManageSettings/ManageSettings";
+import OwnerProfile from "./pages/OwnerProfile/OwnerProfile";
 
 
 function App() {
@@ -135,6 +137,8 @@ function App() {
             <Route path="/driver-application/:jobId/:applicantId" element={<DriverApplicationProfile />} />
             <Route path="/search-job-details" element={<SeachJobDriver />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/manage-settings" element={<ManageSettings />} />
+            <Route path="/manage-profile" element={<OwnerProfile />} />
 
 
 

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService, fetchSuperAdminJobsService, searchDriverByLicenseServiceInSuperadmin } from "../../auth/authServices";
+import { deleteOwnerService, addDriverService, addSuperAdminOwnerService, getSingleOwnerService, getDriverReviewsService, updateSuperAdminOwnerService, getSingleDriverService, updateSuperAdminDriverService, fetchSuperAdminJobsService, searchDriverByLicenseServiceInSuperadmin, updateSuperAdminProfile, getMyProfileSuperAdminService, changePasswordSuperAdmin } from "../../auth/authServices";
 
 // Thunk: Delete Owner
 export const deleteOwner = createAsyncThunk(
@@ -135,6 +135,51 @@ export const searchDriverByLicenseSuperadmin = createAsyncThunk(
 );
 
 
+// change Password SuperAdmin
+export const changeSuperAdminPassword = createAsyncThunk(
+    "superAdmin/changePassword",
+    async (passwordData, { rejectWithValue }) => {
+        try {
+            const data = await changePasswordSuperAdmin(passwordData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to change password"
+            );
+        }
+    }
+);
+
+// get profile SuperAdmin
+export const fetchSuperAdminProfile = createAsyncThunk(
+    "superAdmin/fetchProfile",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getMyProfileSuperAdminService();
+            return data.user;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch profile"
+            );
+        }
+    }
+);
+
+
+// Update SuperAdmin profile thunk
+export const updateSuperAdminDetails = createAsyncThunk(
+    "superAdmin/updateProfile",
+    async (updatedData, { rejectWithValue }) => {
+        try {
+            const data = await updateSuperAdminProfile(updatedData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update profile"
+            );
+        }
+    }
+);
 
 
 const SuperAdminSlice = createSlice({
@@ -310,6 +355,52 @@ const SuperAdminSlice = createSlice({
                 state.error = action.payload;
                 state.searchResult = [];
             })
+
+
+            //change super AdminPassword
+            .addCase(changeSuperAdminPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeSuperAdminPassword.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+            })
+            .addCase(changeSuperAdminPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // get superAdmin profile
+            .addCase(fetchSuperAdminProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchSuperAdminProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.profile = action.payload;
+            })
+            .addCase(fetchSuperAdminProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            //update superAdmin profile details
+            .addCase(updateSuperAdminDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateSuperAdminDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload?.user) {
+                    state.profile = action.payload.user;
+                }
+            })
+            .addCase(updateSuperAdminDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
 
 
 
