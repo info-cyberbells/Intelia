@@ -2,13 +2,35 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDriverSettings, updateDriverSettings, postDriverFeedback } from "../../features/Drivers/driverSlice";
 import { useToast } from "../../context/ToastContext";
+import { fetchOwnerSettings, updateOwnerSettings } from "../../features/ownerSlice/ownerSlice";
 
 
 
 const Settings = () => {
     const dispatch = useDispatch();
     const { showToast } = useToast();
-    const { settings, loading } = useSelector((state) => state.drivers);
+    // const { settings, loading } = useSelector((state) => state.drivers);
+
+    const getRole = () => {
+        try {
+            const raw = localStorage.getItem("user"); 
+            if (!raw) return null;
+
+            const user = JSON.parse(raw);
+            return user.role || null;
+        } catch {
+            return null;
+        }
+        };
+
+    const role = getRole();
+
+const driverState = useSelector((state) => state.drivers);
+const ownerState = useSelector((state) => state.owner);
+
+const settings = role === "owner" ? ownerState.settings : driverState.settings;
+const loading = role === "owner" ? ownerState.loading : driverState.loading;
+
 
     const [toggles, setToggles] = useState({
         email: false,
@@ -18,9 +40,23 @@ const Settings = () => {
 
     const [feedBack, setfeedBack] = useState("");
 
+
+
+    // useEffect(() => {
+    //     dispatch(fetchDriverSettings());
+    // }, [dispatch]);
+
     useEffect(() => {
-        dispatch(fetchDriverSettings());
+    const role = getRole();
+
+        if (role === "driver") {
+            dispatch(fetchDriverSettings());
+        } 
+        else if (role === "owner") {
+            dispatch(fetchOwnerSettings());
+        }
     }, [dispatch]);
+
 
 
     useEffect(() => {
@@ -34,21 +70,49 @@ const Settings = () => {
     }, [settings]);
 
 
+    // const handleToggle = (key) => {
+    //     const newToggles = { ...toggles, [key]: !toggles[key] };
+    //     setToggles(newToggles);
+
+    //     const updatedData = {
+    //         emailNotification: newToggles.email,
+    //         inAppNotification: newToggles.inApp,
+    //         darkMode: newToggles.darkMode,
+    //     };
+
+    //     dispatch(updateDriverSettings(updatedData))
+    //         .unwrap()
+    //         .then(() => showToast("Settings updated successfully!", "success"))
+    //         .catch(() => showToast("Failed to update settings!", "error"));
+    // };
+
     const handleToggle = (key) => {
-        const newToggles = { ...toggles, [key]: !toggles[key] };
-        setToggles(newToggles);
+    const newToggles = { ...toggles, [key]: !toggles[key] };
+    setToggles(newToggles);
 
-        const updatedData = {
-            emailNotification: newToggles.email,
-            inAppNotification: newToggles.inApp,
-            darkMode: newToggles.darkMode,
-        };
-
-        dispatch(updateDriverSettings(updatedData))
-            .unwrap()
-            .then(() => showToast("Settings updated successfully!", "success"))
-            .catch(() => showToast("Failed to update settings!", "error"));
+    const payload = {
+        emailNotification: newToggles.email,
+        inAppNotification: newToggles.inApp,
+        darkMode: newToggles.darkMode,
     };
+
+    const role = getRole();
+
+    if (role === "driver") {
+        dispatch(updateDriverSettings(payload))
+            .unwrap()
+            .then(() => showToast("Driver settings updated!", "success"))
+            .catch(() => showToast("Failed to update settings!", "error"));
+    }
+
+    if (role === "owner") {
+        dispatch(updateOwnerSettings(payload))
+            .unwrap()
+            .then(() => showToast("Owner settings updated!", "success"))
+            .catch(() => showToast("Failed to update settings!", "error"));
+    }
+};
+
 
     const handleSubmit = () => {
         if (!feedBack.trim()) {
@@ -167,8 +231,8 @@ const Settings = () => {
                     </div>
                 </div>
 
-
-                {/* 💬 Feedback */}
+                {role === "driver" && ( <>
+                    {/* 💬 Feedback */}
                 <div className="mt-8">
                     <label className="block text-[#333B69] font-medium text-sm mb-2">
                         Feedback
@@ -181,7 +245,6 @@ const Settings = () => {
                         className="w-full border border-gray-200 rounded-xl p-3 text-sm text-gray-600 focus:ring-1 focus:ring-blue-100 outline-none resize-none"
                     />
                 </div>
-
                 {/* Submit Button */}
                 <div className="flex justify-center mt-6">
                     <button
@@ -193,7 +256,9 @@ const Settings = () => {
                         {loading ? "Submitting..." : "Submit"}
                     </button>
 
-                </div>
+                </div></>
+                )}
+                
             </div>
         </div>
     );
