@@ -50,6 +50,10 @@ export const USER_ENDPOINTS = {
   OWNER_CHANGE_PASSWORD: `${API_BASE_URL}/owner/change-password`,
   OWNER_GET_PROFILE: `${API_BASE_URL}/owner/profile`,
   OWNER_UPDATE_PROFILE: `${API_BASE_URL}/owner/profile`,
+  OWNER_UPDATE_SETTINGS: `${API_BASE_URL}/owner/update-settings`,
+  OWNER_SETTINGS: `${API_BASE_URL}/owner/settings`,
+
+
 
 
 

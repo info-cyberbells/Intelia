@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService, fetchDriverProfileService, shortlistApplicantService, updateOwnerDetails, getMyProfileOwnerService, changePasswordOwner } from '../../auth/authServices';
+import { ownerDashboardService, superAdminOwnerListingService, searchDriverByLicenseService, fetchOwnerVehiclesService, addOwnerVehicleService, updateOwnerVehicleService, deleteOwnerVehicleService, createJobService, fetchOwnerJobsService, fetchSingleJobService, updateJobService, deleteJobService, fetchJobApplicationsService, fetchDriverProfileService, shortlistApplicantService, updateOwnerDetails, getMyProfileOwnerService, changePasswordOwner, updateOwnerSettingsService, getOwnerSettingService } from '../../auth/authServices';
 
 // get all drivers - SuperAdmin
 export const fetchSuperAdminOwners = createAsyncThunk(
@@ -262,6 +262,36 @@ export const updateOwnerProfileDetails = createAsyncThunk(
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to update profile"
+            );
+        }
+    }
+);
+
+// fetch owner Settings
+export const fetchOwnerSettings = createAsyncThunk(
+    "owner/fetchSettings",
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getOwnerSettingService();
+            return data.settings || data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch settings"
+            );
+        }
+    }
+);
+
+// upadte owner settings
+export const updateOwnerSettings = createAsyncThunk(
+    "owner/updateSettings",
+    async (settingsData, { rejectWithValue }) => {
+        try {
+            const data = await updateOwnerSettingsService(settingsData);
+            return data.settings || data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to update settings"
             );
         }
     }
@@ -551,6 +581,34 @@ const ownerSlice = createSlice({
                 }
             })
             .addCase(updateOwnerProfileDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            //  Fetch owner settings
+                        .addCase(fetchOwnerSettings.pending, (state) => {
+                            state.loading = true;
+                            state.error = null;
+                        })
+                        .addCase(fetchOwnerSettings.fulfilled, (state, action) => {
+                            state.loading = false;
+                            state.settings = action.payload;
+                        })
+                        .addCase(fetchOwnerSettings.rejected, (state, action) => {
+                            state.loading = false;
+                            state.error = action.payload;
+                        })
+
+            //update owner details
+                .addCase(updateOwnerSettings.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                })
+                .addCase(updateOwnerSettings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.settings = action.payload;
+                })
+                .addCase(updateOwnerSettings.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

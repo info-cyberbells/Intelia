@@ -696,3 +696,18 @@ export const getSingleJobService = async (jobId) => {
     return response.data;
 };
 
+//get current settings owner
+export const getOwnerSettingService = async () => {
+    const response = await axios.get(USER_ENDPOINTS.OWNER_SETTINGS, getAuthHeader());
+    return response.data;
+};
+
+// Update owner settings
+export const updateOwnerSettingsService = async (settingsData) => {
+    const response = await axios.post(
+        `${USER_ENDPOINTS.OWNER_UPDATE_SETTINGS}`,
+        settingsData,
+        getAuthHeader()
+    );
+    return response.data;
+};
