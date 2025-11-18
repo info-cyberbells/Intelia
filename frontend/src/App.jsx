@@ -37,6 +37,7 @@ import JobApplications from "./pages/JobApplications/JobApplications";
 import DriverApplicationProfile from "./pages/JobApplications/DriverApplicationProfile";
 import SeachJobDriver from "./pages/SearchJobDriver/SearchJobDriver";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
+import ChangePassword from "./pages/ForgotPassword/ChangePassword";
 
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
 
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         {token ? (
           <>
             <Route path="/dashboard" element={<SuperadminDasboard />} />
