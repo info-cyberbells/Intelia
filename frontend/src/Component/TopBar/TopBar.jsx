@@ -10,7 +10,7 @@ import { useToast } from "../../context/ToastContext";
 import { createPortal } from "react-dom";
 
 
-const TopBar = () => {
+const TopBar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const [license, setLicense] = useState("");
@@ -109,9 +109,22 @@ const TopBar = () => {
   }, []);
 
   return (
-    <div className="fixed top-0 bg-[#FCFCFC] left-56 right-0 flex items-center justify-between px-6 py-4">
+    <div className="fixed top-0 bg-[#FCFCFC] left-0 lg:left-56 right-0 flex items-center justify-between px-3 lg:px-6 py-4 z-50">
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors mr-2"
+      >
+        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isMobileMenuOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
+
       {/* ---- Search Bar ---- */}
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md lg:max-w-md">
         <input
           type="text"
           placeholder={
@@ -201,7 +214,7 @@ const TopBar = () => {
       </div>
 
       {/* ---- Right Section ---- */}
-      <div className="flex items-center space-x-12">
+      <div className="flex items-center ml-4 space-x-4 lg:space-x-12">
         {/* Message Icon */}
         <div className="relative">
           <img
@@ -228,7 +241,7 @@ const TopBar = () => {
         {/* User Profile */}
         <div className="flex items-center gap-3">
           {/* User Info */}
-          <div className="text-right">
+          <div className="text-right hidden lg:block">
             <p className="text-sm font-semibold text-gray-800 leading-tight">
               {user?.name || "User"}
             </p>

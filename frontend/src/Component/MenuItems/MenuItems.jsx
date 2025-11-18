@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { logout } from "../../features/userSlice/userSlice";
 import logoimage from "../../assets/mainlogo.png";
 
-const MenuItems = () => {
+const MenuItems = ({ onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,7 +103,7 @@ const MenuItems = () => {
 
 
   return (
-    <div className="w-56 font-[Inter] bg-[#FCFCFC] fixed flex flex-col justify-between h-full left-0 top-0 border-r border-gray-200">
+    <div className="w-56 font-[Inter] bg-[#FCFCFC] flex flex-col justify-between h-full border-r border-gray-200 pt-12 lg:pt-0">
       <div>
         {/* Logo Section */}
         <div className="p-3 pl-12 flex justify-start">
@@ -118,6 +118,7 @@ const MenuItems = () => {
               <Link
                 key={to}
                 to={to}
+                onClick={() => onClose && onClose()}
                 className={`flex items-center px-4 py-2.5 rounded-xl transition-colors ${isActive
                   ? "bg-[#3565E3] text-white"
                   : "text-[#A098AE] hover:bg-gray-100 hover:text-gray-800"
@@ -145,6 +146,7 @@ const MenuItems = () => {
         {role !== "superadmin" && (
           <Link
             to="/settings"
+            onClick={() => onClose && onClose()}
             className={`flex items-center cursor-pointer px-4 py-3 rounded-xl transition-colors ${location.pathname === "/settings"
               ? "bg-[#3565E3] text-white"
               : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
