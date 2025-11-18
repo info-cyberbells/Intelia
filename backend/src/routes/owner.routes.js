@@ -13,6 +13,7 @@ import { getMyDrivers ,getMyDriverProfile, searchDriverByLicense } from "../cont
 import { addReview, getClientReviews } from "../controllers/review.controller.js";
 import { uploadVehicleImage } from "../middleware/upload.middleware.js";
 import { getSystemNotifications } from "../controllers/systemNotificationController.js";
+import { updateSettings, getSettings } from "../controllers/owner/settings.controller.js";
 
 const router = express.Router();
 
@@ -114,4 +115,7 @@ router.get("/driver-reviews/:driverId", getClientReviews);
 //Notifications
 router.get("/my-notifications", getSystemNotifications);
 
+//Settings
+router.get("/settings", getSettings);
+router.post("/update-settings", updateSettings);
 export default router;

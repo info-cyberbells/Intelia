@@ -112,6 +112,8 @@ const userSchema = new mongoose.Schema(
     city: { type: String, trim: true },
     country: { type: String, trim: true },
     dob: { type: Date },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );
