@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSuperAdminJobs } from "../../../features/SuperAdminSlice/SuperAdminSlice";
+import JobDetailsModal from "../SuperAdminModals/JobDetailsModal";
 
 
 const ManageJobsTable = () => {
@@ -14,6 +15,8 @@ const ManageJobsTable = () => {
     // const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [selectedRows, setSelectedRows] = useState([]);
     // const [filteredJobs, setFilteredJobs] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
 
     useEffect(() => {
         dispatch(fetchSuperAdminJobs());
@@ -161,7 +164,11 @@ const ManageJobsTable = () => {
                             {paginatedJobs.map((job, index) => (
                                 <tr
                                     key={job._id}
-                                    className={`hover:bg-gray-50 transition-colors ${selectedRows.includes(job._id) ? "bg-blue-50" : ""
+                                    onClick={()=>{
+                                        setShowModal(true);
+                                        setSelectedJob(job);
+                                    }}
+                                    className={`hover:bg-gray-50 transition-colors cursor-pointer ${selectedRows.includes(job._id) ? "bg-blue-50" : ""
                                         }`}
                                 >
                                     
@@ -263,6 +270,13 @@ const ManageJobsTable = () => {
                         </button>
                     </div>
                 </div>
+            )}
+            {selectedJob && showModal && (
+                <JobDetailsModal 
+                onClose={()=> setShowModal(false)}
+                open={showModal}
+                job={selectedJob}
+                />
             )}
         </div>
     );
