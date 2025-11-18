@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, createCarOwner, logout } from "../controllers/auth.controller.js";
+import { register, login, createCarOwner, logout, forgotPassword, resetPassword } from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import { validateRegister } from "../validation/auth.validation.js";
@@ -29,5 +29,9 @@ router.post("/logout", authenticate, logout);
 
 // Protected (Super Admin only) - Create car owner
 router.post("/create-owner", setRole("owner"), validateRegister, createCarOwner);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+
 
 export default router;

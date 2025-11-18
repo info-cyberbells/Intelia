@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import TokenBlacklist from "../models/tokenBlacklist.model.js";
+import crypto from "crypto";
+import sgMail from "@sendgrid/mail";
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Register Driver
 export const register = async (req, res) => {
@@ -157,5 +160,87 @@ export const logout = async (req, res) => {
       success: false,
       message: "Server Error"
     });
+  }
+};
+
+// Forgot Password
+export const forgotPassword = async (req, res) => {
+  try {
+    console.log("SENDGRID KEY:", process.env.SENDGRID_API_KEY);
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(404).json({ success: false, message: "Email not found" });
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 1000 * 60 * 30; // 30 minutes
+
+    await user.save();
+
+    // Reset link
+    const resetLink = `${process.env.RESET_PASSWORD_URL}/${resetToken}`;
+
+    // Send Email
+    const msg = {
+      to: user.email,
+      from: "info.cyberbells@gmail.com",
+      subject: "Password Reset Request",
+      html: `
+        <h3>Password Reset</h3>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
+        <p>This link will expire in 30 minutes.</p>
+      `,
+    };
+
+    await sgMail.send(msg);
+
+    return res.json({
+      success: true,
+      message: "Password reset link sent successfully",
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Reset Password
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }, // not expired
+    });
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+
+    user.password = password; // hashing will happen in model pre-save
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
