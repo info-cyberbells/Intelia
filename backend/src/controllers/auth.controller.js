@@ -166,7 +166,6 @@ export const logout = async (req, res) => {
 // Forgot Password
 export const forgotPassword = async (req, res) => {
   try {
-    console.log("SENDGRID KEY:", process.env.SENDGRID_API_KEY);
     const { email } = req.body;
 
     const user = await User.findOne({ email });
